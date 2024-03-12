@@ -2,7 +2,7 @@ import { Injectable } from "@angular/core";
 import { Observable, BehaviorSubject } from "rxjs";
 import { map, distinctUntilChanged, tap, shareReplay } from "rxjs/operators";
 import { HttpClient } from "@angular/common/http";
-import { User } from "../models/user.model";
+import { User } from "../models";
 import { Router } from "@angular/router";
 
 @Injectable({ providedIn: "root" })

@@ -4,12 +4,7 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
-.pre-bootstrapping-container {
-  @apply w-full h-full relative;
-  .pre-bootstrapping-spinner {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-  }
-}
+@import 'styles/global';
+@import 'styles/indicator';
+@import 'styles/quill';
+@import 'styles/scrollbar';

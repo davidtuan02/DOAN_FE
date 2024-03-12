@@ -1,5 +1,5 @@
 import { Component, Input } from "@angular/core";
-import { Errors } from "../../../core/models/errors.model";
+import { Errors } from "../../../core/models/base/errors";
 import { NgForOf, NgIf } from "@angular/common";
 
 @Component({
