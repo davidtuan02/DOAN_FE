@@ -7,7 +7,7 @@ import {
   forwardRef,
 } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
-import { NgModelComponent } from '../../../core/abstracts/ngmodel-component.abstract';
+import { NgModelComponent } from '../../../core/abstracts';
 import { FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 @Component({

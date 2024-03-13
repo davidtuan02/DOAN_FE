@@ -1,0 +1,1 @@
+export * from './ngmodel-component.abstract';

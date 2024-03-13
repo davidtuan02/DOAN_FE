@@ -1,4 +1,3 @@
-import { IssueUtil } from '../../../shared/utils/issue.util';
 import { IssueType } from '../../enums';
 
 export class IssueTypeWithIcon {
@@ -7,6 +6,6 @@ export class IssueTypeWithIcon {
 
   constructor(issueType: IssueType) {
     this.value = issueType;
-    this.icon = IssueUtil.getIssueTypeIcon(issueType);
+    this.icon = issueType?.toLowerCase();
   }
 }

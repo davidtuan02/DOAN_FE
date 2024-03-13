@@ -29,6 +29,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { ToastrModule } from 'ngx-toastr';
 import { NgxsModule } from '@ngxs/store';
 import { ToasterState } from './core/store/states/toaster.state';
+import { QuillModule } from 'ngx-quill';
 
 export function initAuth(jwtService: JwtService, userService: UserService) {
   return () => (jwtService.getToken() ? userService.getCurrentUser() : EMPTY);
@@ -99,7 +100,8 @@ export const appConfig: ApplicationConfig = {
       }),
       NgxsModule.forRoot([]),
       NgxsModule.forFeature([ToasterState]),
-      ),
+      QuillModule.forRoot()
+    ),
     provideRouter(
       routes,
       withPreloading(PreloadAllModules),

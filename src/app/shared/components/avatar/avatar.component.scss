@@ -1,0 +1,11 @@
+.avatar {
+  @apply bg-gray-300 rounded-full flex-shrink-0 block cursor-pointer;
+
+  &.bordered {
+    @apply border-2 border-white;
+  }
+
+  &.selected {
+    @apply border-primary;
+  }
+}

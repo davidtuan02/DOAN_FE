@@ -1,3 +1,19 @@
-export * from './error/error.component';
-export * from './input/input.component';
-export * from './list-errors/list-errors.component';
+import { ErrorComponent} from './error/error.component';
+import { AvatarComponent } from './avatar/avatar.component';
+import { InputComponent } from './input/input.component';
+import { ListErrorsComponent } from './list-errors/list-errors.component';
+import { RichTextEditorComponent } from './rich-text-editor/rich-text-editor.component';
+import { SvgDefinitionsComponent } from './svg-icon/svg-definitions/svg-definitions.component';
+import { SvgIconComponent } from './svg-icon/svg-icon/svg-icon.component';
+import { InlineInputControlsDirective } from './inline-input-controls/inline-input-controls.directive';
+
+export {
+    ErrorComponent,
+    AvatarComponent,
+    InputComponent,
+    ListErrorsComponent,
+    RichTextEditorComponent,
+    SvgDefinitionsComponent,
+    SvgIconComponent,
+    InlineInputControlsDirective
+}

@@ -1,5 +1,5 @@
 import { IssuePriority } from "../../enums";
-import { IssueConsts } from "../../constants/issue.const";
+import { IssuePriorityColors } from "../../constants";
 
 export class IssuePriorityIcon {
   icon: string;
@@ -10,6 +10,6 @@ export class IssuePriorityIcon {
     const lowerPriorities = [IssuePriority.LOW, IssuePriority.LOWEST];
     this.value = issuePriority;
     this.icon = lowerPriorities.includes(issuePriority) ? 'arrow-down' : 'arrow-up';
-    this.color = IssueConsts.IssuePriorityColors[issuePriority];
+    this.color = IssuePriorityColors[issuePriority];
   }
 }

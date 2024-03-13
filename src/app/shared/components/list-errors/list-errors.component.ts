@@ -7,7 +7,6 @@ import { NgForOf, NgIf } from "@angular/common";
   standalone: true,
   imports: [NgIf, NgForOf],
   templateUrl: './list-errors.component.html',
-  styleUrl: './list-errors.component.scss'
 })
 export class ListErrorsComponent {
   errorList: string[] = [];

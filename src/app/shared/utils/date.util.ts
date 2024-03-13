@@ -1,5 +1,3 @@
-export class DateUtil {
-  static getNow(): string {
-    return new Date().toISOString();
-  }
+export function getNow(): string {
+  return new Date().toISOString();
 }
