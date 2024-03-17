@@ -2,18 +2,16 @@ import { Component } from '@angular/core';
 import { faEnvelope, faLock } from '@fortawesome/free-solid-svg-icons';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Store } from '@ngxs/store';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
-import { Navigate } from '@ngxs/router-plugin';
 import { TranslateModule } from '@ngx-translate/core';
-import { AuthLogin, ToasterError } from '../../../../core/store/actions';
 import { InputComponent } from '../../../../shared/components';
 import { extractError } from '../../../../shared/utils';
+import { NzPopoverModule } from 'ng-zorro-antd/popover';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [TranslateModule, InputComponent, ReactiveFormsModule, RouterModule],
+  imports: [TranslateModule, InputComponent, ReactiveFormsModule, RouterModule, NzPopoverModule],
   templateUrl: './login.component.html',
 })
 export class LoginComponent {
@@ -22,7 +20,7 @@ export class LoginComponent {
 
   form: FormGroup;
 
-  constructor(private fb: FormBuilder, private store: Store, private route: ActivatedRoute, private router: Router) {
+  constructor(private fb: FormBuilder, private route: ActivatedRoute, private router: Router) {
     this.form = this.fb.group({
       email: ['', [Validators.required]],
       password: ['', [Validators.required]],

@@ -1,0 +1,33 @@
+.board-card {
+  @apply rounded w-full block transition-colors bg-white p-3 shadow hover:bg-backgroundLightest cursor-pointer outline-none;
+
+  .square-button {
+    @apply invisible;
+
+    &.focused {
+      @apply bg-backgroundBlack visible;
+
+      app-svg-icon {
+        @apply text-white;
+      }
+    }
+  }
+
+  &:hover {
+    .square-button {
+      @apply visible;
+    }
+  }
+
+  .board-card-name {
+    @apply text-left;
+  }
+
+  .label {
+    @apply bg-backgroundGray text-textDark text-xs border-none px-1 py-0.5 rounded;
+  }
+
+  .context-button {
+    @apply px-2 py-1 hover:bg-backgroundDark;
+  }
+}

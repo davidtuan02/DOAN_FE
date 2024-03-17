@@ -31,7 +31,8 @@ export class InlineInputControlsDirective implements OnDestroy {
     private overlay: Overlay,
     private elementRef: ElementRef<HTMLElement>,
     private viewContainerRef: ViewContainerRef
-  ) {
+  ) 
+  {
   }
 
   togglePanel(): void {

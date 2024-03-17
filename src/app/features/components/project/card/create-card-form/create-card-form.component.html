@@ -1,0 +1,51 @@
+<div class="w-full">
+  <button class="btn-create-issue" *ngIf="!editMode" (click)='editMode=true'>
+    <app-svg-icon name="plus"></app-svg-icon>
+    <div>Create issue</div>
+  </button>
+  <form *ngIf="editMode" class="create-issue-form"
+        [ngClass]="{'visible': editMode}"
+        [formGroup]="createCardForm"
+        (onDismiss)="editMode = false"
+        dismissOnEscape>
+      <textarea
+        formControlName="title"
+        placeholder="What need to be done?"
+        rows="2"
+        appAutofocus
+        appTextareaSubmitOnEnter
+        (onSubmit)="onSubmit()">
+      </textarea>
+    <div class="issue-type-dropdown">
+      <nz-select [nzCustomTemplate]="defaultTemplate" [nzDropdownMatchSelectWidth]="false"
+                 [nzDropdownRender]="renderTemplate"
+                 nzBorderless
+                 [nzSuffixIcon]="customDropdownIcon"
+                 formControlName="type"
+                 class="w-12">
+        <nz-option nzCustomContent [nzLabel]="t.icon" [nzValue]="t.label"
+                   [nzHide]="type?.value === t.label"
+                   *ngFor="let t of cardTypes">
+          <div class="flex flex-row gap-2 mt-1">
+            <app-svg-icon [name]="t.icon" [height]="16" [width]="16"></app-svg-icon>
+            <div class="leading-none capitalize">{{t.label.toLowerCase()}}</div>
+          </div>
+        </nz-option>
+      </nz-select>
+
+      <ng-template #renderTemplate>
+        <button class="border-t border-gray-550 px-4 py-2">
+          Manage issue types
+        </button>
+      </ng-template>
+
+      <ng-template #defaultTemplate let-selected>
+        <app-svg-icon [name]="selected.nzLabel" [height]="16" [width]="16"></app-svg-icon>
+      </ng-template>
+
+      <ng-template #customDropdownIcon>
+        <app-svg-icon class="text-textDark" name="arrowDown" [width]="16" [height]="16"></app-svg-icon>
+      </ng-template>
+    </div>
+  </form>
+</div>

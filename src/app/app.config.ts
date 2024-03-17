@@ -26,10 +26,10 @@ import { LanguageHandler } from './core/handlers/language.handler';
 import { LoaderHandler } from './core/handlers/loader.handler';
 import { TranslateService } from '@ngx-translate/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { ToastrModule } from 'ngx-toastr';
-import { NgxsModule } from '@ngxs/store';
-import { ToasterState } from './core/store/states/toaster.state';
 import { QuillModule } from 'ngx-quill';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { BoardService } from './core/services';
+import { CoreModule } from './core/core.module';
 
 export function initAuth(jwtService: JwtService, userService: UserService) {
   return () => (jwtService.getToken() ? userService.getCurrentUser() : EMPTY);
@@ -62,7 +62,7 @@ export const appConfig: ApplicationConfig = {
     {
       provide: APP_INITIALIZER,
       useFactory: initAuth,
-      deps: [JwtService, UserService],
+      deps: [JwtService, UserService, BoardService],
       multi: true,
     },
     // {
@@ -82,12 +82,12 @@ export const appConfig: ApplicationConfig = {
     //   deps: [TranslateService],
     //   multi: true
     // },
-    { provide: HTTP_INTERCEPTORS, useClass: ApiInterceptor, multi: true },
-    { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true },
-    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
+    // { provide: HTTP_INTERCEPTORS, useClass: ApiInterceptor, multi: true },
+    // { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true },
+    // { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
     importProvidersFrom(
-      HttpClientModule,
       BrowserModule,
+      BrowserAnimationsModule,
       TranslateModule.forRoot({
         loader: {
           provide: TranslateLoader,
@@ -95,12 +95,8 @@ export const appConfig: ApplicationConfig = {
           deps: [HttpClient],
         },
       }),
-      ToastrModule.forRoot({
-        preventDuplicates: true,
-      }),
-      NgxsModule.forRoot([]),
-      NgxsModule.forFeature([ToasterState]),
-      QuillModule.forRoot()
+      QuillModule.forRoot(),
+      CoreModule
     ),
     provideRouter(
       routes,

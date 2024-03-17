@@ -1,0 +1,44 @@
+<ng-container *ngIf="selectedCard$ | async as card">
+  <app-card-title [title]="card.title"
+                  [cardId]="card.id"
+                  (onUpdateTitle)="onUpdateCard($event)">
+  </app-card-title>
+  <div class="flex gap-2 mt-4 ml-1.5">
+    <button class="raise-button">
+      <app-svg-icon name="attach" [width]="24" [height]="24"></app-svg-icon>
+      <div class="font-medium">Attach</div>
+    </button>
+
+    <button class="raise-button">
+      <app-svg-icon name="hierarchy" [width]="24" [height]="24"></app-svg-icon>
+      <div class="font-medium">Add a child issue</div>
+    </button>
+
+    <button class="raise-button">
+      <app-svg-icon name="link" [width]="24" [height]="24"></app-svg-icon>
+      <div class="font-medium">Link issue</div>
+    </button>
+
+    <button class="raise-button">
+      <app-svg-icon name="threedot" [width]="24" [height]="24"></app-svg-icon>
+    </button>
+  </div>
+  <div class="flex flex-col my-4 gap-2">
+    <div class="font-medium text-textDark ml-1.5">Description</div>
+    <app-card-description [description]="card.description"
+                          [cardId]="card.id"
+                          (updateDescription)="onUpdateCard($event)">
+    </app-card-description>
+  </div>
+  <div class="flex flex-col my-4 gap-2">
+    <div class="font-medium text-textDark ml-1.5">Environment</div>
+    <app-card-environment [environment]="card.environment"
+                          [cardId]="card.id"
+                          (updateCardEnvironment)="onUpdateCard($event)">
+    </app-card-environment>
+  </div>
+  <div class="flex flex-col my-4 gap-2 ml-1.5">
+    <app-card-activity></app-card-activity>
+  </div>
+
+</ng-container>

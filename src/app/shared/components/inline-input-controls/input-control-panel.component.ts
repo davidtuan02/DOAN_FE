@@ -6,12 +6,9 @@ import {
   EventEmitter
 } from '@angular/core';
 import { ControlPanel } from './inline-input-controls.directive';
-import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-input-control-panel',
-  standalone: true,
-  imports: [CommonModule],
   template: `
     <ng-template>
       <div (click)="closed.emit()" class="input-control-panel-container">

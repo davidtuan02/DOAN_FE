@@ -1,0 +1,34 @@
+<ng-container *ngIf="assignee || editMode">
+  <nz-select [nzCustomTemplate]="defaultTemplate" [nzDropdownMatchSelectWidth]="false"
+             nzBorderless
+             nzShowSearch
+             [nzSuffixIcon]="customDropdownIcon"
+             [nzShowArrow]="false"
+             [formControl]="assigneeControl"
+             class="w-full">
+    <nz-option nzCustomContent [nzLabel]="u.avatar ?? ''" [nzValue]="u"
+               *ngFor="let u of users">
+      <div class="flex gap-2 py-1 item-centers">
+        <app-avatar [user]="u" [size]="24"></app-avatar>
+        <div class="capitalize text-textDark">{{u.username}}</div>
+      </div>
+    </nz-option>
+  </nz-select>
+</ng-container>
+
+<button *ngIf="(!assignee) && !editMode"
+        class="px-3 hover:bg-backgroundDark py-1 rounded w-full text-left text-textMedium"
+        (click)="onEnableEditMode()">
+  None
+</button>
+
+<ng-template #defaultTemplate let-selected>
+  <div class="flex items-center gap-2 h-full">
+    <app-avatar [user]="selected.nzValue" [size]="24"></app-avatar>
+    <div class="capitalize text-textDark">{{selected.nzValue.name}}</div>
+  </div>
+</ng-template>
+
+<ng-template #customDropdownIcon>
+  <app-svg-icon class="text-textDark" name="arrowDown" [width]="24" [height]="24"></app-svg-icon>
+</ng-template>

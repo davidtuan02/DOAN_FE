@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { Actions, ofActionDispatched, Select, UpdateState } from '@ngxs/store';
 import { Observable } from 'rxjs';
 import { filter, take } from 'rxjs/operators';
 
@@ -15,8 +14,8 @@ export class LanguageHandler {
     return this.translateService.currentLang;
   }
 
-  constructor(private actions$: Actions, private translateService: TranslateService) {
-    this.actions$.pipe(ofActionDispatched(UpdateState), take(1)).subscribe(() => this.initTranslate());
+  constructor(private translateService: TranslateService) {
+    //this.actions$.pipe(ofActionDispatched(UpdateState), take(1)).subscribe(() => this.initTranslate());
   }
 
   private initTranslate() {

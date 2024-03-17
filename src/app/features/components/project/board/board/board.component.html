@@ -1,0 +1,5 @@
+<div class="board" cdkDropListGroup>
+  <app-board-column *ngFor="let col of (columns$ | async)"
+                    [column]="col">
+  </app-board-column>
+</div>
