@@ -6,14 +6,13 @@ import {
   Output,
   forwardRef,
 } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
 import { NgModelComponent } from '../../../core/abstracts';
 import { FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 @Component({
   selector: 'app-input',
   standalone: true,
-  imports: [TranslateModule, CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './input.component.html',
   providers: [
     {

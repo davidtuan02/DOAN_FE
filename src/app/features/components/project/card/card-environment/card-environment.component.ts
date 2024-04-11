@@ -1,6 +1,5 @@
 import { Component, EventEmitter, Input, Output, SimpleChanges } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-
 import { PartialCard } from '../../../../../core/models';
 import { RichTextEditorComponent } from '../../../../../shared/components';
 import { QuillModule } from 'ngx-quill';

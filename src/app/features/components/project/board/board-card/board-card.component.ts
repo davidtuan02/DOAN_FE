@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, Output, SimpleChanges } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Card, User } from '../../../../../core/models';
 import { CardPriorityEnum, CardTypesEnum } from '../../../../../core/enums';

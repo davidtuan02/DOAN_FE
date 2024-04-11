@@ -3,7 +3,6 @@ import { faEnvelope, faLock } from '@fortawesome/free-solid-svg-icons';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
 import { InputComponent } from '../../../../shared/components';
 import { extractError } from '../../../../shared/utils';
 import { NzPopoverModule } from 'ng-zorro-antd/popover';
@@ -11,7 +10,7 @@ import { NzPopoverModule } from 'ng-zorro-antd/popover';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [TranslateModule, InputComponent, ReactiveFormsModule, RouterModule, NzPopoverModule],
+  imports: [InputComponent, ReactiveFormsModule, RouterModule, NzPopoverModule],
   templateUrl: './login.component.html',
 })
 export class LoginComponent {

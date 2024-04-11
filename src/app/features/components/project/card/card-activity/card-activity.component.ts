@@ -10,7 +10,7 @@ import { CardActivityLabelsComponent } from '../card-activity-labels/card-activi
 import { SvgIconComponent } from '../../../../../shared/components';
 import { CommentListComponent } from '../../comment/comment-list/comment-list.component';
 import * as fromStore from '../../../../../core/store';
-import { Store, on, select } from '@ngrx/store';
+import { Store, select } from '@ngrx/store';
 
 @Destroyable()
 @Component({

@@ -6,13 +6,11 @@ const routes: Routes = [
   {
     path: '',
     component: BoardContainerComponent,
-    //resolve: [_resolvers.DashboardResolver],
   }
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
-  //providers: [_resolvers.DashboardResolver],
 })
 export class ProjectRoutingModule {}
