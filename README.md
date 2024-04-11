@@ -23,4 +23,4 @@ Run `ng build` to build the project. The build artifacts will be stored in the `
 ## Stay in touch
 
 - Email - nguyentrung96dn@gmail.com
-- Linkedin - [linkedin.com](nkedin.com/in/trungnguyen-be)
+- Linkedin - [linkedin.com](https://www.linkedin.com/in/trungnguyen-be)
