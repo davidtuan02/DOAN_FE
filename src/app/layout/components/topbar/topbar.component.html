@@ -3,51 +3,384 @@
     <div class="brand">
       <app-svg-icon name="menu" [width]="24" [height]="24"></app-svg-icon>
       <a routerLink="/">
-        <app-svg-icon class="hidden xl:block" name="jira" [width]="134" [height]="24"></app-svg-icon>
-        <app-svg-icon class="block xl:hidden" name="jiraIcon" [width]="24" [height]="24"></app-svg-icon>
+        <app-svg-icon
+          class="hidden xl:block"
+          name="jira"
+          [width]="134"
+          [height]="24"
+        ></app-svg-icon>
+        <app-svg-icon
+          class="block xl:hidden"
+          name="jiraIcon"
+          [width]="24"
+          [height]="24"
+        ></app-svg-icon>
       </a>
     </div>
 
     <div class="menu">
-      <div class="menu-item" *ngFor="let item of displayTopbarMenuItems" [ngClass]="{'active': item['selected']}">
-        <button nz-dropdown nzTrigger="click">
-          {{item['name']}}
-          <app-svg-icon name="arrowDown" [width]="24" [height]="24"></app-svg-icon>
+      <div
+        class="menu-item"
+        *ngFor="let item of displayTopbarMenuItems"
+        [ngClass]="{ active: item.selected }"
+      >
+        <button
+          *ngIf="item.name === 'Your work'"
+          nz-dropdown
+          [nzDropdownMenu]="yourWorkMenu"
+        >
+          {{ item.name }}
+          <app-svg-icon
+            name="arrowDown"
+            [width]="24"
+            [height]="24"
+          ></app-svg-icon>
         </button>
+        <nz-dropdown-menu #yourWorkMenu="nzDropdownMenu">
+          <div class="bg-white rounded shadow-lg w-80">
+            <!-- Tabs -->
+            <div class="border-b border-gray-200">
+              <div class="flex">
+                <button
+                  class="flex-1 px-4 py-2 text-sm font-medium text-center border-b-2"
+                  [class.text-blue-600]="activeWorkTab === 'assigned'"
+                  [class.border-blue-600]="activeWorkTab === 'assigned'"
+                  [class.text-gray-500]="activeWorkTab !== 'assigned'"
+                  [class.border-transparent]="activeWorkTab !== 'assigned'"
+                  (click)="setActiveWorkTab('assigned')"
+                >
+                  Assigned to me
+                </button>
+                <button
+                  class="flex-1 px-4 py-2 text-sm font-medium text-center border-b-2"
+                  [class.text-blue-600]="activeWorkTab === 'recent'"
+                  [class.border-blue-600]="activeWorkTab === 'recent'"
+                  [class.text-gray-500]="activeWorkTab !== 'recent'"
+                  [class.border-transparent]="activeWorkTab !== 'recent'"
+                  (click)="setActiveWorkTab('recent')"
+                >
+                  Recent
+                </button>
+                <button
+                  class="flex-1 px-4 py-2 text-sm font-medium text-center border-b-2"
+                  [class.text-blue-600]="activeWorkTab === 'boards'"
+                  [class.border-blue-600]="activeWorkTab === 'boards'"
+                  [class.text-gray-500]="activeWorkTab !== 'boards'"
+                  [class.border-transparent]="activeWorkTab !== 'boards'"
+                  (click)="setActiveWorkTab('boards')"
+                >
+                  Boards
+                </button>
+              </div>
+            </div>
+
+            <!-- Content -->
+            <div>
+              <!-- Assigned to me tab content -->
+              <div *ngIf="activeWorkTab === 'assigned'">
+                <div class="p-2 px-4 text-xs text-gray-500">in progress</div>
+
+                <div
+                  *ngFor="let task of assignedTasks"
+                  class="flex items-start px-4 py-2 hover:bg-gray-50"
+                >
+                  <div class="flex-shrink-0 pt-0.5">
+                    <div
+                      class="flex items-center justify-center w-5 h-5 bg-blue-100 rounded"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.5"
+                        stroke="currentColor"
+                        class="w-4 h-4 text-blue-600"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M4.5 12.75l6 6 9-13.5"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="flex-1 ml-3">
+                    <div class="text-sm font-medium text-gray-900">
+                      {{ task.title }}
+                    </div>
+                    <div class="flex items-center text-xs text-gray-500">
+                      <span>{{ task.key }}</span>
+                      <span class="mx-1">•</span>
+                      <span>{{ task.project }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  *ngIf="assignedTasks.length === 0"
+                  class="px-4 py-4 text-sm text-center text-gray-500"
+                >
+                  No tasks assigned to you
+                </div>
+              </div>
+
+              <!-- Recent tab content -->
+              <div *ngIf="activeWorkTab === 'recent'">
+                <div
+                  *ngFor="let task of recentTasks"
+                  class="flex items-start px-4 py-2 hover:bg-gray-50"
+                >
+                  <div class="flex-shrink-0 pt-0.5">
+                    <div
+                      class="w-5 h-5 bg-white border border-gray-300 rounded-full"
+                    ></div>
+                  </div>
+                  <div class="flex-1 ml-3">
+                    <div class="text-sm font-medium text-gray-900">
+                      {{ task.title }}
+                    </div>
+                    <div class="flex items-center text-xs text-gray-500">
+                      <span>{{ task.key }}</span>
+                      <span class="mx-1">•</span>
+                      <span>{{ task.project }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  *ngIf="recentTasks.length === 0"
+                  class="px-4 py-4 text-sm text-center text-gray-500"
+                >
+                  No recent tasks
+                </div>
+              </div>
+
+              <!-- Boards tab content -->
+              <div *ngIf="activeWorkTab === 'boards'">
+                <div
+                  *ngFor="let board of boards"
+                  class="px-4 py-2 hover:bg-gray-50"
+                >
+                  <div class="text-sm font-medium text-gray-900">
+                    {{ board.name }}
+                  </div>
+                  <div class="text-xs text-gray-500">{{ board.project }}</div>
+                </div>
+
+                <div
+                  *ngIf="boards.length === 0"
+                  class="px-4 py-4 text-sm text-center text-gray-500"
+                >
+                  No recent boards
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-2 border-t border-gray-200 bg-gray-50">
+              <a
+                (click)="navigateAndCloseDropdown('/your-work')"
+                class="block w-full py-1 text-sm text-center text-blue-600 cursor-pointer hover:underline"
+              >
+                Go to Your Work page
+              </a>
+            </div>
+          </div>
+        </nz-dropdown-menu>
+
+        <button
+          *ngIf="item.name === 'Projects'"
+          nz-dropdown
+          [nzDropdownMenu]="projectsMenu"
+        >
+          {{ item.name }}
+          <app-svg-icon
+            name="arrowDown"
+            [width]="24"
+            [height]="24"
+          ></app-svg-icon>
+        </button>
+        <nz-dropdown-menu #projectsMenu="nzDropdownMenu">
+          <div class="bg-white rounded shadow-lg w-80">
+            <!-- Header -->
+            <div class="px-4 py-3 border-b border-gray-200">
+              <div class="text-lg font-medium">Projects</div>
+            </div>
+
+            <!-- Recent Projects -->
+            <div class="px-4 py-2">
+              <div class="mb-2 text-xs font-medium text-gray-500">RECENT</div>
+              <div
+                *ngFor="let project of recentProjects; let i = index"
+                class="py-1"
+              >
+                <a
+                  (click)="navigateAndCloseDropdown('/projects/' + project.id)"
+                  class="flex items-center text-sm text-gray-700 cursor-pointer hover:text-blue-600"
+                >
+                  <div
+                    [ngClass]="
+                      project.type === 'business'
+                        ? 'bg-purple-600'
+                        : 'bg-blue-600'
+                    "
+                    class="flex items-center justify-center flex-shrink-0 mr-2 text-white rounded w-7 h-7"
+                  >
+                    <span class="text-xs font-medium">{{
+                      project.key?.substring(0, 2)
+                    }}</span>
+                  </div>
+                  {{ project.name }}
+                </a>
+              </div>
+              <div
+                *ngIf="recentProjects.length === 0"
+                class="py-2 text-sm text-gray-500"
+              >
+                No recent projects
+              </div>
+            </div>
+
+            <!-- View all / Create project -->
+            <div
+              class="flex items-center justify-between p-3 border-t border-gray-200 bg-gray-50"
+            >
+              <a
+                (click)="navigateAndCloseDropdown('/projects')"
+                class="text-sm text-blue-600 cursor-pointer hover:underline"
+              >
+                View all projects
+              </a>
+              <a
+                (click)="navigateAndCloseDropdown('/projects/new')"
+                class="text-sm text-blue-600 cursor-pointer hover:underline"
+              >
+                Create project
+              </a>
+            </div>
+          </div>
+        </nz-dropdown-menu>
+
+        <button
+          *ngIf="
+            item.name !== 'Your work' &&
+            item.name !== 'People' &&
+            item.name !== 'Projects'
+          "
+          (click)="onMenuItemClick(item.route)"
+        >
+          {{ item.name }}
+          <app-svg-icon
+            name="arrowDown"
+            [width]="24"
+            [height]="24"
+          ></app-svg-icon>
+        </button>
+
+        <button
+          *ngIf="item.name === 'People'"
+          nz-dropdown
+          [nzDropdownMenu]="peopleMenu"
+        >
+          {{ item.name }}
+          <app-svg-icon
+            name="arrowDown"
+            [width]="24"
+            [height]="24"
+          ></app-svg-icon>
+        </button>
+        <nz-dropdown-menu #peopleMenu="nzDropdownMenu">
+          <ul nz-menu>
+            <li nz-menu-item (click)="navigateTo('/teams')">All Teams</li>
+            <li
+              nz-menu-item
+              (click)="
+                navigateTo('/teams', { queryParams: { filter: 'my-teams' } })
+              "
+            >
+              My Teams
+            </li>
+            <li nz-menu-divider></li>
+            <li nz-menu-item (click)="navigateTo('/teams/new')">Create Team</li>
+          </ul>
+        </nz-dropdown-menu>
       </div>
 
-      <button *ngIf="displayTopbarMenuItems.length < 7" class="h-8 w-8 bg-primary rounded text-white font-bold ml-2">+</button>
+      <button
+        *ngIf="displayTopbarMenuItems.length < 7"
+        class="w-8 h-8 ml-2 font-bold text-white rounded bg-primary"
+      >
+        +
+      </button>
     </div>
-
   </div>
   <div class="flex items-center gap-2">
     <nz-input-group [nzPrefix]="prefixIconSearch" class="hidden md:inline-flex">
-      <input type="text" nz-input placeholder="Search"/>
+      <input type="text" nz-input placeholder="Search" />
     </nz-input-group>
 
-    <button class="circle-icon-button text-textHeader"
-            nz-tooltip nzTooltipTitle="Notifications"
-            nzTooltipPlacement="bottom">
+    <button
+      class="circle-icon-button text-textHeader"
+      nz-tooltip
+      nzTooltipTitle="Notifications"
+      nzTooltipPlacement="bottom"
+    >
       <app-svg-icon name="bell" [width]="24" [height]="24"></app-svg-icon>
     </button>
 
-    <button class="circle-icon-button text-textHeader"
-            nz-tooltip nzTooltipTitle="Help"
-            nzTooltipPlacement="bottom">
-      <app-svg-icon name="questionMark" [width]="24" [height]="24"></app-svg-icon>
+    <button
+      class="circle-icon-button text-textHeader"
+      nz-tooltip
+      nzTooltipTitle="Help"
+      nzTooltipPlacement="bottom"
+    >
+      <app-svg-icon
+        name="questionMark"
+        [width]="24"
+        [height]="24"
+      ></app-svg-icon>
     </button>
 
-    <button class="circle-icon-button text-textHeader"
-            nz-tooltip nzTooltipTitle="Settings"
-            nzTooltipPlacement="bottom">
+    <button
+      class="circle-icon-button text-textHeader"
+      nz-tooltip
+      nzTooltipTitle="Settings"
+      nzTooltipPlacement="bottom"
+    >
       <app-svg-icon name="config" [width]="24" [height]="24"></app-svg-icon>
     </button>
 
-
     <ng-container *ngIf="currentUser$ | async as user">
-      <app-avatar [user]="user"
-                  [size]="48">
-      </app-avatar>
+      <a nz-dropdown [nzDropdownMenu]="userMenu" class="cursor-pointer">
+        <app-avatar [user]="user" [size]="48"> </app-avatar>
+      </a>
+      <nz-dropdown-menu #userMenu="nzDropdownMenu" class="w-64">
+        <div class="px-4 py-3 border-b border-gray-200">
+          <div class="flex items-center gap-3">
+            <app-avatar [user]="user" [size]="40"></app-avatar>
+            <div>
+              <div class="font-medium">{{ user.username }}</div>
+              <div class="text-sm text-gray-500">{{ user.email }}</div>
+            </div>
+          </div>
+        </div>
+        <ul nz-menu class="py-2">
+          <li
+            nz-menu-item
+            (click)="onProfileClick()"
+            class="flex items-center gap-3 px-4 py-2 text-sm hover:bg-gray-50"
+          >
+            <span>Profile</span>
+          </li>
+          <li
+            nz-menu-item
+            (click)="onLogoutClick()"
+            class="flex items-center gap-3 px-4 py-2 text-sm hover:bg-gray-50"
+          >
+            <span>Logout</span>
+          </li>
+        </ul>
+      </nz-dropdown-menu>
     </ng-container>
   </div>
 </div>

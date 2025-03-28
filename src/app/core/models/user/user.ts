@@ -1,7 +1,22 @@
+export enum UserRole {
+  ADMIN = 'admin',
+  USER = 'user',
+}
+
 export interface User {
   id: string;
+  createdAt: string;
+  updatedAt: string;
+  firstName: string;
+  lastName: string;
+  age: number;
+  email: string;
   username: string;
-  email?: string;
+  role: UserRole;
   avatar?: string;
-  token: string;
+}
+
+export interface AuthResponse {
+  accessToken: string;
+  user: User;
 }

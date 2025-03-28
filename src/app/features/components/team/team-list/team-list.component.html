@@ -1,0 +1,432 @@
+<div class="flex flex-col">
+  <div class="bg-gray-100 border-b border-gray-300 p-6">
+    <div class="flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-bold">Teams</h1>
+        <p class="text-gray-600 mt-1">Manage teams and team members</p>
+      </div>
+      <button
+        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center"
+        (click)="createTeam()"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-4 w-4 mr-1"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+            clip-rule="evenodd"
+          />
+        </svg>
+        Create team
+      </button>
+    </div>
+  </div>
+
+  <div class="p-6">
+    <!-- Search and filter bar -->
+    <div
+      class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+    >
+      <div class="relative w-full md:w-64">
+        <input
+          type="text"
+          class="w-full p-2 pl-8 border rounded-md"
+          placeholder="Search teams..."
+          [(ngModel)]="searchTerm"
+          (input)="onSearch()"
+        />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-4 w-4 text-gray-400 absolute left-2.5 top-3"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+            clip-rule="evenodd"
+          />
+        </svg>
+      </div>
+
+      <!-- Tabs -->
+      <div class="flex border-b border-gray-200">
+        <button
+          class="py-2 px-4 font-medium text-sm"
+          [class.text-blue-600]="activeTab === 'all-teams'"
+          [class.border-b-2]="activeTab === 'all-teams'"
+          [class.border-blue-600]="activeTab === 'all-teams'"
+          (click)="setActiveTab('all-teams')"
+        >
+          All Teams
+        </button>
+        <button
+          class="py-2 px-4 font-medium text-sm"
+          [class.text-blue-600]="activeTab === 'my-teams'"
+          [class.border-b-2]="activeTab === 'my-teams'"
+          [class.border-blue-600]="activeTab === 'my-teams'"
+          (click)="setActiveTab('my-teams')"
+        >
+          My Teams
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading indicator -->
+    <div *ngIf="loading" class="flex justify-center my-8">
+      <div
+        class="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"
+      ></div>
+    </div>
+
+    <!-- Error message -->
+    <div
+      *ngIf="error"
+      class="mb-6 p-4 bg-red-100 text-red-700 rounded-md border border-red-200"
+    >
+      <div class="flex items-center">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5 mr-2"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+            clip-rule="evenodd"
+          />
+        </svg>
+        {{ error }}
+      </div>
+    </div>
+
+    <!-- All Teams tab -->
+    <div *ngIf="activeTab === 'all-teams' && !loading">
+      <div *ngIf="filteredTeams.length === 0" class="text-center my-12">
+        <div class="mb-4">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-16 w-16 mx-auto text-gray-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1"
+              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+            />
+          </svg>
+        </div>
+        <h3 class="text-xl font-medium text-gray-700">No teams found</h3>
+        <p class="text-gray-500 mt-2">
+          {{
+            searchTerm
+              ? "No teams match your search."
+              : "There are no teams yet."
+          }}
+        </p>
+        <button
+          *ngIf="!searchTerm"
+          class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 inline-flex items-center"
+          (click)="createTeam()"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4 mr-1"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          Create first team
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div
+          *ngFor="let team of filteredTeams"
+          class="bg-white border border-gray-200 rounded-md overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div class="p-4 border-b border-gray-100 bg-blue-50">
+            <div class="flex justify-between items-start">
+              <h3
+                class="font-semibold text-lg text-blue-800 cursor-pointer hover:underline"
+                (click)="viewTeam(team.id)"
+              >
+                {{ team.name }}
+              </h3>
+              <button
+                class="text-gray-500 hover:text-gray-700"
+                [nzDropdownMenu]="menu"
+                nz-dropdown
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"
+                  />
+                </svg>
+              </button>
+              <nz-dropdown-menu #menu="nzDropdownMenu">
+                <ul nz-menu>
+                  <li nz-menu-item (click)="viewTeam(team.id)">View details</li>
+                  <li
+                    nz-menu-item
+                    *ngIf="canManageTeam(team)"
+                    (click)="editTeam(team)"
+                  >
+                    Edit team
+                  </li>
+                  <li
+                    nz-menu-item
+                    *ngIf="canManageTeam(team)"
+                    nzDanger
+                    (click)="confirmDeleteTeam(team)"
+                  >
+                    Delete team
+                  </li>
+                </ul>
+              </nz-dropdown-menu>
+            </div>
+          </div>
+
+          <div class="p-4">
+            <p class="text-gray-600 text-sm mb-4 min-h-[40px]">
+              {{ team.description || "No description" }}
+            </p>
+
+            <div class="flex items-center justify-between mt-2">
+              <div class="flex -space-x-2 overflow-hidden">
+                <div
+                  *ngFor="
+                    let member of team.usersIncludes?.slice(0, 3);
+                    let i = index
+                  "
+                  class="inline-block h-8 w-8 rounded-full bg-gray-300 border-2 border-white text-center overflow-hidden"
+                >
+                  <span
+                    *ngIf="i < 3"
+                    class="text-xs font-medium flex items-center justify-center h-full text-gray-700"
+                  >
+                    {{ member.user.firstName.charAt(0)
+                    }}{{ member.user.lastName.charAt(0) }}
+                  </span>
+                </div>
+                <div
+                  *ngIf="(team.usersIncludes.length || 0) > 3"
+                  class="inline-block h-8 w-8 rounded-full bg-gray-200 border-2 border-white text-center"
+                >
+                  <span
+                    class="text-xs font-medium flex items-center justify-center h-full text-gray-700"
+                  >
+                    +{{ (team.usersIncludes.length || 0) - 3 }}
+                  </span>
+                </div>
+              </div>
+              <div class="text-xs text-gray-500">
+                {{ (team.usersIncludes && team.usersIncludes.length) || 0 }}
+                members
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="px-4 py-3 bg-gray-50 border-t border-gray-100 text-xs text-gray-500 flex justify-between"
+          >
+            <span>Created: {{ team.createdAt | date : "mediumDate" }}</span>
+            <span *ngIf="getTeamRole(team)" class="capitalize"
+              >You: {{ getTeamRole(team) }}</span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- My Teams tab -->
+    <div *ngIf="activeTab === 'my-teams' && !loading">
+      <div *ngIf="filteredMyTeams.length === 0" class="text-center my-12">
+        <div class="mb-4">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-16 w-16 mx-auto text-gray-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1"
+              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+            />
+          </svg>
+        </div>
+        <h3 class="text-xl font-medium text-gray-700">No teams found</h3>
+        <p class="text-gray-500 mt-2">
+          {{
+            searchTerm
+              ? "No teams match your search."
+              : "You are not a member of any team yet."
+          }}
+        </p>
+        <button
+          *ngIf="!searchTerm"
+          class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 inline-flex items-center"
+          (click)="createTeam()"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4 mr-1"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          Create team
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div
+          *ngFor="let team of filteredMyTeams"
+          class="bg-white border border-gray-200 rounded-md overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div class="p-4 border-b border-gray-100 bg-blue-50">
+            <div class="flex justify-between items-start">
+              <h3
+                class="font-semibold text-lg text-blue-800 cursor-pointer hover:underline"
+                (click)="viewTeam(team.id)"
+              >
+                {{ team.name }}
+              </h3>
+              <button
+                class="text-gray-500 hover:text-gray-700"
+                [nzDropdownMenu]="menu"
+                nz-dropdown
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"
+                  />
+                </svg>
+              </button>
+              <nz-dropdown-menu #menu="nzDropdownMenu">
+                <ul nz-menu>
+                  <li nz-menu-item (click)="viewTeam(team.id)">View details</li>
+                  <li
+                    nz-menu-item
+                    *ngIf="canManageTeam(team)"
+                    (click)="editTeam(team)"
+                  >
+                    Edit team
+                  </li>
+                  <li
+                    nz-menu-item
+                    *ngIf="canManageTeam(team)"
+                    nzDanger
+                    (click)="confirmDeleteTeam(team)"
+                  >
+                    Delete team
+                  </li>
+                </ul>
+              </nz-dropdown-menu>
+            </div>
+          </div>
+
+          <div class="p-4">
+            <p class="text-gray-600 text-sm mb-4 min-h-[40px]">
+              {{ team.description || "No description" }}
+            </p>
+
+            <div class="flex items-center justify-between mt-2">
+              <div class="flex -space-x-2 overflow-hidden">
+                <div
+                  *ngFor="
+                    let member of team.usersIncludes?.slice(0, 3);
+                    let i = index
+                  "
+                  class="inline-block h-8 w-8 rounded-full bg-gray-300 border-2 border-white text-center overflow-hidden"
+                >
+                  <span
+                    *ngIf="i < 3"
+                    class="text-xs font-medium flex items-center justify-center h-full text-gray-700"
+                  >
+                    {{ member.user.firstName.charAt(0)
+                    }}{{ member.user.lastName.charAt(0) }}
+                  </span>
+                </div>
+                <div
+                  *ngIf="(team.usersIncludes.length || 0) > 3"
+                  class="inline-block h-8 w-8 rounded-full bg-gray-200 border-2 border-white text-center"
+                >
+                  <span
+                    class="text-xs font-medium flex items-center justify-center h-full text-gray-700"
+                  >
+                    +{{ (team.usersIncludes.length || 0) - 3 }}
+                  </span>
+                </div>
+              </div>
+              <div class="text-xs text-gray-500">
+                {{ (team.usersIncludes && team.usersIncludes.length) || 0 }}
+                members
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="px-4 py-3 bg-gray-50 border-t border-gray-100 text-xs text-gray-500 flex justify-between"
+          >
+            <span>Created: {{ team.createdAt | date : "mediumDate" }}</span>
+            <span class="capitalize">You: {{ getTeamRole(team) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirmation modal -->
+<nz-modal
+  [(nzVisible)]="isDeleteModalVisible"
+  nzTitle="Confirm Delete"
+  (nzOnCancel)="handleDeleteCancel()"
+  (nzOnOk)="handleDeleteOk()"
+  [nzOkLoading]="deleteLoading"
+  nzOkText="Delete"
+  nzOkType="primary"
+>
+  <ng-container *nzModalContent>
+    <p>
+      Are you sure you want to delete the team
+      <strong>{{ teamToDelete?.name }}</strong
+      >?
+    </p>
+    <p class="text-red-600 mt-2">
+      This action cannot be undone. All team data will be permanently deleted.
+    </p>
+  </ng-container>
+</nz-modal>

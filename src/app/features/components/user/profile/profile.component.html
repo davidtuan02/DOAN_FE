@@ -1,0 +1,309 @@
+<div class="h-screen overflow-y-auto bg-gray-50">
+  <div class="max-w-4xl p-5 p-8 mx-auto my-8 bg-white rounded-lg shadow-md">
+    <!-- Loading spinner for the main profile -->
+    <div *ngIf="isLoading" class="flex justify-center py-8">
+      <div
+        class="w-12 h-12 border-4 border-blue-500 rounded-full border-t-transparent animate-spin"
+      ></div>
+    </div>
+
+    <div *ngIf="!isLoading">
+      <!-- Enhanced Header Section -->
+      <div
+        class="flex flex-col items-start pb-8 mb-8 border-b border-gray-200 md:flex-row md:items-center"
+      >
+        <div class="relative w-32 h-32 mb-4 mr-8 md:mb-0">
+          <img
+            [src]="
+              'https://ui-avatars.com/api/?name=' +
+              user?.firstName +
+              '+' +
+              user?.lastName +
+              '&background=random'
+            "
+            [alt]="user?.firstName + ' ' + user?.lastName"
+            class="object-cover w-full h-full border-4 border-blue-100 rounded-full"
+          />
+          <div
+            class="absolute bottom-0 right-0 w-6 h-6 bg-green-500 border-2 border-white rounded-full"
+          ></div>
+        </div>
+        <div class="flex-1">
+          <div class="flex items-center justify-between">
+            <div>
+              <h1 class="m-0 text-3xl font-semibold text-gray-900">
+                {{ user?.firstName }} {{ user?.lastName }}
+              </h1>
+              <p class="mt-2 text-lg text-gray-600">
+                {{ "@" + user?.username }}
+              </p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span
+                class="px-3 py-1 text-sm font-medium text-blue-700 bg-blue-100 rounded-full"
+              >
+                {{ user?.role }}
+              </span>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4 mt-4 md:grid-cols-4">
+            <div class="text-center">
+              <div class="text-2xl font-bold text-gray-900">
+                {{ totalTasks }}
+              </div>
+              <div class="text-sm text-gray-600">Tasks</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-gray-900">
+                {{ teamMembers.length }}
+              </div>
+              <div class="text-sm text-gray-600">Team Members</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-gray-900">
+                {{ inProgressTasks }}
+              </div>
+              <div class="text-sm text-gray-600">In Progress</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-gray-900">
+                {{ todoTasks }}
+              </div>
+              <div class="text-sm text-gray-600">To Do</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <nz-tabset
+        [(nzSelectedIndex)]="selectedTabIndex"
+        (nzSelectedIndexChange)="onTabChange($event)"
+      >
+        <!-- Profile Tab -->
+        <nz-tab nzTitle="Profile">
+          <div class="space-y-8">
+            <div>
+              <div class="flex items-center justify-between mb-6">
+                <h2 class="m-0 text-2xl font-semibold text-gray-900">
+                  Personal Information
+                </h2>
+                <button
+                  (click)="toggleEdit()"
+                  class="px-4 py-2 text-gray-700 transition-colors duration-200 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
+                  [disabled]="isLoading"
+                >
+                  {{ isEditing ? "Cancel" : "Edit Profile" }}
+                </button>
+              </div>
+
+              <form *ngIf="isEditing" (ngSubmit)="onSubmit()" class="space-y-6">
+                <div class="space-y-2">
+                  <label class="block text-sm font-medium text-gray-700"
+                    >First Name</label
+                  >
+                  <input
+                    type="text"
+                    name="firstName"
+                    [value]="formData.firstName"
+                    (input)="onInputChange($event)"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div class="space-y-2">
+                  <label class="block text-sm font-medium text-gray-700"
+                    >Last Name</label
+                  >
+                  <input
+                    type="text"
+                    name="lastName"
+                    [value]="formData.lastName"
+                    (input)="onInputChange($event)"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div class="space-y-2">
+                  <label class="block text-sm font-medium text-gray-700"
+                    >Email</label
+                  >
+                  <input
+                    type="email"
+                    name="email"
+                    [value]="formData.email"
+                    (input)="onInputChange($event)"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div class="space-y-2">
+                  <label class="block text-sm font-medium text-gray-700"
+                    >Username</label
+                  >
+                  <input
+                    type="text"
+                    name="username"
+                    [value]="formData.username"
+                    (input)="onInputChange($event)"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div class="space-y-2">
+                  <label class="block text-sm font-medium text-gray-700"
+                    >Age</label
+                  >
+                  <input
+                    type="number"
+                    name="age"
+                    [value]="formData.age"
+                    (input)="onInputChange($event)"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  class="w-full px-6 py-3 text-white transition-colors duration-200 bg-blue-600 rounded-md hover:bg-blue-700"
+                  [disabled]="isLoading"
+                >
+                  <span *ngIf="isLoading" class="mr-2">
+                    <span
+                      class="inline-block w-4 h-4 border-2 border-white rounded-full border-t-transparent animate-spin"
+                    ></span>
+                  </span>
+                  Save Changes
+                </button>
+              </form>
+
+              <div *ngIf="!isEditing" class="grid gap-6">
+                <div class="space-y-2">
+                  <label class="block text-sm font-medium text-gray-700"
+                    >First Name</label
+                  >
+                  <p class="text-gray-900">{{ user?.firstName }}</p>
+                </div>
+                <div class="space-y-2">
+                  <label class="block text-sm font-medium text-gray-700"
+                    >Last Name</label
+                  >
+                  <p class="text-gray-900">{{ user?.lastName }}</p>
+                </div>
+                <div class="space-y-2">
+                  <label class="block text-sm font-medium text-gray-700"
+                    >Email</label
+                  >
+                  <p class="text-gray-900">{{ user?.email }}</p>
+                </div>
+                <div class="space-y-2">
+                  <label class="block text-sm font-medium text-gray-700"
+                    >Username</label
+                  >
+                  <p class="text-gray-900">{{ user?.username }}</p>
+                </div>
+                <div class="space-y-2">
+                  <label class="block text-sm font-medium text-gray-700"
+                    >Age</label
+                  >
+                  <p class="text-gray-900">{{ user?.age }}</p>
+                </div>
+                <div class="space-y-2">
+                  <label class="block text-sm font-medium text-gray-700"
+                    >Role</label
+                  >
+                  <p class="text-gray-900">{{ user?.role }}</p>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h2 class="mb-6 text-2xl font-semibold text-gray-900">
+                Security
+              </h2>
+              <div class="flex">
+                <button
+                  (click)="openChangePasswordModal()"
+                  [disabled]="isLoading"
+                  class="px-6 py-3 text-gray-700 transition-colors duration-200 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
+                >
+                  Change Password
+                </button>
+              </div>
+            </div>
+          </div>
+        </nz-tab>
+
+        <!-- Your Work Tab -->
+        <nz-tab nzTitle="Your Work">
+          <div class="space-y-8">
+            <div *ngIf="isLoadingWork" class="flex justify-center py-8">
+              <div
+                class="w-8 h-8 border-4 border-blue-500 rounded-full border-t-transparent animate-spin"
+              ></div>
+            </div>
+            <div *ngIf="!isLoadingWork" class="space-y-4">
+              <div
+                *ngFor="let item of workItems"
+                class="p-4 rounded-lg bg-gray-50"
+              >
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h3 class="text-lg font-medium text-gray-900">
+                      {{ item.title }}
+                    </h3>
+                    <p class="text-sm text-gray-600">{{ item.projectName }}</p>
+                  </div>
+                  <span
+                    [class]="
+                      'px-2 py-1 text-sm rounded-full ' +
+                      (item.status === 'In Progress'
+                        ? 'bg-blue-100 text-blue-800'
+                        : item.status === 'To Do'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-green-100 text-green-800')
+                    "
+                  >
+                    {{ item.status }}
+                  </span>
+                </div>
+                <div class="mt-2 text-sm text-gray-600">
+                  <span class="mr-4">Type: {{ item.type }}</span>
+                  <span *ngIf="item.dueDate"
+                    >Due: {{ item.dueDate | date }}</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </nz-tab>
+
+        <!-- Team Tab -->
+        <nz-tab nzTitle="Team">
+          <div class="space-y-8">
+            <div *ngIf="isLoadingTeam" class="flex justify-center py-8">
+              <div
+                class="w-8 h-8 border-4 border-blue-500 rounded-full border-t-transparent animate-spin"
+              ></div>
+            </div>
+            <div
+              *ngIf="!isLoadingTeam"
+              class="grid grid-cols-1 gap-4 sm:grid-cols-2"
+            >
+              <div
+                *ngFor="let member of teamMembers"
+                class="flex items-center p-4 rounded-lg bg-gray-50"
+              >
+                <img
+                  [src]="member.avatar"
+                  [alt]="member.firstName + ' ' + member.lastName"
+                  class="w-12 h-12 rounded-full"
+                />
+                <div class="ml-4">
+                  <h3 class="text-lg font-medium text-gray-900">
+                    {{ member.firstName }} {{ member.lastName }}
+                  </h3>
+                  <p class="text-sm text-gray-600">{{ member.role }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </nz-tab>
+      </nz-tabset>
+    </div>
+  </div>
+</div>

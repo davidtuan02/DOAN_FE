@@ -9,3 +9,29 @@
     @apply border-primary;
   }
 }
+
+.initials-avatar {
+  @apply flex items-center justify-center text-white font-medium;
+  text-align: center;
+
+  // We'll create 5 distinct background colors for different users
+  &:nth-child(5n + 1) {
+    background-color: #1890ff; // Blue
+  }
+
+  &:nth-child(5n + 2) {
+    background-color: #52c41a; // Green
+  }
+
+  &:nth-child(5n + 3) {
+    background-color: #722ed1; // Purple
+  }
+
+  &:nth-child(5n + 4) {
+    background-color: #fa8c16; // Orange
+  }
+
+  &:nth-child(5n + 5) {
+    background-color: #eb2f96; // Pink
+  }
+}

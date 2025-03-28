@@ -11,18 +11,24 @@ import { Store, select } from '@ngrx/store';
 @Component({
   selector: 'app-column-container',
   standalone: true,
-  imports: [BoardComponent, BoardHeadingComponent, BoardActionComponent, AsyncPipe],
+  imports: [
+    BoardComponent,
+    BoardHeadingComponent,
+    BoardActionComponent,
+    AsyncPipe,
+  ],
   templateUrl: './board-container.component.html',
-  styleUrls: ['./board-container.component.scss']
+  styleUrls: ['./board-container.component.scss'],
 })
 export class BoardContainerComponent implements OnInit {
   clearFiltersVisible$!: Observable<boolean>;
 
-  constructor(private store: Store<fromStore.AppState>) {
-  }
+  constructor(private store: Store<fromStore.AppState>) {}
 
   ngOnInit(): void {
-    this.clearFiltersVisible$ = this.store.pipe(select(fromStore.clearFilterVisible));
+    this.clearFiltersVisible$ = this.store.pipe(
+      select(fromStore.clearFilterVisible)
+    );
   }
 
   updateCardFilters(filters: CardFilter): void {

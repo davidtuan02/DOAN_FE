@@ -7,20 +7,17 @@ import { BoardService } from '../../services/board.service';
 
 @Injectable()
 export class ColumnEffects {
-  getColumns$ = createEffect(() => this.actions$.pipe(
+  getColumns$ = createEffect(() =>
+    this.actions$.pipe(
       ofType(actions.getColumns),
-      mergeMap(() => this.boardService.getBoardColumns()
-        .pipe(
-          map(columns => actions.getColumnsSuccess({ columns })),
+      mergeMap(() =>
+        this.boardService.getBoardColumns().pipe(
+          map((columns) => actions.getColumnsSuccess({ columns })),
           catchError((error) => of(actions.getColumnsError({ error })))
-        ))
+        )
+      )
     )
   );
 
-  constructor(
-    private actions$: Actions,
-    private boardService: BoardService
-  ) {
-  }
-
+  constructor(private actions$: Actions, private boardService: BoardService) {}
 }

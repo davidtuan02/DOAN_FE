@@ -2,7 +2,8 @@
   <app-board-heading></app-board-heading>
   <app-board-action
     [clearFiltersVisible]="clearFiltersVisible$ | async"
-    (updateCardFilters)="updateCardFilters($event)">
+    (updateCardFilters)="updateCardFilters($event)"
+  >
   </app-board-action>
 
   <app-board></app-board>

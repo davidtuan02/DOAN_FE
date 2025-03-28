@@ -1,0 +1,21 @@
+// Table style enhancements
+.grid-cols-12 {
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+    transition: background-color 0.2s;
+  }
+}
+
+// Improve star button interaction
+button:focus {
+  outline: none;
+}
+
+// Enhanced pagination styles
+.w-8.h-8.rounded-full {
+  transition: all 0.2s;
+
+  &:hover {
+    transform: scale(1.05);
+  }
+}

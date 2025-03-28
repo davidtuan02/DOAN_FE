@@ -1,0 +1,320 @@
+<div class="flex flex-col h-full">
+  <!-- Header with breadcrumbs and actions -->
+  <div class="bg-gray-100 border-b border-gray-300 p-6">
+    <!-- Breadcrumbs -->
+    <div class="flex items-center text-sm text-gray-500 mb-2">
+      <a [routerLink]="breadcrumbs[0].route" class="hover:text-blue-600">
+        {{ breadcrumbs[0].label }}
+      </a>
+      <span class="mx-2">/</span>
+      <span class="font-medium text-gray-700">{{ breadcrumbs[1].label }}</span>
+    </div>
+
+    <div class="flex justify-between items-center">
+      <h1 class="text-2xl font-bold" *ngIf="team">{{ team.name }}</h1>
+      <div class="flex space-x-3" *ngIf="canManageTeam() && !editMode">
+        <button
+          class="px-4 py-2 border rounded-md hover:bg-gray-100 flex items-center"
+          (click)="toggleEditMode()"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4 mr-1"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
+            />
+          </svg>
+          Edit
+        </button>
+        <button
+          class="px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700 flex items-center"
+          (click)="confirmDeleteTeam()"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4 mr-1"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading indicator -->
+  <div *ngIf="loading" class="flex-1 flex justify-center items-center">
+    <div
+      class="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"
+    ></div>
+  </div>
+
+  <!-- Error message -->
+  <div
+    *ngIf="error"
+    class="m-6 p-4 bg-red-100 text-red-700 rounded-md border border-red-200"
+  >
+    <div class="flex items-center">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-5 w-5 mr-2"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+          clip-rule="evenodd"
+        />
+      </svg>
+      {{ error }}
+    </div>
+  </div>
+
+  <!-- Main content with sidebar navigation -->
+  <div *ngIf="!loading && team && !editMode" class="flex flex-1">
+    <!-- Sidebar navigation -->
+    <div class="w-48 md:w-64 border-r border-gray-200 h-full">
+      <nav class="p-4">
+        <h3 class="font-medium text-gray-700 mb-2">Team Settings</h3>
+        <ul>
+          <li>
+            <a
+              class="block py-2 px-3 mb-1 rounded-md cursor-pointer"
+              [class.bg-blue-50]="activeTab === 'overview'"
+              [class.text-blue-600]="activeTab === 'overview'"
+              (click)="setActiveTab('overview')"
+            >
+              Overview
+            </a>
+          </li>
+          <li>
+            <a
+              class="block py-2 px-3 mb-1 rounded-md cursor-pointer"
+              [class.bg-blue-50]="activeTab === 'members'"
+              [class.text-blue-600]="activeTab === 'members'"
+              (click)="setActiveTab('members')"
+            >
+              Members
+            </a>
+          </li>
+          <li>
+            <a
+              class="block py-2 px-3 mb-1 rounded-md cursor-pointer"
+              [class.bg-blue-50]="activeTab === 'projects'"
+              [class.text-blue-600]="activeTab === 'projects'"
+              (click)="setActiveTab('projects')"
+            >
+              Projects
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+    <!-- Content area -->
+    <div class="flex-1 p-6 bg-gray-50">
+      <!-- Overview tab -->
+      <div *ngIf="activeTab === 'overview'">
+        <div class="bg-white rounded-lg shadow-sm border p-6 mb-6">
+          <h2 class="text-lg font-semibold mb-4">Team Information</h2>
+
+          <div class="mb-6">
+            <h3 class="font-medium mb-2">Description</h3>
+            <p class="text-gray-700 bg-gray-50 p-4 rounded-md border">
+              {{ team.description || "No description provided" }}
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="p-4 bg-gray-50 rounded-md border">
+              <span class="block text-sm text-gray-500">Created By</span>
+              <span class="font-medium">{{ team.createdBy }}</span>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-md border">
+              <span class="block text-sm text-gray-500">Created At</span>
+              <span class="font-medium">{{
+                team.createdAt | date : "medium"
+              }}</span>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-md border">
+              <span class="block text-sm text-gray-500">Updated At</span>
+              <span class="font-medium">{{
+                team.updatedAt | date : "medium"
+              }}</span>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-md border">
+              <span class="block text-sm text-gray-500">Your Role</span>
+              <span class="font-medium capitalize">{{
+                teamAccess?.role || "Not a member"
+              }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Team summary -->
+        <div class="bg-white rounded-lg shadow-sm border p-6">
+          <h2 class="text-lg font-semibold mb-4">Team Summary</h2>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-blue-50 p-4 rounded-md border border-blue-100">
+              <div class="flex items-center">
+                <div class="rounded-full bg-blue-100 p-2 mr-3">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-6 w-6 text-blue-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <div class="text-sm text-gray-500">Members</div>
+                  <div class="text-xl font-bold">
+                    {{ team.usersIncludes.length || 0 }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-purple-50 p-4 rounded-md border border-purple-100">
+              <div class="flex items-center">
+                <div class="rounded-full bg-purple-100 p-2 mr-3">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-6 w-6 text-purple-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <div class="text-sm text-gray-500">Projects</div>
+                  <div class="text-xl font-bold">{{ projectsCount || 0 }}</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-green-50 p-4 rounded-md border border-green-100">
+              <div class="flex items-center">
+                <div class="rounded-full bg-green-100 p-2 mr-3">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-6 w-6 text-green-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <div class="text-sm text-gray-500">Tasks Completed</div>
+                  <div class="text-xl font-bold">{{ tasksCompleted || 0 }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Members tab -->
+      <div *ngIf="activeTab === 'members'">
+        <div class="bg-white rounded-lg shadow-sm border p-6">
+          <h2 class="text-lg font-semibold mb-4">Team Members</h2>
+          <app-team-members [teamId]="teamId"></app-team-members>
+        </div>
+      </div>
+
+      <!-- Projects tab -->
+      <div *ngIf="activeTab === 'projects'">
+        <div class="bg-white rounded-lg shadow-sm border p-6">
+          <h2 class="text-lg font-semibold mb-4">Team Projects</h2>
+          <app-team-projects [teamId]="teamId"></app-team-projects>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit mode -->
+  <div *ngIf="!loading && team && editMode" class="p-6">
+    <div class="bg-white rounded-lg shadow-sm border p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-semibold">Edit Team</h2>
+        <button
+          class="text-gray-500 hover:text-gray-700"
+          (click)="cancelEdit()"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </button>
+      </div>
+      <app-team-form
+        [team]="team"
+        [loading]="updating"
+        (formSubmit)="onUpdateTeam($event)"
+        (cancel)="cancelEdit()"
+      >
+      </app-team-form>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirmation modal -->
+<nz-modal
+  [(nzVisible)]="isDeleteModalVisible"
+  nzTitle="Confirm Delete"
+  (nzOnCancel)="handleDeleteCancel()"
+  (nzOnOk)="handleDeleteOk()"
+  [nzOkLoading]="deleteLoading"
+  nzOkText="Delete"
+  nzOkType="primary"
+>
+  <ng-container *nzModalContent>
+    <p>
+      Are you sure you want to delete the team <strong>{{ team?.name }}</strong
+      >?
+    </p>
+    <p class="text-red-600 mt-2">
+      This action cannot be undone. All team data will be permanently deleted.
+    </p>
+  </ng-container>
+</nz-modal>

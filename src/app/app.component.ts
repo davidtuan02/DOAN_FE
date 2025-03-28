@@ -11,7 +11,7 @@ import * as fromStore from './core/store';
   standalone: true,
   imports: [NzSpinModule, RouterOutlet, AsyncPipe],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit {
   loading$: Observable<boolean>;
@@ -20,6 +20,5 @@ export class AppComponent implements OnInit {
     this.loading$ = this.store.pipe(select(fromStore.selectCardsLoading));
   }
 
-  ngOnInit(): void {
-  }
+  ngOnInit(): void {}
 }

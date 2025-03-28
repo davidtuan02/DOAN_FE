@@ -16,7 +16,13 @@ import { Store, select } from '@ngrx/store';
 @Component({
   selector: 'app-card-activity',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, CardActivityLabelsComponent, SvgIconComponent, CommentListComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    CardActivityLabelsComponent,
+    SvgIconComponent,
+    CommentListComponent,
+  ],
   templateUrl: './card-activity.component.html',
 })
 export class CardActivityComponent implements OnInit {
@@ -35,10 +41,12 @@ export class CardActivityComponent implements OnInit {
     this.comments$ = this.store.pipe(select(fromStore.allCommentsWithUser));
     this.currentUser$ = this.store.pipe(select(fromStore.selectCurrentUser));
 
-    this.activityLabelControl.valueChanges.pipe(
-      takeUntilDestroyed(this),
-      tap(value => (this.currentActivityTab = value))
-    ).subscribe();
+    this.activityLabelControl.valueChanges
+      .pipe(
+        takeUntilDestroyed(this),
+        tap((value) => (this.currentActivityTab = value))
+      )
+      .subscribe();
   }
 
   onAddComment(comment: AddCommentModel): void {

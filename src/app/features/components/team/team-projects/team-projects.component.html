@@ -1,0 +1,667 @@
+<div>
+  <!-- Loading indicator -->
+  <div *ngIf="loading" class="flex justify-center my-8">
+    <div
+      class="w-8 h-8 border-blue-200 rounded-full border-3 border-t-blue-600 animate-spin"
+    ></div>
+  </div>
+
+  <!-- Error message -->
+  <div
+    *ngIf="error"
+    class="p-4 mb-4 text-red-700 bg-red-100 border border-red-200 rounded-md"
+  >
+    <div class="flex items-center">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="w-5 h-5 mr-2"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+          clip-rule="evenodd"
+        />
+      </svg>
+      {{ error }}
+    </div>
+  </div>
+
+  <!-- Action bar -->
+  <div
+    class="flex flex-col items-start justify-between gap-4 mb-6 sm:flex-row sm:items-center"
+  >
+    <div class="relative w-full sm:w-64">
+      <input
+        type="text"
+        class="w-full p-2 pl-8 border rounded-md"
+        placeholder="Find a project..."
+        [(ngModel)]="searchTerm"
+        (input)="onSearch()"
+      />
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-4 w-4 text-gray-400 absolute left-2.5 top-3"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+          clip-rule="evenodd"
+        />
+      </svg>
+    </div>
+
+    <button
+      *ngIf="canManageTeam"
+      class="flex items-center px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700"
+      (click)="createProject()"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="w-4 h-4 mr-1"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+          clip-rule="evenodd"
+        />
+      </svg>
+      Create project
+    </button>
+  </div>
+
+  <!-- Projects list -->
+  <div *ngIf="!loading">
+    <!-- Empty state -->
+    <div
+      *ngIf="projects.length === 0"
+      class="py-8 text-center border border-gray-200 rounded-md bg-gray-50"
+    >
+      <div class="mb-4">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-16 h-16 mx-auto text-gray-400"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1"
+            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+          />
+        </svg>
+      </div>
+      <h3 class="text-lg font-medium text-gray-700">No projects yet</h3>
+      <p class="mt-1 text-gray-500">This team doesn't have any projects yet.</p>
+      <button
+        *ngIf="canManageTeam"
+        class="inline-flex items-center px-4 py-2 mt-4 text-white bg-blue-600 rounded-md hover:bg-blue-700"
+        (click)="createProject()"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-4 h-4 mr-1"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+            clip-rule="evenodd"
+          />
+        </svg>
+        Create first project
+      </button>
+    </div>
+
+    <!-- Empty state for search -->
+    <div
+      *ngIf="projects.length > 0 && filteredProjects.length === 0"
+      class="py-8 text-center border border-gray-200 rounded-md bg-gray-50"
+    >
+      <div class="mb-4">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-12 h-12 mx-auto text-gray-400"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1"
+            d="M8 16l2.879-2.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+      </div>
+      <h3 class="text-lg font-medium text-gray-700">No results found</h3>
+      <p class="mt-1 text-gray-500">
+        Try adjusting your search to find what you're looking for.
+      </p>
+      <button
+        class="inline-flex items-center px-4 py-2 mt-4 text-gray-700 border rounded-md hover:bg-gray-100"
+        (click)="clearSearch()"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-4 h-4 mr-1"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+            clip-rule="evenodd"
+          />
+        </svg>
+        Clear search
+      </button>
+    </div>
+
+    <!-- Project cards -->
+    <div
+      *ngIf="filteredProjects.length > 0"
+      class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+    >
+      <div
+        *ngFor="let project of filteredProjects"
+        class="transition-all duration-200 bg-white border border-gray-200 rounded-md shadow-sm hover:shadow-md group"
+      >
+        <div
+          class="p-4 border-b border-gray-100"
+          [ngClass]="getProjectHeaderClass(project)"
+        >
+          <div class="flex items-start justify-between">
+            <div class="flex items-center">
+              <div
+                class="flex items-center justify-center w-10 h-10 mr-3 rounded-md"
+                [ngClass]="getProjectIconClass(project)"
+              >
+                <span class="text-lg font-bold">{{
+                  project.key?.charAt(0) || "P"
+                }}</span>
+              </div>
+              <div>
+                <h3
+                  class="font-semibold cursor-pointer hover:underline group-hover:text-blue-600"
+                  (click)="project.id && viewProject(project.id)"
+                >
+                  {{ project.name }}
+                </h3>
+                <div class="text-xs text-gray-500 mt-0.5">
+                  <span class="bg-gray-200 rounded px-1.5 py-0.5 font-mono">{{
+                    project.key || "N/A"
+                  }}</span>
+                  <span *ngIf="project.status" class="ml-2">
+                    <span
+                      class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium"
+                      [ngClass]="{
+                        'bg-green-100 text-green-800':
+                          project.status === 'completed',
+                        'bg-blue-100 text-blue-800':
+                          project.status === 'active',
+                        'bg-gray-100 text-gray-800':
+                          project.status === 'archived'
+                      }"
+                    >
+                      {{ project.status }}
+                    </span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Actions dropdown -->
+            <div *ngIf="canManageTeam">
+              <button
+                class="text-gray-500 hover:text-gray-700"
+                [nzDropdownMenu]="menu"
+                nz-dropdown
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="w-5 h-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"
+                  />
+                </svg>
+              </button>
+              <nz-dropdown-menu #menu="nzDropdownMenu">
+                <ul nz-menu>
+                  <li
+                    nz-menu-item
+                    (click)="project.id && viewProject(project.id)"
+                  >
+                    View project
+                  </li>
+                  <li nz-menu-item (click)="project.id && editProject(project)">
+                    Edit project
+                  </li>
+                  <li
+                    nz-menu-item
+                    nzDanger
+                    (click)="confirmDeleteProject(project)"
+                  >
+                    Delete project
+                  </li>
+                </ul>
+              </nz-dropdown-menu>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-4">
+          <p
+            class="text-sm text-gray-600 mb-4 min-h-[40px] line-clamp-2 group-hover:line-clamp-none"
+          >
+            {{ project.description || "No description" }}
+          </p>
+
+          <!-- Progress bar -->
+          <div
+            class="mb-3"
+            *ngIf="project.completedTasks !== undefined && project.totalTasks"
+          >
+            <div class="flex justify-between text-xs text-gray-500 mb-1">
+              <span>Progress</span>
+              <span>{{ getCompletionPercentage(project) }}%</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-1.5">
+              <div
+                class="h-1.5 rounded-full"
+                [ngStyle]="{ width: getCompletionPercentage(project) + '%' }"
+                [ngClass]="{
+                  'bg-green-500': getCompletionPercentage(project) > 75,
+                  'bg-yellow-500':
+                    getCompletionPercentage(project) > 25 &&
+                    getCompletionPercentage(project) <= 75,
+                  'bg-blue-500': getCompletionPercentage(project) <= 25
+                }"
+              ></div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 mt-4">
+            <div
+              class="flex flex-col border border-gray-100 rounded p-2 bg-gray-50"
+            >
+              <span class="text-xs text-gray-500">Tasks</span>
+              <span class="font-medium"
+                >{{ project.completedTasks || 0 }}/{{
+                  project.totalTasks || 0
+                }}</span
+              >
+            </div>
+
+            <div
+              class="flex flex-col border border-gray-100 rounded p-2 bg-gray-50"
+            >
+              <span class="text-xs text-gray-500">Deadline</span>
+              <span
+                class="font-medium"
+                [ngClass]="{
+                  'text-red-600': isOverdue(project),
+                  'text-orange-600': isApproachingDeadline(project),
+                  'text-green-600':
+                    !isOverdue(project) && !isApproachingDeadline(project)
+                }"
+              >
+                {{ getDaysRemaining(project) }}
+              </span>
+            </div>
+          </div>
+
+          <div
+            class="flex items-center justify-between mt-4 pt-3 border-t border-gray-100 text-xs text-gray-500"
+          >
+            <span>
+              Created: {{ project.createdAt | date : "mediumDate" }}
+            </span>
+
+            <button
+              *ngIf="project.id"
+              class="flex items-center text-blue-600 hover:text-blue-800"
+              (click)="viewProject(project.id)"
+            >
+              <span>View details</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-3 w-3 ml-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirmation modal -->
+<nz-modal
+  [(nzVisible)]="isDeleteModalVisible"
+  nzTitle="Delete Project"
+  (nzOnCancel)="handleDeleteCancel()"
+  (nzOnOk)="handleDeleteOk()"
+  [nzOkLoading]="deleteLoading"
+  nzOkText="Delete"
+  nzOkType="primary"
+>
+  <ng-container *nzModalContent>
+    <p>
+      Are you sure you want to delete the project
+      <strong>{{ projectToDelete?.name }}</strong
+      >?
+    </p>
+    <p class="mt-2 text-red-600">
+      This action cannot be undone. All tasks and data associated with this
+      project will be permanently deleted.
+    </p>
+  </ng-container>
+</nz-modal>
+
+<!-- Project form modal -->
+<nz-modal
+  [(nzVisible)]="isProjectModalVisible"
+  [nzTitle]="isEditing ? 'Edit Project' : 'Create New Project'"
+  (nzOnCancel)="closeProjectModal()"
+  (nzOnOk)="handleProjectSubmit()"
+  [nzOkLoading]="submitting"
+  [nzOkText]="isEditing ? 'Update' : 'Create'"
+  nzOkType="primary"
+  nzWidth="700px"
+>
+  <ng-container *nzModalContent>
+    <form [formGroup]="projectForm">
+      <div class="mb-6">
+        <label for="name" class="block mb-1 text-sm font-medium text-gray-700">
+          Project Name <span class="text-red-500">*</span>
+        </label>
+        <input
+          type="text"
+          id="name"
+          formControlName="name"
+          class="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          [ngClass]="{
+            'border-red-500':
+              projectForm.get('name')?.invalid &&
+              projectForm.get('name')?.touched
+          }"
+        />
+        <div
+          *ngIf="
+            projectForm.get('name')?.invalid && projectForm.get('name')?.touched
+          "
+          class="mt-1 text-sm text-red-500"
+        >
+          <div *ngIf="projectForm.get('name')?.errors?.['required']">
+            Project name is required
+          </div>
+          <div *ngIf="projectForm.get('name')?.errors?.['minlength']">
+            Project name must be at least 3 characters
+          </div>
+          <div *ngIf="projectForm.get('name')?.errors?.['maxlength']">
+            Project name cannot exceed 50 characters
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <label for="key" class="block mb-1 text-sm font-medium text-gray-700">
+          Project Key <span class="text-red-500">*</span>
+        </label>
+        <div class="flex items-center">
+          <input
+            type="text"
+            id="key"
+            formControlName="key"
+            class="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
+            [ngClass]="{
+              'border-red-500':
+                projectForm.get('key')?.invalid &&
+                projectForm.get('key')?.touched
+            }"
+            placeholder="PRJ"
+          />
+        </div>
+        <div class="mt-1 text-xs text-gray-500">
+          2-10 uppercase letters and/or numbers (e.g., PRJ, ABC123)
+        </div>
+        <div
+          *ngIf="
+            projectForm.get('key')?.invalid && projectForm.get('key')?.touched
+          "
+          class="mt-1 text-sm text-red-500"
+        >
+          <div *ngIf="projectForm.get('key')?.errors?.['required']">
+            Project key is required
+          </div>
+          <div *ngIf="projectForm.get('key')?.errors?.['minlength']">
+            Project key must be at least 2 characters
+          </div>
+          <div *ngIf="projectForm.get('key')?.errors?.['maxlength']">
+            Project key cannot exceed 10 characters
+          </div>
+          <div *ngIf="projectForm.get('key')?.errors?.['pattern']">
+            Project key must contain only uppercase letters and numbers
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <label
+          for="description"
+          class="block mb-1 text-sm font-medium text-gray-700"
+        >
+          Description <span class="text-red-500">*</span>
+        </label>
+        <textarea
+          id="description"
+          formControlName="description"
+          rows="5"
+          class="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          [ngClass]="{
+            'border-red-500':
+              projectForm.get('description')?.invalid &&
+              projectForm.get('description')?.touched
+          }"
+        ></textarea>
+        <div
+          *ngIf="
+            projectForm.get('description')?.invalid &&
+            projectForm.get('description')?.touched
+          "
+          class="mt-1 text-sm text-red-500"
+        >
+          <div *ngIf="projectForm.get('description')?.errors?.['required']">
+            Description is required
+          </div>
+          <div *ngIf="projectForm.get('description')?.errors?.['minlength']">
+            Description must be at least 10 characters
+          </div>
+          <div *ngIf="projectForm.get('description')?.errors?.['maxlength']">
+            Description cannot exceed 500 characters
+          </div>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- Project view modal -->
+<nz-modal
+  [(nzVisible)]="isViewModalVisible"
+  nzTitle="Project Details"
+  (nzOnCancel)="closeViewModal()"
+  [nzFooter]="viewProjectFooter"
+  nzWidth="800px"
+>
+  <ng-template #viewProjectFooter>
+    <button
+      class="px-4 py-2 border rounded-md hover:bg-gray-100"
+      (click)="closeViewModal()"
+    >
+      Close
+    </button>
+    <button
+      *ngIf="canManageTeam && selectedProject"
+      class="px-4 py-2 ml-2 border rounded-md hover:bg-gray-100"
+      (click)="editProject(selectedProject); closeViewModal()"
+    >
+      Edit Project
+    </button>
+  </ng-template>
+
+  <ng-container *nzModalContent>
+    <div *ngIf="selectedProject" class="project-details">
+      <!-- Project header -->
+      <div class="flex items-center mb-6">
+        <div
+          class="flex items-center justify-center w-10 h-10 mr-3 rounded"
+          [ngClass]="getProjectIconClass(selectedProject)"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-6 h-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+            />
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-xl font-bold">{{ selectedProject.name }}</h2>
+          <div *ngIf="selectedProject.key" class="text-gray-500">
+            Key: {{ selectedProject.key }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Project content -->
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <!-- Left column -->
+        <div class="md:col-span-2">
+          <div class="mb-6">
+            <h3 class="mb-2 text-lg font-semibold">Description</h3>
+            <p class="text-gray-700 whitespace-pre-line">
+              {{ selectedProject.description }}
+            </p>
+          </div>
+
+          <!-- Project members -->
+          <div
+            *ngIf="
+              selectedProject.usersIncludes &&
+              selectedProject.usersIncludes.length > 0
+            "
+          >
+            <h3 class="mb-2 text-lg font-semibold">Team Members</h3>
+            <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <div
+                *ngFor="let member of selectedProject.usersIncludes"
+                class="flex items-center p-3 border rounded-md"
+              >
+                <div
+                  class="flex items-center justify-center w-8 h-8 mr-3 bg-gray-200 rounded-full"
+                >
+                  <svg
+                    *ngIf="!member.user?.avatar"
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="w-4 h-4 text-gray-500"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                  <img
+                    *ngIf="member.user?.avatar"
+                    [src]="member.user.avatar"
+                    alt="User avatar"
+                    class="w-8 h-8 rounded-full"
+                  />
+                </div>
+                <div>
+                  <div class="font-medium">
+                    {{ member.user?.firstName }} {{ member.user?.lastName }}
+                  </div>
+                  <div class="text-sm text-gray-500">
+                    {{ member.accessLevel || "Member" }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right column -->
+        <div>
+          <div class="p-4 border rounded-md bg-gray-50">
+            <h3 class="mb-3 text-lg font-semibold">Project Details</h3>
+
+            <div class="mb-3">
+              <div class="text-sm text-gray-500">Created</div>
+              <div>{{ selectedProject.createdAt | date : "medium" }}</div>
+            </div>
+
+            <div class="mb-3" *ngIf="selectedProject.updatedAt">
+              <div class="text-sm text-gray-500">Last Updated</div>
+              <div>{{ selectedProject.updatedAt | date : "medium" }}</div>
+            </div>
+
+            <div class="mb-3" *ngIf="selectedProject.status">
+              <div class="text-sm text-gray-500">Status</div>
+              <div class="capitalize">{{ selectedProject.status }}</div>
+            </div>
+
+            <div class="mb-3">
+              <div class="text-sm text-gray-500">Task Progress</div>
+              <div>
+                {{ selectedProject.completedTasks || 0 }}/{{
+                  selectedProject.totalTasks || 0
+                }}
+              </div>
+            </div>
+
+            <div class="mb-3" *ngIf="selectedProject.deadline">
+              <div class="text-sm text-gray-500">Deadline</div>
+              <div>{{ selectedProject.deadline | date : "medium" }}</div>
+              <div class="mt-1 text-sm text-blue-600">
+                {{ getDaysRemaining(selectedProject) }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>

@@ -1,34 +1,48 @@
 <ng-container *ngIf="assignee || editMode">
-  <nz-select [nzCustomTemplate]="defaultTemplate" [nzDropdownMatchSelectWidth]="false"
-             nzBorderless
-             nzShowSearch
-             [nzSuffixIcon]="customDropdownIcon"
-             [nzShowArrow]="false"
-             [formControl]="assigneeControl"
-             class="w-full">
-    <nz-option nzCustomContent [nzLabel]="u.avatar ?? ''" [nzValue]="u"
-               *ngFor="let u of users">
+  <nz-select
+    [nzCustomTemplate]="defaultTemplate"
+    [nzDropdownMatchSelectWidth]="false"
+    nzBorderless
+    nzShowSearch
+    [nzSuffixIcon]="customDropdownIcon"
+    [nzShowArrow]="false"
+    [formControl]="assigneeControl"
+    class="w-full"
+  >
+    <nz-option
+      nzCustomContent
+      [nzLabel]="u.avatar ?? ''"
+      [nzValue]="u"
+      *ngFor="let u of users"
+    >
       <div class="flex gap-2 py-1 item-centers">
         <app-avatar [user]="u" [size]="24"></app-avatar>
-        <div class="capitalize text-textDark">{{u.username}}</div>
+        <div class="capitalize text-textDark">{{ u.username }}</div>
       </div>
     </nz-option>
   </nz-select>
 </ng-container>
 
-<button *ngIf="(!assignee) && !editMode"
-        class="px-3 hover:bg-backgroundDark py-1 rounded w-full text-left text-textMedium"
-        (click)="onEnableEditMode()">
+<button
+  *ngIf="!assignee && !editMode"
+  class="w-full px-3 py-1 text-left rounded hover:bg-backgroundDark text-textMedium"
+  (click)="onEnableEditMode()"
+>
   None
 </button>
 
 <ng-template #defaultTemplate let-selected>
-  <div class="flex items-center gap-2 h-full">
+  <div class="flex items-center h-full gap-2">
     <app-avatar [user]="selected.nzValue" [size]="24"></app-avatar>
-    <div class="capitalize text-textDark">{{selected.nzValue.name}}</div>
+    <div class="capitalize text-textDark">{{ selected.nzValue.name }}</div>
   </div>
 </ng-template>
 
 <ng-template #customDropdownIcon>
-  <app-svg-icon class="text-textDark" name="arrowDown" [width]="24" [height]="24"></app-svg-icon>
+  <app-svg-icon
+    class="text-textDark"
+    name="arrowDown"
+    [width]="24"
+    [height]="24"
+  ></app-svg-icon>
 </ng-template>

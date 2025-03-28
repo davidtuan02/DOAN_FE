@@ -7,12 +7,16 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-board-heading',
   standalone: true,
-  imports: [CommonModule, NzBreadCrumbModule, NzPopoverModule, SvgIconComponent],
+  imports: [
+    CommonModule,
+    NzBreadCrumbModule,
+    NzPopoverModule,
+    SvgIconComponent,
+  ],
   templateUrl: './board-heading.component.html',
-  styleUrls: ['./board-heading.component.scss']
+  styleUrls: ['./board-heading.component.scss'],
 })
 export class BoardHeadingComponent {
-
   contextMenuVisible: boolean = false;
 
   onContextMenuClick(): void {

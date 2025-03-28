@@ -1,33 +1,313 @@
-<div class="min-h-screen flex items-center justify-center w-full dark:bg-gray-950">
-	<div class="bg-white dark:bg-gray-900 shadow-lg rounded-lg px-3 py-6 w-80 max-w-md">
-		<h1 class="text-2xl font-bold text-center mb-4 dark:text-gray-200">Jira App Clone</h1>
-		<form [formGroup]="form" (keydown.enter)="submitForm()">
-            <app-input
-                inputType="email"
-                inputId="email"
-                inputLabel="Email Address"
-                inputPlaceholder="your@email.com"
-                required="true"
-                inputClass="shadow-sm rounded-md w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                containerClass="mb-4"
-            ></app-input>
-            <app-input
-                inputType="password"
-                inputId="password"
-                inputLabel="Password"
-                inputPlaceholder="Enter your password"
-                required="true"
-                inputClass="shadow-sm rounded-md w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                containerClass="mb-4"
-            ></app-input>
-			<button 
-                type="submit" 
-                (click)="submitForm()" 
-                class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-                Login
-            </button>
-		</form>
-	</div>
+<div class="flex items-center justify-center min-h-screen p-4 bg-gray-100">
+  <div class="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
+    <div class="mb-8 text-center">
+      <div class="flex justify-center mb-4 space-x-4">
+        <button
+          (click)="switchMode('signin')"
+          [ngClass]="{
+            'text-blue-600 border-b-2 border-blue-600': !isSignUp,
+            'text-gray-500': isSignUp
+          }"
+          class="px-4 pb-2 text-lg font-medium transition-all duration-200"
+        >
+          Sign In
+        </button>
+        <button
+          (click)="switchMode('signup')"
+          [ngClass]="{
+            'text-blue-600 border-b-2 border-blue-600': isSignUp,
+            'text-gray-500': !isSignUp
+          }"
+          class="px-4 pb-2 text-lg font-medium transition-all duration-200"
+        >
+          Sign Up
+        </button>
+      </div>
+      <h1 class="text-2xl font-bold text-gray-800">
+        {{ isSignUp ? "Create Account" : "Welcome Back" }}
+      </h1>
+      <p class="text-gray-600">
+        {{ isSignUp ? "Sign up for a new account" : "Log in to your account" }}
+      </p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-6">
+      <div class="space-y-2">
+        <label class="block text-sm font-medium text-gray-700" for="email"
+          >Email</label
+        >
+        <div class="relative">
+          <input
+            type="email"
+            id="email"
+            formControlName="email"
+            class="w-full px-4 py-2 pl-10 border rounded-md"
+            [ngClass]="{
+              'border-red-500':
+                loginForm.get('email')?.errors &&
+                loginForm.get('email')?.touched
+            }"
+          />
+          <span class="absolute left-3 top-2.5 text-gray-400">
+            <i class="fas fa-envelope"></i>
+          </span>
+        </div>
+        <div
+          *ngIf="loginForm.get('email')?.errors?.['required'] && loginForm.get('email')?.touched"
+          class="text-sm text-red-500"
+        >
+          Email is required
+        </div>
+        <div
+          *ngIf="loginForm.get('email')?.errors?.['email'] && loginForm.get('email')?.touched"
+          class="text-sm text-red-500"
+        >
+          Please enter a valid email
+        </div>
+      </div>
+
+      <div class="space-y-2" *ngIf="isSignUp">
+        <label class="block text-sm font-medium text-gray-700" for="name"
+          >Full Name</label
+        >
+        <div class="relative">
+          <input
+            type="text"
+            id="name"
+            formControlName="name"
+            class="w-full px-4 py-2 pl-10 border rounded-md"
+            [ngClass]="{
+              'border-red-500':
+                loginForm.get('name')?.errors && loginForm.get('name')?.touched
+            }"
+          />
+          <span class="absolute left-3 top-2.5 text-gray-400">
+            <i class="fas fa-user"></i>
+          </span>
+        </div>
+        <div
+          *ngIf="loginForm.get('name')?.errors?.['required'] && loginForm.get('name')?.touched"
+          class="text-sm text-red-500"
+        >
+          Name is required
+        </div>
+      </div>
+
+      <div class="space-y-2" *ngIf="isSignUp">
+        <label class="block text-sm font-medium text-gray-700" for="username"
+          >Username</label
+        >
+        <div class="relative">
+          <input
+            type="text"
+            id="username"
+            formControlName="username"
+            class="w-full px-4 py-2 pl-10 border rounded-md"
+            [ngClass]="{
+              'border-red-500':
+                loginForm.get('username')?.errors &&
+                loginForm.get('username')?.touched
+            }"
+          />
+          <span class="absolute left-3 top-2.5 text-gray-400">
+            <i class="fas fa-at"></i>
+          </span>
+        </div>
+        <div
+          *ngIf="loginForm.get('username')?.errors?.['required'] && loginForm.get('username')?.touched"
+          class="text-sm text-red-500"
+        >
+          Username is required
+        </div>
+      </div>
+
+      <div class="space-y-2" *ngIf="isSignUp">
+        <label class="block text-sm font-medium text-gray-700" for="age"
+          >Age</label
+        >
+        <div class="relative">
+          <input
+            type="number"
+            id="age"
+            formControlName="age"
+            class="w-full px-4 py-2 pl-10 border rounded-md"
+            [ngClass]="{
+              'border-red-500':
+                loginForm.get('age')?.errors && loginForm.get('age')?.touched
+            }"
+          />
+          <span class="absolute left-3 top-2.5 text-gray-400">
+            <i class="fas fa-birthday-cake"></i>
+          </span>
+        </div>
+        <div
+          *ngIf="loginForm.get('age')?.errors?.['required'] && loginForm.get('age')?.touched"
+          class="text-sm text-red-500"
+        >
+          Age is required
+        </div>
+      </div>
+
+      <div class="space-y-2" *ngIf="isSignUp">
+        <label class="block text-sm font-medium text-gray-700" for="role"
+          >Role</label
+        >
+        <div class="relative">
+          <select
+            id="role"
+            formControlName="role"
+            class="w-full px-4 py-2 pl-10 border rounded-md"
+            [ngClass]="{
+              'border-red-500':
+                loginForm.get('role')?.errors && loginForm.get('role')?.touched
+            }"
+          >
+            <option value="BASIC">Basic User</option>
+            <option value="ADMIN">Admin</option>
+          </select>
+          <span class="absolute left-3 top-2.5 text-gray-400">
+            <i class="fas fa-user-shield"></i>
+          </span>
+        </div>
+        <div
+          *ngIf="loginForm.get('role')?.errors?.['required'] && loginForm.get('role')?.touched"
+          class="text-sm text-red-500"
+        >
+          Role is required
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <label class="block text-sm font-medium text-gray-700" for="password"
+          >Password</label
+        >
+        <div class="relative">
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            id="password"
+            formControlName="password"
+            class="w-full px-4 py-2 pl-10 border rounded-md"
+            [ngClass]="{
+              'border-red-500':
+                loginForm.get('password')?.errors &&
+                loginForm.get('password')?.touched
+            }"
+          />
+          <span class="absolute left-3 top-2.5 text-gray-400">
+            <i class="fas fa-lock"></i>
+          </span>
+          <button
+            type="button"
+            (click)="togglePassword()"
+            class="absolute right-3 top-2.5 text-gray-400"
+          >
+            <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+          </button>
+        </div>
+        <div class="w-full h-1 bg-gray-200 rounded">
+          <div
+            [ngStyle]="{ width: passwordStrength + '%' }"
+            [ngClass]="passwordStrengthClass"
+            class="h-1 transition-all duration-300 rounded"
+          ></div>
+        </div>
+      </div>
+
+      <div class="space-y-2" *ngIf="isSignUp">
+        <label
+          class="block text-sm font-medium text-gray-700"
+          for="confirmPassword"
+          >Confirm Password</label
+        >
+        <div class="relative">
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            id="confirmPassword"
+            formControlName="confirmPassword"
+            class="w-full px-4 py-2 pl-10 border rounded-md"
+            [ngClass]="{'border-red-500': loginForm.get('confirmPassword')?.errors || loginForm.errors?.['passwordMismatch']}"
+          />
+          <span class="absolute left-3 top-2.5 text-gray-400">
+            <i class="fas fa-lock"></i>
+          </span>
+        </div>
+        <div
+          *ngIf="loginForm.errors?.['passwordMismatch']"
+          class="text-sm text-red-500"
+        >
+          Passwords do not match
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between" *ngIf="!isSignUp">
+        <div class="flex items-center">
+          <input
+            type="checkbox"
+            id="remember"
+            formControlName="rememberMe"
+            class="w-4 h-4 text-blue-600"
+          />
+          <label for="remember" class="ml-2 text-sm text-gray-600"
+            >Remember me</label
+          >
+        </div>
+        <button
+          type="button"
+          (click)="showForgotPasswordModal()"
+          class="text-sm text-blue-600 hover:text-blue-800"
+        >
+          Forgot password?
+        </button>
+      </div>
+
+      <button
+        type="submit"
+        [disabled]="!loginForm.valid || isLoading"
+        class="flex justify-center w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+      >
+        <span *ngIf="!isLoading">{{ isSignUp ? "Sign Up" : "Sign In" }}</span>
+        <span *ngIf="isLoading" class="flex items-center">
+          <i class="mr-2 fas fa-spinner fa-spin"></i>
+          {{ isSignUp ? "Signing up..." : "Signing in..." }}
+        </span>
+      </button>
+
+      <div class="mt-6">
+        <div class="relative">
+          <div class="absolute inset-0 flex items-center">
+            <div class="w-full border-t border-gray-300"></div>
+          </div>
+          <div class="relative flex justify-center text-sm">
+            <span class="px-2 text-gray-500 bg-white">Or continue with</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mt-6">
+          <button
+            type="button"
+            (click)="signInWithGoogle()"
+            class="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border rounded-md shadow-sm hover:bg-gray-50"
+          >
+            <i class="mr-2 text-red-500 fab fa-google"></i>
+            Google
+          </button>
+          <button
+            type="button"
+            (click)="signInWithMicrosoft()"
+            class="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border rounded-md shadow-sm hover:bg-gray-50"
+          >
+            <i class="mr-2 text-blue-500 fab fa-microsoft"></i>
+            Microsoft
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <div
+      *ngIf="errorMessage"
+      class="p-4 mt-4 border border-red-200 rounded-md bg-red-50"
+    >
+      <p class="text-sm text-red-600">{{ errorMessage }}</p>
+    </div>
+  </div>
 </div>
-  

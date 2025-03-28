@@ -1,7 +1,29 @@
-<img class="avatar"
-     [ngClass]="{'bordered': bordered, 'selected': selected}"
-     [width]="size"
-     [height]="size"
-     [src]="user?.avatar" alt="avatar"
-     nz-tooltip [nzTooltipTitle]="user?.username"
-     (click)="onSelect()">
+<ng-container *ngIf="user?.avatar; else initialsTemplate">
+  <img
+    class="avatar"
+    [ngClass]="{ bordered: bordered, selected: selected }"
+    [width]="size"
+    [height]="size"
+    [src]="user?.avatar"
+    alt="avatar"
+    nz-tooltip
+    [nzTooltipTitle]="user?.username"
+    (click)="onSelect()"
+  />
+</ng-container>
+
+<ng-template #initialsTemplate>
+  <div
+    class="avatar initials-avatar"
+    [ngClass]="{ bordered: bordered, selected: selected }"
+    [style.width.px]="size"
+    [style.height.px]="size"
+    [style.line-height.px]="size"
+    [style.font-size.px]="size / 2.5"
+    nz-tooltip
+    [nzTooltipTitle]="user?.username"
+    (click)="onSelect()"
+  >
+    {{ getUserInitials() }}
+  </div>
+</ng-template>

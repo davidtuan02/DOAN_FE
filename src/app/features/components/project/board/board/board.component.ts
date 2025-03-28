@@ -9,7 +9,7 @@ import { CardDetailsComponent } from '../../card/card-details/card-details.compo
 import { Destroyable, takeUntilDestroyed } from '../../../../../shared/utils';
 import { BoardColumnComponent } from '../board-column/board-column.component';
 import { AsyncPipe, CommonModule } from '@angular/common';
-import {DragDropModule} from '@angular/cdk/drag-drop';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 import { BoardService } from '../../../../../core/services';
 import { Store, select } from '@ngrx/store';
 import * as fromStore from '../../../../../core/store';
@@ -21,19 +21,20 @@ import * as fromStore from '../../../../../core/store';
   imports: [CommonModule, DragDropModule, BoardColumnComponent, AsyncPipe],
   providers: [NzModalService],
   templateUrl: './board.component.html',
-  styleUrls: ['./board.component.scss']
+  styleUrls: ['./board.component.scss'],
 })
 export class BoardComponent implements OnInit {
   columns$!: Observable<Array<Column>>;
   modalRef!: NzModalRef;
 
-  constructor(private store: Store<fromStore.AppState>,
-              private activatedRoute: ActivatedRoute,
-              private modal: NzModalService,
-              private viewContainerRef: ViewContainerRef,
-              private router: Router,
-              private boardService: BoardService) {
-  }
+  constructor(
+    private store: Store<fromStore.AppState>,
+    private activatedRoute: ActivatedRoute,
+    private modal: NzModalService,
+    private viewContainerRef: ViewContainerRef,
+    private router: Router,
+    private boardService: BoardService
+  ) {}
 
   ngOnInit(): void {
     this.columns$ = this.boardService.getBoardColumns();
@@ -46,23 +47,27 @@ export class BoardComponent implements OnInit {
 
     this.columns$ = this.store.pipe(select(fromStore.allColumns));
 
-    this.activatedRoute.queryParams.pipe(
-      filter(params => params && params['selectedIssue']),
-      map(params => params['selectedIssue']),
-      takeUntilDestroyed(this)
-    ).subscribe((id) => {
-      this.store.dispatch(fromStore.setSelectedCardId({ id }));
-      this.openCardDetailsModal();
-    });
+    this.activatedRoute.queryParams
+      .pipe(
+        filter((params) => params && params['selectedIssue']),
+        map((params) => params['selectedIssue']),
+        takeUntilDestroyed(this)
+      )
+      .subscribe((id) => {
+        this.store.dispatch(fromStore.setSelectedCardId({ id }));
+        this.openCardDetailsModal();
+      });
 
-    this.activatedRoute.queryParams.pipe(
-      filter(params => !params['selectedIssue']),
-      takeUntilDestroyed(this)
-    ).subscribe((id) => {
-      if (this.modalRef) {
-        this.modalRef.close();
-      }
-    });
+    this.activatedRoute.queryParams
+      .pipe(
+        filter((params) => !params['selectedIssue']),
+        takeUntilDestroyed(this)
+      )
+      .subscribe((id) => {
+        if (this.modalRef) {
+          this.modalRef.close();
+        }
+      });
   }
 
   openCardDetailsModal(): void {
@@ -76,10 +81,9 @@ export class BoardComponent implements OnInit {
       nzStyle: { top: '5%' },
     });
 
-    this.modalRef.afterClose.subscribe(_ => {
+    this.modalRef.afterClose.subscribe((_) => {
       this.router.navigate(['/board']);
       this.store.dispatch(fromStore.setSelectedCardId({ id: null }));
     });
   }
-
 }

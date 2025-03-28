@@ -7,20 +7,17 @@ import { BoardService } from '../../services/board.service';
 
 @Injectable()
 export class UserEffects {
-  getUsers$ = createEffect(() => this.actions$.pipe(
+  getUsers$ = createEffect(() =>
+    this.actions$.pipe(
       ofType(actions.getUsers),
-      mergeMap(() => this.boardService.getUsers()
-        .pipe(
-          map(users => actions.getUsersSuccess({ users })),
+      mergeMap(() =>
+        this.boardService.getUsers().pipe(
+          map((users) => actions.getUsersSuccess({ users })),
           catchError((error) => of(actions.getUsersError({ error })))
-        ))
+        )
+      )
     )
   );
 
-  constructor(
-    private actions$: Actions,
-    private boardService: BoardService
-  ) {
-  }
-
+  constructor(private actions$: Actions, private boardService: BoardService) {}
 }
