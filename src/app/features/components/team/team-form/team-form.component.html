@@ -1,6 +1,6 @@
-<div *ngIf="isStandalone" class="mb-4">
+<div *ngIf="isStandalone" class="p-5 mb-4">
   <!-- Breadcrumbs -->
-  <nav class="flex items-center text-sm mb-5">
+  <nav class="flex items-center mb-5 text-sm">
     <a
       [routerLink]="breadcrumbs[0].route"
       class="text-blue-600 hover:text-blue-800"
@@ -11,19 +11,19 @@
     <span class="text-gray-600">{{ breadcrumbs[1].label }}</span>
   </nav>
 
-  <h1 class="text-2xl font-semibold mb-6">
+  <h1 class="mb-6 text-2xl font-semibold">
     {{ team?.id ? "Edit Team" : "Create Team" }}
   </h1>
 
   <!-- Error message -->
   <div
     *ngIf="error"
-    class="mb-4 p-4 bg-red-100 text-red-700 rounded-md border border-red-200"
+    class="p-4 mb-4 text-red-700 bg-red-100 border border-red-200 rounded-md"
   >
     <div class="flex items-center">
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        class="h-5 w-5 mr-2"
+        class="w-5 h-5 mr-2"
         viewBox="0 0 20 20"
         fill="currentColor"
       >
@@ -40,7 +40,7 @@
   <!-- Loading indicator -->
   <div *ngIf="loading" class="flex justify-center my-8">
     <div
-      class="w-8 h-8 border-3 border-blue-200 border-t-blue-600 rounded-full animate-spin"
+      class="w-8 h-8 border-blue-200 rounded-full border-3 border-t-blue-600 animate-spin"
     ></div>
   </div>
 </div>
@@ -48,7 +48,7 @@
 <form
   [formGroup]="teamForm"
   (ngSubmit)="onSubmit()"
-  class="flex flex-col"
+  class="flex flex-col p-5"
   *ngIf="!loading"
 >
   <div class="mb-4">
@@ -97,12 +97,12 @@
     </button>
     <button
       type="submit"
-      class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+      class="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700"
       [disabled]="loading || submitting || !teamForm.valid"
     >
       <span *ngIf="loading || submitting" class="mr-2">
         <span
-          class="inline-block w-4 h-4 border-2 border-t-white rounded-full animate-spin"
+          class="inline-block w-4 h-4 border-2 rounded-full border-t-white animate-spin"
         ></span>
       </span>
       <span *ngIf="team?.id">Update Team</span>

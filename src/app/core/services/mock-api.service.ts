@@ -16,7 +16,7 @@ export class MockApiService {
     age: 30,
     email: 'john.doe@example.com',
     username: 'johndoe',
-    role: UserRole.USER,
+    role: UserRole.ADMIN,
     avatar: 'https://ui-avatars.com/api/?name=John+Doe&background=random',
   };
 

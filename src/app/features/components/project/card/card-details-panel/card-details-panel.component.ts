@@ -22,20 +22,20 @@ import { Store, select } from '@ngrx/store';
   selector: 'app-card-details-panel',
   standalone: true,
   imports: [
-    CommonModule, 
-    ReactiveFormsModule, 
-    NzSelectModule, 
+    CommonModule,
+    ReactiveFormsModule,
+    NzSelectModule,
     NzCollapseModule,
-    SvgIconComponent, 
-    CardAssigneeComponent, 
+    SvgIconComponent,
+    CardAssigneeComponent,
     CardPriorityComponent,
     CardLabelComponent,
     CardStartDateComponent,
     CardDueDateComponent,
-    CardReporterComponent
+    CardReporterComponent,
   ],
   templateUrl: './card-details-panel.component.html',
-  styleUrls: ['./card-details-panel.component.scss']
+  styleUrls: ['./card-details-panel.component.scss'],
 })
 export class CardDetailsPanelComponent implements OnInit {
   columns$!: Observable<Array<Column>>;
@@ -65,12 +65,16 @@ export class CardDetailsPanelComponent implements OnInit {
   }
 
   getColumnDropdownBackgroundColor(): string {
-    const selectedColumn = this.columns?.find(c => c.id === this.columnControl.value);
+    const selectedColumn = this.columns?.find(
+      (c) => c.id === this.columnControl.value
+    );
     return selectedColumn?.bgButton || '#ccc';
   }
 
   getColumnDropdownColor(): string {
-    const selectedColumn = this.columns?.find(c => c.id === this.columnControl.value);
+    const selectedColumn = this.columns?.find(
+      (c) => c.id === this.columnControl.value
+    );
     return selectedColumn?.color || '#000';
   }
 
@@ -79,36 +83,46 @@ export class CardDetailsPanelComponent implements OnInit {
   }
 
   private subscribeEvents(): void {
-    this.columns$.pipe(
-      filter(columns => !!columns),
-      takeUntilDestroyed(this),
-      tap(columns => (this.columns = columns))
-    ).subscribe();
+    this.columns$
+      .pipe(
+        filter((columns) => !!columns),
+        takeUntilDestroyed(this),
+        tap((columns) => (this.columns = columns))
+      )
+      .subscribe();
 
-    this.selectedCard$.pipe(
-      filter(card => !!card),
-      takeUntilDestroyed(this),
-      tap(card => {
-        this.card = card;
-        this.columnControl.patchValue(card?.columnId, { emitEvent: false });
+    this.selectedCard$
+      .pipe(
+        filter((card) => !!card),
+        takeUntilDestroyed(this),
+        tap((card) => {
+          this.card = card;
+          this.columnControl.patchValue(card?.columnId, { emitEvent: false });
 
-        this.assignee$ = this.store.pipe(select(fromStore.selectUserById(this.card?.assigneeId)));
-        this.reporter$ = this.store.pipe(select(fromStore.selectUserById(this.card?.reporterId)));
-      })
-    ).subscribe();
+          this.assignee$ = this.store.pipe(
+            select(fromStore.selectUserById(this.card?.assigneeId))
+          );
+          this.reporter$ = this.store.pipe(
+            select(fromStore.selectUserById(this.card?.reporterId))
+          );
+        })
+      )
+      .subscribe();
   }
 
   private listenControls(): void {
-    this.columnControl.valueChanges.pipe(
-      filter(value => !!value),
-      takeUntilDestroyed(this),
-      tap(value => {
-        const partial: PartialCard = {
-          id: this.card?.id || '',
-          columnId: value
-        };
-        this.store.dispatch(fromStore.updateCard({ partial }));
-      })
-    ).subscribe();
+    this.columnControl.valueChanges
+      .pipe(
+        filter((value) => !!value),
+        takeUntilDestroyed(this),
+        tap((value) => {
+          const partial: PartialCard = {
+            id: this.card?.id || '',
+            columnId: value,
+          };
+          this.store.dispatch(fromStore.updateCard({ partial }));
+        })
+      )
+      .subscribe();
   }
 }

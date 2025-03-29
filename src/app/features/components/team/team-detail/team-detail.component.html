@@ -1,8 +1,8 @@
-<div class="flex flex-col h-full">
+<div class="flex flex-col h-full pb-10 overflow-y-auto">
   <!-- Header with breadcrumbs and actions -->
-  <div class="bg-gray-100 border-b border-gray-300 p-6">
+  <div class="p-6 bg-gray-100 border-b border-gray-300">
     <!-- Breadcrumbs -->
-    <div class="flex items-center text-sm text-gray-500 mb-2">
+    <div class="flex items-center mb-2 text-sm text-gray-500">
       <a [routerLink]="breadcrumbs[0].route" class="hover:text-blue-600">
         {{ breadcrumbs[0].label }}
       </a>
@@ -10,16 +10,16 @@
       <span class="font-medium text-gray-700">{{ breadcrumbs[1].label }}</span>
     </div>
 
-    <div class="flex justify-between items-center">
+    <div class="flex items-center justify-between">
       <h1 class="text-2xl font-bold" *ngIf="team">{{ team.name }}</h1>
       <div class="flex space-x-3" *ngIf="canManageTeam() && !editMode">
         <button
-          class="px-4 py-2 border rounded-md hover:bg-gray-100 flex items-center"
+          class="flex items-center px-4 py-2 border rounded-md hover:bg-gray-100"
           (click)="toggleEditMode()"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            class="h-4 w-4 mr-1"
+            class="w-4 h-4 mr-1"
             viewBox="0 0 20 20"
             fill="currentColor"
           >
@@ -30,12 +30,12 @@
           Edit
         </button>
         <button
-          class="px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700 flex items-center"
+          class="flex items-center px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700"
           (click)="confirmDeleteTeam()"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            class="h-4 w-4 mr-1"
+            class="w-4 h-4 mr-1"
             viewBox="0 0 20 20"
             fill="currentColor"
           >
@@ -52,21 +52,21 @@
   </div>
 
   <!-- Loading indicator -->
-  <div *ngIf="loading" class="flex-1 flex justify-center items-center">
+  <div *ngIf="loading" class="flex items-center justify-center flex-1">
     <div
-      class="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"
+      class="w-10 h-10 border-4 border-blue-200 rounded-full border-t-blue-600 animate-spin"
     ></div>
   </div>
 
   <!-- Error message -->
   <div
     *ngIf="error"
-    class="m-6 p-4 bg-red-100 text-red-700 rounded-md border border-red-200"
+    class="p-4 m-6 text-red-700 bg-red-100 border border-red-200 rounded-md"
   >
     <div class="flex items-center">
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        class="h-5 w-5 mr-2"
+        class="w-5 h-5 mr-2"
         viewBox="0 0 20 20"
         fill="currentColor"
       >
@@ -83,13 +83,13 @@
   <!-- Main content with sidebar navigation -->
   <div *ngIf="!loading && team && !editMode" class="flex flex-1">
     <!-- Sidebar navigation -->
-    <div class="w-48 md:w-64 border-r border-gray-200 h-full">
+    <div class="w-48 h-full border-r border-gray-200 md:w-64">
       <nav class="p-4">
-        <h3 class="font-medium text-gray-700 mb-2">Team Settings</h3>
+        <h3 class="mb-2 font-medium text-gray-700">Team Settings</h3>
         <ul>
           <li>
             <a
-              class="block py-2 px-3 mb-1 rounded-md cursor-pointer"
+              class="block px-3 py-2 mb-1 rounded-md cursor-pointer"
               [class.bg-blue-50]="activeTab === 'overview'"
               [class.text-blue-600]="activeTab === 'overview'"
               (click)="setActiveTab('overview')"
@@ -99,7 +99,7 @@
           </li>
           <li>
             <a
-              class="block py-2 px-3 mb-1 rounded-md cursor-pointer"
+              class="block px-3 py-2 mb-1 rounded-md cursor-pointer"
               [class.bg-blue-50]="activeTab === 'members'"
               [class.text-blue-600]="activeTab === 'members'"
               (click)="setActiveTab('members')"
@@ -109,7 +109,7 @@
           </li>
           <li>
             <a
-              class="block py-2 px-3 mb-1 rounded-md cursor-pointer"
+              class="block px-3 py-2 mb-1 rounded-md cursor-pointer"
               [class.bg-blue-50]="activeTab === 'projects'"
               [class.text-blue-600]="activeTab === 'projects'"
               (click)="setActiveTab('projects')"
@@ -122,37 +122,37 @@
     </div>
 
     <!-- Content area -->
-    <div class="flex-1 p-6 bg-gray-50">
+    <div class="flex-1 p-6 overflow-y-auto bg-gray-50">
       <!-- Overview tab -->
       <div *ngIf="activeTab === 'overview'">
-        <div class="bg-white rounded-lg shadow-sm border p-6 mb-6">
-          <h2 class="text-lg font-semibold mb-4">Team Information</h2>
+        <div class="p-6 mb-6 bg-white border rounded-lg shadow-sm">
+          <h2 class="mb-4 text-lg font-semibold">Team Information</h2>
 
           <div class="mb-6">
-            <h3 class="font-medium mb-2">Description</h3>
-            <p class="text-gray-700 bg-gray-50 p-4 rounded-md border">
+            <h3 class="mb-2 font-medium">Description</h3>
+            <p class="p-4 text-gray-700 border rounded-md bg-gray-50">
               {{ team.description || "No description provided" }}
             </p>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div class="p-4 bg-gray-50 rounded-md border">
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div class="p-4 border rounded-md bg-gray-50">
               <span class="block text-sm text-gray-500">Created By</span>
               <span class="font-medium">{{ team.createdBy }}</span>
             </div>
-            <div class="p-4 bg-gray-50 rounded-md border">
+            <div class="p-4 border rounded-md bg-gray-50">
               <span class="block text-sm text-gray-500">Created At</span>
               <span class="font-medium">{{
                 team.createdAt | date : "medium"
               }}</span>
             </div>
-            <div class="p-4 bg-gray-50 rounded-md border">
+            <div class="p-4 border rounded-md bg-gray-50">
               <span class="block text-sm text-gray-500">Updated At</span>
               <span class="font-medium">{{
                 team.updatedAt | date : "medium"
               }}</span>
             </div>
-            <div class="p-4 bg-gray-50 rounded-md border">
+            <div class="p-4 border rounded-md bg-gray-50">
               <span class="block text-sm text-gray-500">Your Role</span>
               <span class="font-medium capitalize">{{
                 teamAccess?.role || "Not a member"
@@ -162,16 +162,16 @@
         </div>
 
         <!-- Team summary -->
-        <div class="bg-white rounded-lg shadow-sm border p-6">
-          <h2 class="text-lg font-semibold mb-4">Team Summary</h2>
+        <div class="p-6 bg-white border rounded-lg shadow-sm">
+          <h2 class="mb-4 text-lg font-semibold">Team Summary</h2>
 
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-blue-50 p-4 rounded-md border border-blue-100">
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div class="p-4 border border-blue-100 rounded-md bg-blue-50">
               <div class="flex items-center">
-                <div class="rounded-full bg-blue-100 p-2 mr-3">
+                <div class="p-2 mr-3 bg-blue-100 rounded-full">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6 text-blue-600"
+                    class="w-6 h-6 text-blue-600"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -193,12 +193,12 @@
               </div>
             </div>
 
-            <div class="bg-purple-50 p-4 rounded-md border border-purple-100">
+            <div class="p-4 border border-purple-100 rounded-md bg-purple-50">
               <div class="flex items-center">
-                <div class="rounded-full bg-purple-100 p-2 mr-3">
+                <div class="p-2 mr-3 bg-purple-100 rounded-full">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6 text-purple-600"
+                    class="w-6 h-6 text-purple-600"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -218,12 +218,12 @@
               </div>
             </div>
 
-            <div class="bg-green-50 p-4 rounded-md border border-green-100">
+            <div class="p-4 border border-green-100 rounded-md bg-green-50">
               <div class="flex items-center">
-                <div class="rounded-full bg-green-100 p-2 mr-3">
+                <div class="p-2 mr-3 bg-green-100 rounded-full">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6 text-green-600"
+                    class="w-6 h-6 text-green-600"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -248,16 +248,16 @@
 
       <!-- Members tab -->
       <div *ngIf="activeTab === 'members'">
-        <div class="bg-white rounded-lg shadow-sm border p-6">
-          <h2 class="text-lg font-semibold mb-4">Team Members</h2>
+        <div class="p-6 bg-white border rounded-lg shadow-sm">
+          <h2 class="mb-4 text-lg font-semibold">Team Members</h2>
           <app-team-members [teamId]="teamId"></app-team-members>
         </div>
       </div>
 
       <!-- Projects tab -->
       <div *ngIf="activeTab === 'projects'">
-        <div class="bg-white rounded-lg shadow-sm border p-6">
-          <h2 class="text-lg font-semibold mb-4">Team Projects</h2>
+        <div class="p-6 bg-white border rounded-lg shadow-sm">
+          <h2 class="mb-4 text-lg font-semibold">Team Projects</h2>
           <app-team-projects [teamId]="teamId"></app-team-projects>
         </div>
       </div>
@@ -266,8 +266,8 @@
 
   <!-- Edit mode -->
   <div *ngIf="!loading && team && editMode" class="p-6">
-    <div class="bg-white rounded-lg shadow-sm border p-6">
-      <div class="flex justify-between items-center mb-4">
+    <div class="p-6 bg-white border rounded-lg shadow-sm">
+      <div class="flex items-center justify-between mb-4">
         <h2 class="text-lg font-semibold">Edit Team</h2>
         <button
           class="text-gray-500 hover:text-gray-700"
@@ -275,7 +275,7 @@
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
+            class="w-5 h-5"
             viewBox="0 0 20 20"
             fill="currentColor"
           >
@@ -313,7 +313,7 @@
       Are you sure you want to delete the team <strong>{{ team?.name }}</strong
       >?
     </p>
-    <p class="text-red-600 mt-2">
+    <p class="mt-2 text-red-600">
       This action cannot be undone. All team data will be permanently deleted.
     </p>
   </ng-container>

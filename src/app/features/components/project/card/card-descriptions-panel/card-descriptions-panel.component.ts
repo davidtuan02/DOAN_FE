@@ -13,14 +13,20 @@ import { Store, select } from '@ngrx/store';
 @Component({
   selector: 'app-card-descriptions-panel',
   standalone: true,
-  imports: [CommonModule, CardTitleComponent, SvgIconComponent, CardDescriptionComponent, CardEnvironmentComponent, CardActivityComponent],
+  imports: [
+    CommonModule,
+    CardTitleComponent,
+    SvgIconComponent,
+    CardDescriptionComponent,
+    CardEnvironmentComponent,
+    CardActivityComponent,
+  ],
   templateUrl: './card-descriptions-panel.component.html',
 })
 export class CardDescriptionsPanelComponent implements OnInit {
   selectedCard$!: Observable<Card | undefined | null>;
 
-  constructor(private store: Store<fromStore.AppState>) {
-  }
+  constructor(private store: Store<fromStore.AppState>) {}
 
   ngOnInit(): void {
     this.selectedCard$ = this.store.pipe(select(fromStore.selectSelectedCard));

@@ -1,47 +1,70 @@
-<div class="board-column"
-     cdkDropList
-     [id]="column.id"
-     [cdkDropListData]="(cards$ | async) || []"
-     (cdkDropListDropped)="onCardDropped($event)">
+<div
+  class="board-column"
+  cdkDropList
+  [id]="column.id"
+  [cdkDropListData]="(cards$ | async) || []"
+  (cdkDropListDropped)="onCardDropped($event)"
+>
   <div class="board-column-header">
     <div class="board-column-header-name">
-      <span>{{column.name}}</span>
+      <span>{{ column.name }}</span>
       <span *ngIf="cards$ | async as cards">
-        {{cards.length > 1 ? cards.length + ' issues' : cards.length + ' issue'}}
+        {{
+          cards.length > 1 ? cards.length + " issues" : cards.length + " issue"
+        }}
       </span>
     </div>
-    <button class="square-button"
-            nz-popover nzPopoverTrigger="click"
-            [ngClass]="{'focused': contextMenuVisible}"
-            nzPopoverOverlayClassName="column-context-menu"
-            nzPopoverPlacement="bottomRight"
-            [(nzPopoverVisible)]="contextMenuVisible"
-            [nzPopoverContent]="contextMenuTemplate">
+    <button
+      class="square-button"
+      nz-popover
+      nzPopoverTrigger="click"
+      [ngClass]="{ focused: contextMenuVisible }"
+      nzPopoverOverlayClassName="column-context-menu"
+      nzPopoverPlacement="bottomRight"
+      [(nzPopoverVisible)]="contextMenuVisible"
+      [nzPopoverContent]="contextMenuTemplate"
+    >
       <app-svg-icon name="threedot" [width]="32" [height]="24"></app-svg-icon>
     </button>
   </div>
 
   <div class="board-column-content">
-    <app-board-card *ngFor="let card of (cards$ | async)"
-                    cdkDrag
-                    [loading]="(loadingCardIds$ | async)?.includes(card.id) || false"
-                    [cdkDragData]="card.id"
-                    [card]="card"
-                    (goToDetails)="createComponentModal($event)">
+    <app-board-card
+      *ngFor="let card of cards$ | async"
+      cdkDrag
+      [loading]="(loadingCardIds$ | async)?.includes(card.id) || false"
+      [cdkDragData]="card.id"
+      [card]="card"
+      (goToDetails)="createComponentModal($event)"
+    >
       <div class="custom-placeholder" *cdkDragPlaceholder></div>
     </app-board-card>
-
   </div>
   <div class="board-column-footer">
-    <app-create-card-form (createCard)="onCreateCard($event)"></app-create-card-form>
+    <app-create-card-form
+      *ngIf="canCreateCards"
+      (createCard)="onCreateCard($event)"
+    ></app-create-card-form>
+
+    <div *ngIf="!canCreateCards" class="text-center py-2 text-sm text-gray-500">
+      <p>You don't have permission to create tasks</p>
+    </div>
   </div>
 </div>
 
 <ng-template #contextMenuTemplate>
   <div class="flex flex-col justify-start items-start w-36">
-    <button (click)="onContextMenuClick()" class="w-full text-left px-3 py-1 hover:bg-backgroundDark">
+    <button
+      (click)="onContextMenuClick()"
+      class="w-full text-left px-3 py-1 hover:bg-backgroundDark"
+    >
       See column limit
     </button>
-    <button (click)="onContextMenuClick()" class="w-full text-left px-3 py-1 hover:bg-backgroundDark">Delete</button>
+    <button
+      (click)="onContextMenuClick()"
+      class="w-full text-left px-3 py-1 hover:bg-backgroundDark"
+    >
+      Delete
+    </button>
   </div>
 </ng-template>

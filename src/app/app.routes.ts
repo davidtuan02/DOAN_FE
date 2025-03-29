@@ -15,7 +15,11 @@ import { ProjectFormComponent } from './features/components/project/project-form
 import { ProjectsListComponent } from './features/components/project/projects-list/projects-list.component';
 import { BoardContainerComponent } from './features/components/project/board/board-container/board-container.component';
 import { AuthGuard } from './core/guards/auth.guard';
+import { AdminGuard } from './core/guards/admin.guard';
+import { TeamPermissionGuard } from './core/guards/team-permission.guard';
+import { TaskOwnershipGuard } from './core/guards/task-ownership.guard';
 import { YourWorkComponent } from './features/components/your-work/your-work.component';
+import { PermissionType } from './core/services/team-permissions.service';
 
 export const routes: Routes = [
   {
@@ -121,6 +125,7 @@ export const routes: Routes = [
         path: 'new',
         component: TeamFormComponent,
         title: 'Create Team',
+        canActivate: [AdminGuard],
         data: { isStandalone: true },
       },
       {
@@ -132,7 +137,11 @@ export const routes: Routes = [
         path: ':id/edit',
         component: TeamFormComponent,
         title: 'Edit Team',
-        data: { isStandalone: true },
+        canActivate: [TeamPermissionGuard],
+        data: {
+          isStandalone: true,
+          requiredPermission: PermissionType.MANAGE_TEAM,
+        },
       },
     ],
   },
@@ -150,6 +159,8 @@ export const routes: Routes = [
         path: 'new',
         component: ProjectFormComponent,
         title: 'Create Project',
+        canActivate: [TeamPermissionGuard],
+        data: { requiredPermission: PermissionType.MANAGE_PROJECT },
       },
       {
         path: ':id',
@@ -160,6 +171,8 @@ export const routes: Routes = [
         path: ':id/edit',
         component: ProjectFormComponent,
         title: 'Edit Project',
+        canActivate: [TeamPermissionGuard],
+        data: { requiredPermission: PermissionType.MANAGE_PROJECT },
       },
     ],
   },

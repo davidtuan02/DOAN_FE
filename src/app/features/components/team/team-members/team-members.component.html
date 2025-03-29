@@ -158,9 +158,17 @@
           class="w-full p-2 border rounded-md"
         >
           <option value="member">Member</option>
-          <option value="leader">Team Leader</option>
-          <option value="admin">Admin</option>
+          <option value="leader" *ngIf="canPromoteToLeader()">
+            Team Leader
+          </option>
+          <option value="admin" *ngIf="canPromoteToLeader()">Team Admin</option>
         </select>
+        <div class="text-xs text-gray-500 mt-1">
+          <p>{{ getRoleDescription(addMemberForm.get("role")?.value) }}</p>
+          <p *ngIf="!canPromoteToLeader()" class="text-blue-500 mt-1">
+            Note: Only team admins can promote members to leaders
+          </p>
+        </div>
       </div>
 
       <div class="flex justify-end space-x-2">
@@ -371,12 +379,24 @@
               >
                 <select
                   formControlName="role"
-                  class="p-1 text-sm border rounded-md w-28"
+                  class="w-full p-2 border rounded-md"
                 >
                   <option value="member">Member</option>
-                  <option value="leader">Leader</option>
-                  <option value="admin">Admin</option>
+                  <option value="leader" *ngIf="canPromoteToLeader()">
+                    Team Leader
+                  </option>
+                  <option value="admin" *ngIf="canPromoteToLeader()">
+                    Team Admin
+                  </option>
                 </select>
+                <div class="text-xs text-gray-500 mt-1">
+                  <p>
+                    {{ getRoleDescription(editRoleForm.get("role")?.value) }}
+                  </p>
+                  <p *ngIf="!canPromoteToLeader()" class="text-blue-500 mt-1">
+                    Note: Only team admins can promote members to leaders
+                  </p>
+                </div>
                 <button
                   type="submit"
                   class="p-1 bg-green-600 text-white rounded-md text-xs"
