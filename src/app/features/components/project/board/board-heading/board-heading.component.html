@@ -2,18 +2,74 @@
   <nz-breadcrumb>
     <nz-breadcrumb-item>Projects</nz-breadcrumb-item>
     <nz-breadcrumb-item>
-      <a class="text-textGray">Jira Clone</a>
+      <a class="text-textGray">{{
+        currentProject?.name || "Select a Project"
+      }}</a>
+    </nz-breadcrumb-item>
+    <nz-breadcrumb-item>
+      <a class="text-textGray">Board</a>
     </nz-breadcrumb-item>
   </nz-breadcrumb>
 
   <div class="board-title">
-    <textarea
-      class="textarea-inline"
-      [defaultValue]="'Agile board'"
-      rows="1"
-      appTextareaSubmitOnEnter
-    >
-    </textarea>
+    <div class="flex flex-row items-center">
+      <h1 class="text-xl font-semibold mr-3">
+        {{ activeSprint?.name || "No Active Sprint" }}
+      </h1>
+
+      <!-- Sprint Status Indicator -->
+      <div
+        *ngIf="activeSprint"
+        class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full"
+      >
+        Active
+      </div>
+      <div
+        *ngIf="!activeSprint && planningSprints.length > 0"
+        class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+      >
+        Planning
+      </div>
+      <div
+        *ngIf="!activeSprint && planningSprints.length === 0"
+        class="px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full"
+      >
+        No Sprint
+      </div>
+
+      <!-- Sprint Management Dropdown -->
+      <div class="ml-4">
+        <button
+          nz-button
+          nzType="primary"
+          nz-dropdown
+          [nzDropdownMenu]="sprintMenu"
+        >
+          Sprint Actions <i nz-icon nzType="down"></i>
+        </button>
+        <nz-dropdown-menu #sprintMenu="nzDropdownMenu">
+          <ul nz-menu>
+            <li nz-menu-item (click)="showCreateSprintModal()">
+              Create Sprint
+            </li>
+            <ng-container *ngIf="planningSprints.length > 0">
+              <li
+                nz-menu-item
+                *ngFor="let sprint of planningSprints"
+                (click)="startSprint(sprint.id || '')"
+              >
+                Start Sprint: {{ sprint.name }}
+              </li>
+            </ng-container>
+            <ng-container *ngIf="activeSprint">
+              <li nz-menu-item (click)="completeSprint(activeSprint.id || '')">
+                Complete Current Sprint
+              </li>
+            </ng-container>
+          </ul>
+        </nz-dropdown-menu>
+      </div>
+    </div>
 
     <div class="flex flex-row items-baseline">
       <button class="square-button">
@@ -41,6 +97,28 @@
       </button>
     </div>
   </div>
+
+  <!-- Sprint Info Section -->
+  <div *ngIf="activeSprint" class="mt-2 text-sm text-gray-600">
+    <div><strong>Goal:</strong> {{ activeSprint.goal || "No goal set" }}</div>
+    <div class="flex mt-1">
+      <div class="mr-4">
+        <strong>Start:</strong>
+        {{ activeSprint.startDate | date : "mediumDate" }}
+      </div>
+      <div>
+        <strong>End:</strong> {{ activeSprint.endDate | date : "mediumDate" }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading and Error States -->
+  <div *ngIf="isLoading" class="mt-2 text-sm text-gray-600">
+    Loading sprint information...
+  </div>
+  <div *ngIf="error" class="mt-2 text-sm text-red-600">
+    {{ error }}
+  </div>
 </div>
 
 <ng-template #contextMenuTemplate>
@@ -57,5 +135,60 @@
     >
       Configure board
     </button>
+  </div>
+</ng-template>
+
+<!-- Sprint Form Template -->
+<ng-template #sprintFormTemplate>
+  <div class="p-4">
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1"
+        >Sprint Name*</label
+      >
+      <input
+        type="text"
+        [(ngModel)]="newSprint.name"
+        class="w-full p-2 border border-gray-300 rounded"
+        placeholder="Sprint name"
+      />
+    </div>
+
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1"
+        >Sprint Goal</label
+      >
+      <textarea
+        [(ngModel)]="newSprint.goal"
+        class="w-full p-2 border border-gray-300 rounded"
+        placeholder="What do you want to achieve in this sprint?"
+        rows="3"
+      ></textarea>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1"
+          >Start Date</label
+        >
+        <input
+          type="date"
+          [ngModel]="newSprint.startDate | date : 'yyyy-MM-dd'"
+          (ngModelChange)="newSprint.startDate = $event"
+          class="w-full p-2 border border-gray-300 rounded"
+        />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1"
+          >End Date</label
+        >
+        <input
+          type="date"
+          [ngModel]="newSprint.endDate | date : 'yyyy-MM-dd'"
+          (ngModelChange)="newSprint.endDate = $event"
+          class="w-full p-2 border border-gray-300 rounded"
+        />
+      </div>
+    </div>
   </div>
 </ng-template>
