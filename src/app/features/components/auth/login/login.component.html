@@ -148,35 +148,6 @@
         </div>
       </div>
 
-      <div class="space-y-2" *ngIf="isSignUp">
-        <label class="block text-sm font-medium text-gray-700" for="role"
-          >Role</label
-        >
-        <div class="relative">
-          <select
-            id="role"
-            formControlName="role"
-            class="w-full px-4 py-2 pl-10 border rounded-md"
-            [ngClass]="{
-              'border-red-500':
-                loginForm.get('role')?.errors && loginForm.get('role')?.touched
-            }"
-          >
-            <option value="BASIC">Basic User</option>
-            <option value="ADMIN">Admin</option>
-          </select>
-          <span class="absolute left-3 top-2.5 text-gray-400">
-            <i class="fas fa-user-shield"></i>
-          </span>
-        </div>
-        <div
-          *ngIf="loginForm.get('role')?.errors?.['required'] && loginForm.get('role')?.touched"
-          class="text-sm text-red-500"
-        >
-          Role is required
-        </div>
-      </div>
-
       <div class="space-y-2">
         <label class="block text-sm font-medium text-gray-700" for="password"
           >Password</label
@@ -225,14 +196,21 @@
             id="confirmPassword"
             formControlName="confirmPassword"
             class="w-full px-4 py-2 pl-10 border rounded-md"
-            [ngClass]="{'border-red-500': loginForm.get('confirmPassword')?.errors || loginForm.errors?.['passwordMismatch']}"
+            [ngClass]="{
+              'border-red-500':
+                loginForm.get('confirmPassword')?.errors ||
+                loginForm.hasError('passwordMismatch')
+            }"
           />
           <span class="absolute left-3 top-2.5 text-gray-400">
             <i class="fas fa-lock"></i>
           </span>
         </div>
         <div
-          *ngIf="loginForm.errors?.['passwordMismatch']"
+          *ngIf="
+            loginForm.hasError('passwordMismatch') &&
+            loginForm.get('confirmPassword')?.touched
+          "
           class="text-sm text-red-500"
         >
           Passwords do not match

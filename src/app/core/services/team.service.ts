@@ -5,6 +5,10 @@ import { environment } from '../../../environments/environment';
 import { BASE_URL } from '../constants/api.const';
 import { catchError, tap, switchMap, map } from 'rxjs/operators';
 import { UserService } from './user.service';
+import {
+  TeamRole,
+  TeamMember as TeamMemberModel,
+} from '../models/team-role.model';
 
 export interface CreateTeamDto {
   name: string;
@@ -18,11 +22,11 @@ export interface UpdateTeamDto {
 
 export interface AddMemberToTeamDto {
   userId: string;
-  role: 'leader' | 'member' | 'admin';
+  role: TeamRole;
 }
 
 export interface UpdateMemberRoleDto {
-  role: 'leader' | 'member' | 'admin';
+  role: TeamRole;
 }
 
 export interface Team {
@@ -37,7 +41,7 @@ export interface Team {
 
 export interface TeamMember {
   id: string;
-  role: 'leader' | 'member' | 'admin';
+  role: TeamRole;
   joinedAt: string;
   user: {
     id: string;
@@ -50,7 +54,7 @@ export interface TeamMember {
 
 export interface TeamAccess {
   hasAccess: boolean;
-  role: 'leader' | 'member' | 'admin' | null;
+  role: TeamRole | null;
 }
 
 @Injectable({

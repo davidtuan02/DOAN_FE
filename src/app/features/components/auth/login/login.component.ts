@@ -4,6 +4,9 @@ import {
   FormGroup,
   Validators,
   ReactiveFormsModule,
+  FormControl,
+  AbstractControl,
+  ValidationErrors,
 } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -28,7 +31,7 @@ import { ForgotPasswordModalComponent } from '../forgot-password-modal/forgot-pa
   ],
 })
 export class LoginComponent implements OnInit {
-  loginForm: FormGroup = this.initializeForm();
+  loginForm!: FormGroup;
   forgotPasswordForm: FormGroup = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
   });
@@ -47,46 +50,61 @@ export class LoginComponent implements OnInit {
     private modal: NzModalService
   ) {}
 
-  private initializeForm(): FormGroup {
-    const baseControls = {
+  ngOnInit(): void {
+    this.initializeForm();
+  }
+
+  private initializeForm(): void {
+    const formControls: any = {
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(8)]],
       rememberMe: [false],
     };
 
-    const signUpControls = {
-      ...baseControls,
-      name: ['', Validators.required],
-      username: ['', Validators.required],
-      age: ['', [Validators.required, Validators.min(1), Validators.max(120)]],
-      role: ['BASIC', Validators.required],
-      confirmPassword: ['', Validators.required],
-    };
+    if (this.isSignUp) {
+      formControls.name = ['', Validators.required];
+      formControls.username = ['', Validators.required];
+      formControls.age = ['', Validators.required];
+      formControls.confirmPassword = ['', Validators.required];
+    }
 
-    const form = this.fb.group(this.isSignUp ? signUpControls : baseControls, {
-      validators: this.isSignUp ? this.passwordMatchValidator : null,
-    });
+    this.loginForm = this.fb.group(formControls);
 
-    form.get('password')?.valueChanges.subscribe((password) => {
-      this.calculatePasswordStrength(password);
-    });
+    if (this.isSignUp) {
+      this.loginForm.setValidators(this.passwordMatchValidator);
+    }
 
-    return form;
+    // Listen for password changes to calculate strength
+    this.loginForm
+      .get('password')
+      ?.valueChanges.subscribe((password: string) => {
+        if (password) {
+          this.calculatePasswordStrength(password);
+        }
+      });
   }
 
-  private passwordMatchValidator(g: FormGroup) {
-    return g.get('password')?.value === g.get('confirmPassword')?.value
+  passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
+    const password = control.get('password');
+    const confirmPassword = control.get('confirmPassword');
+
+    if (!password || !confirmPassword) {
+      return null;
+    }
+
+    const passwordValue = password.value || '';
+    const confirmPasswordValue = confirmPassword.value || '';
+
+    return passwordValue === confirmPasswordValue
       ? null
       : { passwordMismatch: true };
   }
 
   switchMode(mode: 'signin' | 'signup') {
     this.isSignUp = mode === 'signup';
-    this.loginForm = this.initializeForm();
+    this.initializeForm();
     this.errorMessage = '';
   }
-
-  ngOnInit(): void {}
 
   calculatePasswordStrength(password: string) {
     let strength = 0;
@@ -123,7 +141,7 @@ export class LoginComponent implements OnInit {
         email: this.loginForm.value.email,
         username: this.loginForm.value.username,
         password: this.loginForm.value.password,
-        role: this.loginForm.value.role,
+        role: 'BASIC', // Default role to BASIC
       };
 
       this.userService.register(body).subscribe({
@@ -134,7 +152,7 @@ export class LoginComponent implements OnInit {
             { nzDuration: 3000 }
           );
           this.isSignUp = false;
-          this.loginForm = this.initializeForm();
+          this.initializeForm();
         },
         error: (err) => {
           console.error('Registration error:', err);

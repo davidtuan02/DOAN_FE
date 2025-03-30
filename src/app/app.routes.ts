@@ -14,8 +14,9 @@ import { ProjectDetailComponent } from './features/components/project/project-de
 import { ProjectFormComponent } from './features/components/project/project-form/project-form.component';
 import { ProjectsListComponent } from './features/components/project/projects-list/projects-list.component';
 import { BoardContainerComponent } from './features/components/project/board/board-container/board-container.component';
-import { AuthGuard } from './core/guards/auth.guard';
+import { AuthGuard, RoleGuard, TeamRoleGuard } from './core/guards';
 import { YourWorkComponent } from './features/components/your-work/your-work.component';
+import { UserRole } from './core/models/user/user';
 
 export const routes: Routes = [
   {
@@ -121,18 +122,30 @@ export const routes: Routes = [
         path: 'new',
         component: TeamFormComponent,
         title: 'Create Team',
-        data: { isStandalone: true },
+        canActivate: [RoleGuard],
+        data: {
+          isStandalone: true,
+          role: UserRole.ADMIN,
+        },
       },
       {
         path: ':id',
         component: TeamDetailComponent,
         title: 'Team Details',
+        canActivate: [TeamRoleGuard],
+        data: {
+          teamPermission: 'canManageTeam',
+        },
       },
       {
         path: ':id/edit',
         component: TeamFormComponent,
         title: 'Edit Team',
-        data: { isStandalone: true },
+        canActivate: [TeamRoleGuard],
+        data: {
+          isStandalone: true,
+          teamPermission: 'canManageTeam',
+        },
       },
     ],
   },
@@ -150,6 +163,10 @@ export const routes: Routes = [
         path: 'new',
         component: ProjectFormComponent,
         title: 'Create Project',
+        canActivate: [TeamRoleGuard],
+        data: {
+          teamPermission: 'canManageProject',
+        },
       },
       {
         path: ':id',
@@ -160,6 +177,10 @@ export const routes: Routes = [
         path: ':id/edit',
         component: ProjectFormComponent,
         title: 'Edit Project',
+        canActivate: [TeamRoleGuard],
+        data: {
+          teamPermission: 'canManageProject',
+        },
       },
     ],
   },
