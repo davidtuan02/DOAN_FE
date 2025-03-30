@@ -11,11 +11,7 @@ import { UserService } from '../../../../core/services/user.service';
 import { finalize, catchError } from 'rxjs/operators';
 import { DatePipe } from '@angular/common';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { User, UserRole } from '../../../../core/models/user/user';
-import {
-  TeamPermissionsService,
-  PermissionType,
-} from '../../../../core/services/team-permissions.service';
+import { User } from '../../../../core/models/user/user';
 
 @Component({
   selector: 'app-team-members',
@@ -54,19 +50,11 @@ export class TeamMembersComponent implements OnInit {
   filterRole: 'all' | 'admin' | 'leader' | 'member' = 'all';
   searchTimeout: any;
 
-  // Role descriptions for tooltips
-  roleDescriptions = {
-    admin: 'Can manage team members, but cannot manage projects or tasks.',
-    leader: 'Can create, edit, delete projects and manage tasks.',
-    member: 'Can create and edit their own tasks and participate in projects.',
-  };
-
   constructor(
     private teamService: TeamService,
     private userService: UserService,
     private fb: FormBuilder,
-    private message: NzMessageService,
-    private permissionService: TeamPermissionsService
+    private message: NzMessageService
   ) {
     this.addMemberForm = this.fb.group({
       userId: ['', Validators.required],
@@ -389,29 +377,8 @@ export class TeamMembersComponent implements OnInit {
   }
 
   canManageTeam(): boolean {
-    if (!this.teamAccess) return false;
-
-    // Check if user is team admin or leader
-    if (this.teamAccess.role === 'admin' || this.teamAccess.role === 'leader')
-      return true;
-
-    // We can't directly check for global admin role here, so we'll allow it
-    // and the actual permission will be checked by the permission service
-    return false;
-  }
-
-  // Add method to get role description for tooltips
-  getRoleDescription(role: string): string {
     return (
-      this.roleDescriptions[role as keyof typeof this.roleDescriptions] || ''
+      this.teamAccess?.role === 'leader' || this.teamAccess?.role === 'admin'
     );
-  }
-
-  // Check if the current user can promote members to leader
-  canPromoteToLeader(): boolean {
-    if (!this.teamAccess) return false;
-
-    // Only team admins can promote to leader
-    return this.teamAccess.role === 'admin';
   }
 }

@@ -5,7 +5,6 @@ import { EffectsModule } from '@ngrx/effects';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 import { environment } from '../../environments/environment';
 import { effects, metaReducers, reducers } from './store';
-import { TeamPermissionsService } from './services/team-permissions.service';
 
 @NgModule({
   declarations: [],
@@ -18,7 +17,5 @@ import { TeamPermissionsService } from './services/team-permissions.service';
     }),
     HttpClientModule,
   ],
-  providers: [TeamPermissionsService],
-  exports: [],
 })
 export class CoreModule {}

@@ -42,13 +42,8 @@
   </div>
   <div class="board-column-footer">
     <app-create-card-form
-      *ngIf="canCreateCards"
       (createCard)="onCreateCard($event)"
     ></app-create-card-form>
-
-    <div *ngIf="!canCreateCards" class="text-center py-2 text-sm text-gray-500">
-      <p>You don't have permission to create tasks</p>
-    </div>
   </div>
 </div>
 

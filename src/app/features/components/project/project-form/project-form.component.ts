@@ -15,10 +15,6 @@ import {
   Project,
 } from '../../../../core/services/project.service';
 import { TeamService } from '../../../../core/services/team.service';
-import {
-  TeamPermissionsService,
-  PermissionType,
-} from '../../../../core/services/team-permissions.service';
 
 @Component({
   selector: 'app-project-form',
@@ -39,8 +35,6 @@ export class ProjectFormComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private projectService: ProjectService,
-    private teamService: TeamService,
-    private permissionsService: TeamPermissionsService,
     private route: ActivatedRoute,
     private router: Router,
     private message: NzMessageService
@@ -80,20 +74,6 @@ export class ProjectFormComponent implements OnInit {
 
     // Get teamId from query params (if provided)
     this.teamId = this.route.snapshot.queryParamMap.get('teamId');
-
-    if (this.teamId) {
-      // Check if user has permission to manage projects in this team
-      this.permissionsService
-        .hasPermission(this.teamId, PermissionType.MANAGE_PROJECT)
-        .subscribe((hasPermission) => {
-          if (!hasPermission) {
-            this.message.error(
-              'You do not have permission to manage projects in this team'
-            );
-            this.router.navigate(['/teams', this.teamId]);
-          }
-        });
-    }
 
     if (this.projectId) {
       this.isEditing = true;

@@ -59,6 +59,7 @@ export class LoginComponent implements OnInit {
       name: ['', Validators.required],
       username: ['', Validators.required],
       age: ['', [Validators.required, Validators.min(1), Validators.max(120)]],
+      role: ['BASIC', Validators.required],
       confirmPassword: ['', Validators.required],
     };
 
@@ -122,7 +123,7 @@ export class LoginComponent implements OnInit {
         email: this.loginForm.value.email,
         username: this.loginForm.value.username,
         password: this.loginForm.value.password,
-        role: 'BASIC',
+        role: this.loginForm.value.role,
       };
 
       this.userService.register(body).subscribe({

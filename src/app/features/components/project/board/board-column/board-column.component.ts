@@ -19,12 +19,6 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { Store, select } from '@ngrx/store';
 import * as fromStore from '../../../../../core/store';
 import { filter, take } from 'rxjs/operators';
-import {
-  TeamPermissionsService,
-  PermissionType,
-} from '../../../../../core/services/team-permissions.service';
-import { ProjectService } from '../../../../../core/services/project.service';
-import { NzMessageService } from 'ng-zorro-antd/message';
 
 @Component({
   selector: 'app-board-column',
@@ -45,34 +39,19 @@ export class BoardColumnComponent implements OnInit, OnChanges {
 
   cards$!: Observable<Array<Card>>;
   loadingCardIds$!: Observable<Array<string>>;
-  canCreateCards = false;
 
   contextMenuVisible: boolean = false;
 
   constructor(
     private store: Store<fromStore.AppState>,
     private router: Router,
-    private activatedRoute: ActivatedRoute,
-    private permissionsService: TeamPermissionsService,
-    private projectService: ProjectService,
-    private message: NzMessageService
+    private activatedRoute: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
     this.loadingCardIds$ = this.store.pipe(
       select(fromStore.selectLoadingCardIds)
     );
-
-    // Check if user has permission to create cards
-    this.projectService.selectedProject$.subscribe((project) => {
-      if (project && project.team && project.team.id) {
-        this.permissionsService
-          .hasPermission(project.team.id, PermissionType.CREATE_TASK)
-          .subscribe((hasPermission) => {
-            this.canCreateCards = hasPermission;
-          });
-      }
-    });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -91,38 +70,16 @@ export class BoardColumnComponent implements OnInit, OnChanges {
         event.currentIndex
       );
     } else {
-      // Check if user has permission to move cards
-      this.projectService.selectedProject$
-        .pipe(take(1))
-        .subscribe((project) => {
-          if (project && project.team && project.team.id) {
-            this.permissionsService
-              .hasPermission(project.team.id, PermissionType.UPDATE_TASK)
-              .subscribe((hasPermission) => {
-                if (hasPermission) {
-                  const partial: PartialCard = {
-                    id: event.item.data,
-                    columnId: event.container.id,
-                  };
-                  this.store.dispatch(fromStore.updateCard({ partial }));
-                } else {
-                  this.message.error(
-                    'You do not have permission to update tasks'
-                  );
-                }
-              });
-          }
-        });
+      const partial: PartialCard = {
+        id: event.item.data,
+        columnId: event.container.id,
+      };
+
+      this.store.dispatch(fromStore.updateCard({ partial }));
     }
   }
 
   onCreateCard(card: Card): void {
-    // Check permission before creating
-    if (!this.canCreateCards) {
-      this.message.error('You do not have permission to create tasks');
-      return;
-    }
-
     const newCard: Card = {
       ...card,
       columnId: this.column.id,
