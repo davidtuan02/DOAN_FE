@@ -102,7 +102,6 @@ export class TeamDetailComponent implements OnInit {
       next: (projects) => {
         this.projectsCount = projects.length;
         // In a real app, you'd sum up tasks completed across all projects
-        this.tasksCompleted = Math.floor(Math.random() * 50); // Mock data
       },
       error: (err) => {
         console.error('Failed to load team projects for statistics', err);

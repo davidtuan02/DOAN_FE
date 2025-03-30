@@ -1,4 +1,4 @@
-import { CardTypesEnum } from "../../enums";
+import { CardTypesEnum } from '../../enums';
 
 export interface Card {
   id: string;

@@ -11,6 +11,7 @@ import {
   ProjectService,
   Project,
 } from '../../../../core/services/project.service';
+import { catchError, map, of, forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-team-projects',
@@ -100,8 +101,8 @@ export class TeamProjectsComponent implements OnInit {
         next: (projects) => {
           console.log(`Received ${projects.length} projects:`, projects);
           this.projects = projects;
-          this.enrichProjectsData();
-          this.filteredProjects = [...this.projects];
+          // Load detailed information for each project
+          this.loadProjectDetails();
         },
         error: (err) => {
           console.error('Error loading team projects:', err);
@@ -112,15 +113,37 @@ export class TeamProjectsComponent implements OnInit {
       });
   }
 
-  // Enrich project data with additional information for UI
-  enrichProjectsData(): void {
-    this.projects = this.projects.map((project) => ({
-      ...project,
-      status: project.status || this.getRandomStatus(),
-      completedTasks: project.completedTasks || Math.floor(Math.random() * 30),
-      totalTasks: project.totalTasks || Math.floor(Math.random() * 50) + 30,
-      deadline: project.deadline || this.getRandomDeadline(),
-    }));
+  // Load detailed information for each project
+  loadProjectDetails(): void {
+    if (this.projects.length === 0) {
+      this.filteredProjects = [];
+      return;
+    }
+
+    const projectDetailsRequests = this.projects.map((project) => {
+      if (!project.id) return of(project);
+
+      return this.projectService.getProjectById(project.id).pipe(
+        catchError((error) => {
+          console.error(
+            `Error loading details for project ${project.id}:`,
+            error
+          );
+          return of(project); // Return original project on error
+        })
+      );
+    });
+
+    forkJoin(projectDetailsRequests)
+      .pipe(
+        finalize(() => {
+          this.loading = false;
+        })
+      )
+      .subscribe((detailedProjects: Project[]) => {
+        this.projects = detailedProjects;
+        this.filteredProjects = [...this.projects];
+      });
   }
 
   // Assign an existing project to this team
@@ -146,6 +169,7 @@ export class TeamProjectsComponent implements OnInit {
     });
   }
 
+  // Check team access permissions
   checkTeamAccess(): void {
     this.teamService.validateTeamAccess(this.teamId).subscribe({
       next: (access) => {
@@ -246,21 +270,6 @@ export class TeamProjectsComponent implements OnInit {
           // Show detailed error information
           if (err.error) {
             console.error('Error details:', err.error);
-          }
-          if (err.status) {
-            console.error('Error status:', err.status);
-
-            if (err.status === 401) {
-              this.message.error(
-                'Unauthorized. Please log in again to delete projects.'
-              );
-            } else if (err.status === 403) {
-              this.message.error(
-                'You do not have permission to delete this project.'
-              );
-            } else if (err.status === 500) {
-              this.message.error('Server error. Please try again later.');
-            }
           }
         },
       });
@@ -507,24 +516,5 @@ export class TeamProjectsComponent implements OnInit {
       (deadline.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
     );
     return daysUntilDeadline > 0 && daysUntilDeadline <= 7;
-  }
-
-  // Helper methods for mock data
-  private getRandomStatus(): 'active' | 'completed' | 'archived' {
-    const statuses: ('active' | 'completed' | 'archived')[] = [
-      'active',
-      'completed',
-      'archived',
-    ];
-    const randomIndex = Math.floor(Math.random() * statuses.length);
-    return statuses[randomIndex];
-  }
-
-  private getRandomDeadline(): string {
-    const today = new Date();
-    const daysToAdd = Math.floor(Math.random() * 60) - 10; // -10 to +50 days
-    const deadline = new Date(today);
-    deadline.setDate(deadline.getDate() + daysToAdd);
-    return deadline.toISOString();
   }
 }

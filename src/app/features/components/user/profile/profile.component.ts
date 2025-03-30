@@ -9,8 +9,10 @@ import {
 } from 'ng-zorro-antd/notification';
 import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
-import { catchError, finalize, of } from 'rxjs';
+import { catchError, finalize, forkJoin, of } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
+import { TeamService } from '../../../../core/services/team.service';
+import { ProjectService } from '../../../../core/services/project.service';
 
 interface WorkItem {
   id: string;
@@ -78,6 +80,8 @@ export class ProfileComponent implements OnInit {
 
   constructor(
     private userService: UserService,
+    private teamService: TeamService,
+    private projectService: ProjectService,
     private notification: NzNotificationService,
     private modal: NzModalService
   ) {}
@@ -87,8 +91,6 @@ export class ProfileComponent implements OnInit {
     this.userService.setUseMockApi(false);
 
     this.loadUserProfile();
-    this.loadWorkItems();
-    this.loadTeamMembers();
   }
 
   loadUserProfile(): void {
@@ -117,61 +119,103 @@ export class ProfileComponent implements OnInit {
         if (user) {
           this.user = user;
           this.formData = { ...user };
+
+          // After user data is loaded, fetch related data
+          this.loadWorkItems();
+          this.loadTeamMembers();
         }
       });
   }
 
   loadWorkItems(): void {
+    if (!this.user || !this.user.id) {
+      return;
+    }
+
     this.isLoadingWork = true;
-    // TODO: Implement API call to get user's work items when backend provides endpoint
-    // For now using mock data
-    setTimeout(() => {
-      this.workItems = [
-        {
-          id: '1',
-          title: 'Implement user authentication',
-          type: 'task',
-          status: 'In Progress',
-          dueDate: new Date('2024-03-30'),
-          projectName: 'Jira Clone',
-        },
-        {
-          id: '2',
-          title: 'Design database schema',
-          type: 'task',
-          status: 'To Do',
-          dueDate: new Date('2024-04-01'),
-          projectName: 'Jira Clone',
-        },
-      ];
-      this.isLoadingWork = false;
-    }, 1000);
+
+    // Get tasks assigned to the current user
+    this.projectService
+      .getCurrentUserProjects()
+      .pipe(
+        catchError((error) => {
+          this.notification.error(
+            'Error',
+            `Failed to load work items: ${error.message || 'Unknown error'}`,
+            { nzDuration: 3000 }
+          );
+          console.error('Error loading work items:', error);
+          return of([]);
+        }),
+        finalize(() => {
+          this.isLoadingWork = false;
+        })
+      )
+      .subscribe((projects) => {
+        // Transform projects to work items
+        this.workItems = projects.map((project) => ({
+          id: project.id || '',
+          title: project.name,
+          type: 'project',
+          status: project.status || 'Active',
+          projectName: project.key,
+        }));
+
+        // You may also want to get tasks assigned to the user
+        // For tasks, you would need an API endpoint that returns tasks assigned to the user
+        // This could be implemented in a future iteration
+      });
   }
 
   loadTeamMembers(): void {
+    if (!this.user || !this.user.id) {
+      return;
+    }
+
     this.isLoadingTeam = true;
-    // TODO: Implement API call to get team members when backend provides endpoint
-    // For now using mock data
-    setTimeout(() => {
-      this.teamMembers = [
-        {
-          id: '1',
-          firstName: 'John',
-          lastName: 'Doe',
-          role: 'Project Manager',
-          avatar: 'https://ui-avatars.com/api/?name=John+Doe&background=random',
-        },
-        {
-          id: '2',
-          firstName: 'Jane',
-          lastName: 'Smith',
-          role: 'Developer',
-          avatar:
-            'https://ui-avatars.com/api/?name=Jane+Smith&background=random',
-        },
-      ];
-      this.isLoadingTeam = false;
-    }, 1000);
+
+    // Get teams the user belongs to
+    this.teamService
+      .getMyTeams()
+      .pipe(
+        catchError((error) => {
+          this.notification.error(
+            'Error',
+            `Failed to load team data: ${error.message || 'Unknown error'}`,
+            { nzDuration: 3000 }
+          );
+          console.error('Error loading team data:', error);
+          return of([]);
+        }),
+        finalize(() => {
+          this.isLoadingTeam = false;
+        })
+      )
+      .subscribe((teams: any[]) => {
+        // Get all team members from all teams
+        if (teams && teams.length > 0) {
+          const uniqueMembers = new Map<string, TeamMember>();
+
+          teams.forEach((team: any) => {
+            if (team.usersIncludes && Array.isArray(team.usersIncludes)) {
+              team.usersIncludes.forEach((userTeam: any) => {
+                if (userTeam.user) {
+                  const user = userTeam.user;
+                  uniqueMembers.set(user.id, {
+                    id: user.id,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    role: userTeam.role || 'Member',
+                    avatar: `https://ui-avatars.com/api/?name=${user.firstName}+${user.lastName}&background=random`,
+                  });
+                }
+              });
+            }
+          });
+
+          this.teamMembers = Array.from(uniqueMembers.values());
+        }
+      });
   }
 
   toggleEdit(): void {
@@ -250,17 +294,17 @@ export class ProfileComponent implements OnInit {
         </div>
       `,
       nzOkText: 'Change Password',
-      nzCancelText: 'Cancel',
+      nzOkType: 'primary',
       nzOnOk: () => {
         const currentPassword = (
           document.getElementById('currentPassword') as HTMLInputElement
-        ).value;
+        )?.value;
         const newPassword = (
           document.getElementById('newPassword') as HTMLInputElement
-        ).value;
+        )?.value;
         const confirmPassword = (
           document.getElementById('confirmPassword') as HTMLInputElement
-        ).value;
+        )?.value;
 
         if (!currentPassword || !newPassword || !confirmPassword) {
           this.notification.error('Error', 'All fields are required', {
@@ -270,41 +314,34 @@ export class ProfileComponent implements OnInit {
         }
 
         if (newPassword !== confirmPassword) {
-          this.notification.error('Error', 'New passwords do not match', {
+          this.notification.error('Error', 'Passwords do not match', {
             nzDuration: 3000,
           });
           return false;
         }
 
-        this.isLoading = true;
         this.userService
           .changePassword(currentPassword, newPassword)
           .pipe(
-            catchError((error: HttpErrorResponse) => {
+            catchError((error) => {
               this.notification.error(
                 'Error',
                 `Failed to change password: ${
-                  error.status === 401
-                    ? 'Unauthorized. Please log in again.'
-                    : error.message || 'Unknown error'
+                  error.message || 'Unknown error'
                 }`,
                 { nzDuration: 5000 }
               );
               console.error('Error changing password:', error);
               return of(null);
-            }),
-            finalize(() => {
-              this.isLoading = false;
             })
           )
-          .subscribe((response) => {
-            if (response) {
+          .subscribe((result) => {
+            if (result !== null) {
               this.notification.success(
                 'Success',
                 'Password changed successfully!',
                 { nzDuration: 3000 }
               );
-              this.modal.closeAll();
             }
           });
 
