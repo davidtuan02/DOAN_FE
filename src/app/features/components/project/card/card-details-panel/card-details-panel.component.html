@@ -18,7 +18,7 @@
     >
       <div class="w-48">
         <span
-          class="uppercase bg-blue-500 rounded px-1 py-0 text-xxs font-medium leading-none"
+          class="px-1 py-0 font-medium leading-none uppercase bg-blue-500 rounded text-xxs"
           [ngStyle]="{ backgroundColor: c.bgBadge, color: c.textColor }"
         >
           {{ c.name }}
@@ -28,13 +28,13 @@
   </nz-select>
 
   <ng-template #renderTemplate>
-    <button class="border-t border-gray-550 px-4 py-2 w-full text-left">
+    <button class="w-full px-4 py-2 text-left border-t border-gray-550">
       View workflow
     </button>
   </ng-template>
 
   <ng-template #defaultTemplate let-selected>
-    <div class="bg-transparent capitalize font-medium">
+    <div class="font-medium text-center text-white capitalize">
       {{ selected.nzLabel.toLowerCase() }}
     </div>
   </ng-template>
@@ -48,13 +48,13 @@
     ></app-svg-icon>
   </ng-template>
 </div>
-<nz-collapse class="mt-4 card-details-panel rounded">
+<nz-collapse class="mt-4 rounded card-details-panel">
   <nz-collapse-panel
     [nzShowArrow]="false"
     [nzHeader]="header"
     [nzActive]="true"
   >
-    <div class="flex gap-4 flex-col" *ngIf="card">
+    <div class="flex flex-col gap-4" *ngIf="card">
       <div class="detail-item">
         <div class="title">Assignee</div>
         <app-card-assignee
@@ -78,7 +78,7 @@
         </app-card-priority>
       </div>
 
-      <div class="detail-item items-start">
+      <div class="items-start detail-item">
         <div class="title">Labels</div>
         <app-card-label
           class="w-full"
@@ -88,28 +88,6 @@
           (updateLabels)="onUpdateCard($event)"
         >
         </app-card-label>
-      </div>
-
-      <div class="detail-item items-start">
-        <div class="title">Start date</div>
-        <app-card-start-date
-          class="w-full"
-          [startDate]="card.startDate"
-          [cardId]="card.id"
-          (updateStartDate)="onUpdateCard($event)"
-        >
-        </app-card-start-date>
-      </div>
-
-      <div class="detail-item items-start">
-        <div class="title">Due date</div>
-        <app-card-due-date
-          class="w-full"
-          [dueDate]="card.dueDate"
-          [cardId]="card.id"
-          (updateDueDate)="onUpdateCard($event)"
-        >
-        </app-card-due-date>
       </div>
 
       <div class="detail-item">
@@ -126,20 +104,20 @@
     </div>
   </nz-collapse-panel>
 </nz-collapse>
-<div class="flex justify-between items-center">
-  <div class="mt-4 text-textGray text-xs flex flex-col gap-1">
+<div class="flex items-center justify-between">
+  <div class="flex flex-col gap-1 mt-4 text-xs text-textGray">
     <div>Created {{ card?.createdAt | date : "medium" }}</div>
 
     <div>Updated {{ card?.updatedAt | date : "medium" }}</div>
   </div>
-  <button class="square-button flex p-1 text-textDark font-medium">
+  <button class="flex p-1 font-medium square-button text-textDark">
     <app-svg-icon name="config" [width]="24" [height]="24"></app-svg-icon>
     Configure
   </button>
 </div>
 
 <ng-template #header>
-  <div class="w-full flex justify-between font-medium text-textDark">
+  <div class="flex justify-between w-full font-medium text-textDark">
     Details
     <app-svg-icon
       name="arrowDown"
