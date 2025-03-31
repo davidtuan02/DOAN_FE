@@ -17,6 +17,8 @@ import { ProjectService } from './project.service';
 import { CardTypesEnum } from '../enums';
 import { BASE_URL } from '../constants/api.const';
 import { UserService } from './user.service';
+import { Store } from '@ngrx/store';
+import { selectSelectedCardId } from '../store/card/card.selectors';
 
 @Injectable({ providedIn: 'root' })
 export class BoardService {
@@ -34,7 +36,7 @@ export class BoardService {
   // Standard column definitions for JIRA-like workflow
   private readonly defaultColumns: Column[] = [
     {
-      id: 'TODO',
+      id: 'todo',
       name: 'To Do',
       textColor: '#42526E',
       bgBadge: '#E9F5FE',
@@ -42,7 +44,7 @@ export class BoardService {
       color: '#0052CC',
     },
     {
-      id: 'IN_PROGRESS',
+      id: 'inprogress',
       name: 'In Progress',
       textColor: '#42526E',
       bgBadge: '#E9F5FE',
@@ -50,7 +52,7 @@ export class BoardService {
       color: '#0052CC',
     },
     {
-      id: 'REVIEW',
+      id: 'review',
       name: 'Review',
       textColor: '#42526E',
       bgBadge: '#FFF0B3',
@@ -58,7 +60,7 @@ export class BoardService {
       color: '#FF991F',
     },
     {
-      id: 'DONE',
+      id: 'done',
       name: 'Done',
       textColor: '#42526E',
       bgBadge: '#E4FCEf',
@@ -72,7 +74,8 @@ export class BoardService {
     private sprintService: SprintService,
     private issueService: IssueService,
     private projectService: ProjectService,
-    private userService: UserService
+    private userService: UserService,
+    private store: Store
   ) {}
 
   // Initialize board data for the current project and active sprint
@@ -219,6 +222,18 @@ export class BoardService {
   }
 
   createCard(card: Card): Observable<unknown> {
+    // Kiểm tra xem card này đã tồn tại trong danh sách cards chưa
+    // Nếu đã tồn tại, trả về không làm gì
+    const existingCards = this.cardsSubject.getValue();
+    const existingCard = existingCards.find((c) => c.id === card.id);
+    if (existingCard) {
+      console.log(
+        'Card already exists in local state, not creating again:',
+        card.id
+      );
+      return of(existingCard);
+    }
+
     const currentProject = this.projectService.getSelectedProject();
     if (!currentProject || !currentProject.id) {
       console.error('No project selected, cannot create card');
@@ -286,9 +301,37 @@ export class BoardService {
   }
 
   getComments(): Observable<Array<Comment>> {
-    // This should fetch comments for all cards in the board
-    // For now, we'll return an empty array and implement this later
-    return of([]);
+    // Sử dụng NgRx store selector để lấy selectedCardId
+    return this.store.select(selectSelectedCardId).pipe(
+      switchMap((cardId) => {
+        if (!cardId) {
+          console.log('No card selected, returning empty comments array');
+          return of([]);
+        }
+
+        // Call API để lấy comments cho task
+        return this.http
+          .get<Array<any>>(`${BASE_URL}/comments/task/${cardId}`)
+          .pipe(
+            tap((comments) =>
+              console.log('Received comments from API:', comments)
+            ),
+            map((comments) =>
+              comments.map((comment) => ({
+                id: comment.id,
+                uid: comment.userId,
+                content: comment.content,
+                cardId: comment.taskId,
+                createdAt: comment.createdAt,
+              }))
+            ),
+            catchError((error) => {
+              console.error('Error fetching comments:', error);
+              return of([]);
+            })
+          );
+      })
+    );
   }
 
   addComment(comment: Comment): Observable<unknown> {
@@ -297,9 +340,39 @@ export class BoardService {
       return of({});
     }
 
-    // This would call a comment service or API endpoint
-    // For now, we'll just simulate success
-    return of({ success: true });
+    // Lấy current project và user ID
+    const currentProject = this.projectService.getSelectedProject();
+    const userId = this.userService.getCurrentUserId();
+
+    if (!currentProject || !currentProject.id) {
+      console.error('No project selected, cannot add comment');
+      return of({});
+    }
+
+    // Gọi CommentService để tạo comment
+    // Chuyển đổi từ Card Comment sang Task Comment DTO
+    const createCommentDto = {
+      content: comment.content,
+      taskId: comment.cardId, // Trong BE, cardId chính là taskId
+    };
+
+    console.log('Calling comment service with:', createCommentDto);
+
+    // Import và inject CommentService vào constructor trước khi sử dụng!
+    return this.http
+      .post(`${BASE_URL}/comments`, createCommentDto, {
+        headers: new HttpHeaders({
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.userService['jwtService'].getToken()}`,
+        }),
+      })
+      .pipe(
+        tap((response) => console.log('Comment API response:', response)),
+        catchError((error) => {
+          console.error('Error creating comment:', error);
+          return throwError(() => new Error('Failed to create comment'));
+        })
+      );
   }
 
   // Helper methods

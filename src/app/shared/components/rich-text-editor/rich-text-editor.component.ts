@@ -1,5 +1,19 @@
-import { Component, EventEmitter, forwardRef, Input, OnInit, Output } from '@angular/core';
-import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  forwardRef,
+  Input,
+  OnInit,
+  Output,
+  ViewChild,
+} from '@angular/core';
+import {
+  ControlValueAccessor,
+  FormControl,
+  NG_VALUE_ACCESSOR,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { QuillModule, QuillModules } from 'ngx-quill';
 import { ContentChange } from 'ngx-quill/lib/quill-editor.component';
 
@@ -13,30 +27,38 @@ import { ContentChange } from 'ngx-quill/lib/quill-editor.component';
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => RichTextEditorComponent),
       multi: true,
-    }
-  ]
+    },
+  ],
 })
 export class RichTextEditorComponent implements OnInit, ControlValueAccessor {
   @Output() blur = new EventEmitter();
+  @Output() focus = new EventEmitter();
 
   @Input() editorControl: FormControl;
 
   quillConfig: QuillModules = {
     toolbar: [
-      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-
+      [{ header: [1, 2, 3, 4, 5, 6, false] }],
       ['bold', 'italic', 'underline'],
-      [{ 'color': [] }],
-      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-      ['link', 'image', 'video'],
-
+      [{ color: [] }],
+      [{ list: 'ordered' }, { list: 'bullet' }],
+      ['link', 'image'],
       ['blockquote', 'code-block'],
-
-      [{ 'indent': '-1' }, { 'indent': '+1' }],
-
-      [{ 'align': [] }],
-
-    ]
+      [{ indent: '-1' }, { indent: '+1' }],
+      [{ align: [] }],
+    ],
+    keyboard: {
+      bindings: {
+        enter: {
+          key: 13,
+          shiftKey: false,
+          handler: function (range: any, context: any) {
+            // Xử lý nếu muốn enter khi submit form
+            return true;
+          },
+        },
+      },
+    },
   };
 
   content!: string;
@@ -47,8 +69,7 @@ export class RichTextEditorComponent implements OnInit, ControlValueAccessor {
     this.editorControl = new FormControl();
   }
 
-  ngOnInit(): void {
-  }
+  ngOnInit(): void {}
 
   writeValue(content: string): void {
     this.editorControl.patchValue(content);
@@ -63,18 +84,37 @@ export class RichTextEditorComponent implements OnInit, ControlValueAccessor {
   }
 
   onContentChange(content: ContentChange): void {
-    this.onChanged(content.html);
+    if (content && content.html) {
+      this.onChanged(content.html);
+    } else {
+      this.onChanged('');
+    }
   }
 
   onFocus(): void {
-    this.onTouched();
+    if (this.onTouched) {
+      this.onTouched();
+    }
+    this.focus.emit();
   }
 
   onBlur(): void {
+    // Xử lý sự kiện blur để giúp form kiểm tra validation
+    if (this.onTouched) {
+      this.onTouched();
+    }
     this.blur.emit();
   }
 
   editorCreated(editor: any): void {
-    editor.focus();
+    if (editor) {
+      editor.focus();
+
+      // Thêm sự kiện keydown để xử lý Esc
+      editor.keyboard.addBinding({ key: 27 }, () => {
+        this.blur.emit();
+        return true;
+      });
+    }
   }
 }

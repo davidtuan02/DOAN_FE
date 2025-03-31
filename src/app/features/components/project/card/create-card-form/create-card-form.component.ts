@@ -9,6 +9,9 @@ import { Card } from '../../../../../core/models';
 import { CommonModule } from '@angular/common';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { SvgIconComponent } from '../../../../../shared/components';
+import { TextareaSubmitOnEnterDirective } from '../../../../../shared/directives/textarea-submit-on-enter.directive';
+import { AutofocusDirective } from '../../../../../shared/directives/autofocus.directive';
+import { DismissOnEscapeDirective } from '../../../../../shared/directives/dismiss-on-escape.directive';
 
 @Component({
   selector: 'app-create-card-form',
@@ -18,6 +21,9 @@ import { SvgIconComponent } from '../../../../../shared/components';
     ReactiveFormsModule,
     NzSelectModule,
     SvgIconComponent,
+    TextareaSubmitOnEnterDirective,
+    AutofocusDirective,
+    DismissOnEscapeDirective,
   ],
   templateUrl: './create-card-form.component.html',
   styleUrls: ['./create-card-form.component.scss'],
@@ -55,6 +61,7 @@ export class CreateCardFormComponent {
   }
 
   onSubmit(): void {
+    console.log('Submitting form:', this.createCardForm.value);
     if (this.createCardForm.valid) {
       this.createCard.emit(this.createCardForm.value);
       this.createCardForm.reset({

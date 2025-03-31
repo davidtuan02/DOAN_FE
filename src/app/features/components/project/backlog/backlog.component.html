@@ -464,24 +464,10 @@
 
         <!-- Create Issue Button -->
         <div class="flex items-center p-3 border-t border-gray-200 bg-gray-50">
-          <button
-            class="flex items-center text-sm text-gray-600 hover:text-gray-900"
-            (click)="showCreateIssueModal = true"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="w-4 h-4 mr-1"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                clip-rule="evenodd"
-              />
-            </svg>
-            Create issue
-          </button>
+          <app-create-card-form
+            (createCard)="onCreateCardInSprint($event, sprint.id)"
+            class="w-full"
+          ></app-create-card-form>
         </div>
       </div>
     </div>
@@ -785,1006 +771,129 @@
 
         <!-- Create Issue Button -->
         <div class="flex items-center p-3 border-t border-gray-200 bg-gray-50">
-          <button
-            class="flex items-center text-sm text-gray-600 hover:text-gray-900"
-            (click)="showCreateIssueModal = true"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="w-4 h-4 mr-1"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                clip-rule="evenodd"
-              />
-            </svg>
-            Create issue
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Issue Detail Sidebar -->
-  <div
-    *ngIf="selectedIssue"
-    class="fixed top-0 right-0 w-[500px] h-full bg-white border-l border-gray-200 shadow-lg z-50 overflow-y-auto"
-  >
-    <!-- Header -->
-    <div class="flex items-center justify-between p-4 border-b border-gray-200">
-      <div class="flex items-center">
-        <button
-          class="p-1 mr-2 text-gray-500 hover:text-gray-700"
-          (click)="closeIssueDetail()"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="w-6 h-6"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-
-        <div class="flex items-center">
-          <span class="text-sm font-medium text-gray-800">{{
-            selectedIssue.key
-          }}</span>
-          <button class="p-1 ml-2 text-gray-500 hover:text-gray-700">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="w-5 h-5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-              <path
-                d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
-              ></path>
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <div class="flex items-center">
-        <button class="p-1.5 text-gray-500 hover:text-gray-700">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="w-5 h-5"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path
-              d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"
-            ></path>
-          </svg>
-        </button>
-
-        <button class="p-1.5 text-gray-500 hover:text-gray-700">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="w-5 h-5"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path
-              d="M8.56 2.9A7 7 0 0 1 19 9v4m-2 4H2v-7a2 2 0 0 1 2-2h9.5M6 18v3m4-3v3m4-3v3"
-            ></path>
-          </svg>
-        </button>
-
-        <button class="p-1.5 text-gray-500 hover:text-gray-700">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="w-5 h-5"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path
-              d="M18 21l-7-7M3 21l7-7M21 7v1.5M21 13v1.5M21 19v1.5M3 13v1.5M3 7v1.5M3 19v1.5"
-            ></path>
-          </svg>
-        </button>
-
-        <button class="p-1.5 text-gray-500 hover:text-gray-700">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="w-5 h-5"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <circle cx="12" cy="12" r="1"></circle>
-            <circle cx="19" cy="12" r="1"></circle>
-            <circle cx="5" cy="12" r="1"></circle>
-          </svg>
-        </button>
-      </div>
-    </div>
-
-    <!-- Title -->
-    <div class="p-4 border-b border-gray-200">
-      <div *ngIf="!isEditingTitle" class="flex items-start">
-        <div [ngSwitch]="selectedIssue.type" class="flex-shrink-0 mr-3">
-          <svg
-            *ngSwitchCase="'Task'"
-            xmlns="http://www.w3.org/2000/svg"
-            class="w-5 h-5 text-blue-600"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-          >
-            <path
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"
-            />
-          </svg>
-          <svg
-            *ngSwitchCase="'Bug'"
-            xmlns="http://www.w3.org/2000/svg"
-            class="w-5 h-5 text-red-600"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-          >
-            <path
-              d="M20 8h-2.81c-.45-.78-1.07-1.45-1.82-1.96L16.9 4H20V2H13.9l-2-2h-3.8l-2 2H4v2h3.1l1.52 2.04c-.75.51-1.37 1.18-1.82 1.96H4v2h2.09c-.05.33-.09.66-.09 1v1H4v2h2v1c0 .34.04.67.09 1H4v2h2.81c1.04 1.79 2.97 3 5.19 3s4.15-1.21 5.19-3H20v-2h-2.09c.05-.33.09-.66.09-1v-1h2v-2h-2v-1c0-.34-.04-.67-.09-1H20V8zm-4 4v3c0 .22-.03.47-.07.7l-.1.65-.37.65c-.72 1.24-2.04 2-3.46 2s-2.74-.77-3.46-2l-.37-.64-.1-.65C8.03 15.48 8 15.23 8 15v-4c0-.23.03-.48.07-.7l.1-.65.37-.65c.3-.52.72-.97 1.21-1.31l.57-.39.74-.18c.31-.08.63-.12.94-.12.32 0 .63.04.95.12l.68.16.61.42c.5.34.91.78 1.21 1.31l.38.65.1.65c.04.22.07.47.07.69v1zm-6 2h4v2h-4v-2zm0-8h4v2h-4V6z"
-            />
-          </svg>
-        </div>
-
-        <div class="flex-grow">
-          <h2 class="text-xl font-medium text-gray-800">
-            {{ selectedIssue.title }}
-          </h2>
-          <button
-            class="mt-1 text-sm text-blue-600 hover:underline"
-            (click)="startEditingTitle()"
-          >
-            Edit
-          </button>
-        </div>
-      </div>
-
-      <div *ngIf="isEditingTitle" class="mt-2">
-        <textarea
-          [(ngModel)]="editingIssue.title"
-          class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-          rows="2"
-        ></textarea>
-        <div class="flex mt-2 space-x-2">
-          <button
-            class="px-3 py-1 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700"
-            (click)="saveTitle()"
-          >
-            Save
-          </button>
-          <button
-            class="px-3 py-1 text-sm text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
-            (click)="cancelEditingTitle()"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Actions Bar -->
-    <div class="p-4 border-b border-gray-200">
-      <div class="flex items-center text-sm">
-        <button
-          class="px-3 py-1 font-medium text-gray-700 rounded-md hover:bg-gray-100"
-        >
-          Add child ▾
-        </button>
-        <div class="w-px h-4 mx-3 bg-gray-300"></div>
-        <button
-          class="px-3 py-1 font-medium text-gray-700 rounded-md hover:bg-gray-100"
-        >
-          Link issue
-        </button>
-        <div class="w-px h-4 mx-3 bg-gray-300"></div>
-        <button
-          class="px-3 py-1 font-medium text-red-600 rounded-md hover:bg-red-50"
-          (click)="deleteIssue()"
-        >
-          Delete
-        </button>
-      </div>
-    </div>
-
-    <!-- Details Section -->
-    <div class="p-4 border-b border-gray-200">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-medium text-gray-800">Details</h3>
-        <button class="text-gray-500 hover:text-gray-700">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="w-5 h-5"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </button>
-      </div>
-
-      <div class="grid grid-cols-2 gap-4 text-sm">
-        <div>
-          <div class="mb-3">
-            <label class="block mb-1 text-gray-500">Reporter</label>
-            <div class="flex items-center">
-              <div class="flex-shrink-0 mr-2">
-                <div
-                  *ngIf="
-                    selectedIssue &&
-                    selectedIssue.reporter &&
-                    selectedIssue.reporter.name
-                  "
-                  class="flex items-center justify-center text-sm font-medium text-white bg-purple-600 rounded-full w-7 h-7"
-                >
-                  {{ getInitials(selectedIssue.reporter.name) }}
-                </div>
-                <div
-                  *ngIf="
-                    !selectedIssue ||
-                    !selectedIssue.reporter ||
-                    !selectedIssue.reporter.name
-                  "
-                  class="flex items-center justify-center text-sm font-medium text-white bg-gray-400 rounded-full w-7 h-7"
-                >
-                  ?
-                </div>
-              </div>
-              <div>
-                <span class="font-medium text-gray-800">{{
-                  selectedIssue &&
-                  selectedIssue.reporter &&
-                  selectedIssue.reporter.name
-                    ? selectedIssue.reporter.name
-                    : "Unassigned"
-                }}</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="mb-3">
-            <label class="block mb-1 text-gray-500">Priority</label>
-            <select
-              [(ngModel)]="editingIssue.priority"
-              (change)="
-                editingIssue.priority &&
-                  (selectedIssue.priority = editingIssue.priority)
-              "
-              class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="Highest">Highest</option>
-              <option value="High">High</option>
-              <option value="Medium">Medium</option>
-              <option value="Low">Low</option>
-              <option value="Lowest">Lowest</option>
-            </select>
-          </div>
-        </div>
-
-        <div>
-          <div class="mb-3">
-            <label class="block mb-1 text-gray-500">Assignee</label>
-
-            <!-- Assignee dropdown trigger -->
-            <div class="relative">
-              <div
-                class="flex items-center p-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50"
-                (click)="toggleAssigneeDropdown($event)"
-              >
-                <div class="flex-shrink-0 mr-2">
-                  <div
-                    *ngIf="
-                      selectedIssue &&
-                      selectedIssue.assignee &&
-                      selectedIssue.assignee.name
-                    "
-                    class="flex items-center justify-center text-sm font-medium text-white bg-blue-600 rounded-full w-7 h-7"
-                  >
-                    {{ getInitials(selectedIssue.assignee.name) }}
-                  </div>
-                  <div
-                    *ngIf="
-                      !selectedIssue ||
-                      !selectedIssue.assignee ||
-                      !selectedIssue.assignee.name
-                    "
-                    class="flex items-center justify-center text-sm font-medium text-gray-600 bg-gray-200 rounded-full w-7 h-7"
-                  >
-                    <svg
-                      class="w-4 h-4"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                        clip-rule="evenodd"
-                      ></path>
-                    </svg>
-                  </div>
-                </div>
-                <div class="flex-grow">
-                  <span class="font-medium text-gray-800">
-                    {{
-                      selectedIssue &&
-                      selectedIssue.assignee &&
-                      selectedIssue.assignee.name
-                        ? selectedIssue.assignee.name
-                        : "Unassigned"
-                    }}
-                  </span>
-                </div>
-                <div class="flex-shrink-0 ml-2">
-                  <svg
-                    class="w-5 h-5 text-gray-400"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fill-rule="evenodd"
-                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                      clip-rule="evenodd"
-                    />
-                  </svg>
-                </div>
-              </div>
-
-              <!-- Dropdown content -->
-              <div
-                *ngIf="showAssigneeDropdown"
-                class="absolute left-0 z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg"
-              >
-                <!-- Unassigned option -->
-                <div
-                  class="flex items-center p-2 cursor-pointer hover:bg-gray-100"
-                  (click)="unassignIssue(); toggleAssigneeDropdown($event)"
-                >
-                  <div class="flex-shrink-0 mr-2">
-                    <div
-                      class="flex items-center justify-center text-sm font-medium text-gray-600 bg-gray-200 rounded-full w-7 h-7"
-                    >
-                      <svg
-                        class="w-4 h-4"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          fill-rule="evenodd"
-                          d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                          clip-rule="evenodd"
-                        ></path>
-                      </svg>
-                    </div>
-                  </div>
-                  <div class="flex-grow">
-                    <span class="font-medium text-gray-800">Unassigned</span>
-                  </div>
-                </div>
-
-                <!-- Current user with "Assign to me" option -->
-                <div
-                  class="flex items-center p-2 cursor-pointer hover:bg-gray-100"
-                  (click)="assignToMe(); toggleAssigneeDropdown($event)"
-                >
-                  <div class="flex-shrink-0 mr-2">
-                    <div
-                      class="flex items-center justify-center text-sm font-medium text-white bg-purple-600 rounded-full w-7 h-7"
-                    >
-                      {{ currentUserInitials }}
-                    </div>
-                  </div>
-                  <div class="flex-grow">
-                    <span class="font-medium text-gray-800">{{
-                      currentUserName
-                    }}</span>
-                    <span class="ml-2 text-sm text-gray-500"
-                      >(Assign to me)</span
-                    >
-                  </div>
-                </div>
-
-                <!-- Automatic option -->
-                <div
-                  class="flex items-center p-2 cursor-pointer hover:bg-gray-100"
-                  (click)="assignAutomatic(); toggleAssigneeDropdown($event)"
-                >
-                  <div class="flex-shrink-0 mr-2">
-                    <div
-                      class="flex items-center justify-center text-sm font-medium text-gray-600 bg-gray-200 rounded-full w-7 h-7"
-                    >
-                      <svg
-                        class="w-4 h-4"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"
-                        ></path>
-                      </svg>
-                    </div>
-                  </div>
-                  <div class="flex-grow">
-                    <span class="font-medium text-gray-800">Automatic</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="mb-3">
-            <label class="block mb-1 text-gray-500">Status</label>
-            <div class="relative">
-              <select
-                [(ngModel)]="editingIssue.status"
-                (ngModelChange)="updateIssueStatus($event)"
-                class="w-full p-2 pl-10 border border-gray-300 rounded-md appearance-none focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="To Do">To Do</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Review">Review</option>
-                <option value="Done">Done</option>
-              </select>
-              <div
-                class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"
-              >
-                <span
-                  class="flex w-5 h-5 rounded-full"
-                  [ngClass]="{
-                    'bg-blue-500': editingIssue.status === 'To Do',
-                    'bg-yellow-500': editingIssue.status === 'In Progress',
-                    'bg-purple-500': editingIssue.status === 'Review',
-                    'bg-green-500': editingIssue.status === 'Done',
-                    'bg-gray-500': !editingIssue.status
-                  }"
-                ></span>
-              </div>
-              <div
-                class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none"
-              >
-                <svg
-                  class="w-5 h-5 text-gray-400"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-              </div>
-            </div>
-            <div class="mt-2 text-xs text-gray-500">
-              <div class="flex items-center">
-                <span
-                  class="w-2 h-2 mr-1 rounded-full"
-                  [ngClass]="getStatusColor(editingIssue.status)"
-                ></span>
-                Any status change is updated immediately
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Description Section -->
-    <div class="p-4 border-b border-gray-200">
-      <div class="flex items-center justify-between mb-2">
-        <h3 class="text-lg font-medium text-gray-800">Description</h3>
-      </div>
-
-      <div *ngIf="!isEditingDescription">
-        <div
-          *ngIf="selectedIssue.description"
-          class="prose text-gray-700 max-w-none"
-        >
-          {{ selectedIssue.description }}
-        </div>
-        <div *ngIf="!selectedIssue.description" class="italic text-gray-500">
-          No description provided
-        </div>
-        <button
-          class="mt-2 text-sm text-blue-600 hover:underline"
-          (click)="startEditingDescription()"
-        >
-          Edit
-        </button>
-      </div>
-
-      <div *ngIf="isEditingDescription" class="mt-2">
-        <textarea
-          [(ngModel)]="editingIssue.description"
-          class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-          rows="4"
-        ></textarea>
-        <div class="flex mt-2 space-x-2">
-          <button
-            class="px-3 py-1 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700"
-            (click)="saveDescriptionOnly()"
-          >
-            Save
-          </button>
-          <button
-            class="px-3 py-1 text-sm text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
-            (click)="cancelEditingDescription()"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Activity Section -->
-    <div class="p-4">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-medium text-gray-800">Activity</h3>
-        <div class="flex items-center">
-          <button
-            class="px-3 py-1 text-sm text-gray-700 rounded-md hover:bg-gray-100"
-            (click)="toggleCommentSortOrder()"
-          >
-            {{
-              commentSortOrder === "newest"
-                ? "Newest first ▾"
-                : "Oldest first ▾"
-            }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Comment input form -->
-      <div class="flex mt-4">
-        <div class="flex-shrink-0 mr-4">
-          <div
-            class="flex items-center justify-center w-8 h-8 text-white bg-indigo-600 rounded-full"
-          >
-            {{ currentUserInitials }}
-          </div>
-        </div>
-
-        <div class="flex-grow">
-          <textarea
-            placeholder="Add a comment..."
-            [(ngModel)]="newCommentContent"
-            class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-            rows="2"
-          ></textarea>
-
-          <div
-            class="flex items-center justify-between mt-2 text-sm text-gray-500"
-          >
-            <div>
-              <span>Press M to comment</span>
-            </div>
-            <button
-              class="px-3 py-1 font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
-              (click)="addComment()"
-              [disabled]="!newCommentContent.trim() || isLoadingComments"
-            >
-              Comment
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Comments list -->
-      <div class="mt-6">
-        <div *ngIf="isLoadingComments" class="py-4 text-center">
-          <span class="text-gray-500">Loading comments...</span>
-        </div>
-
-        <div
-          *ngIf="!isLoadingComments && comments.length === 0"
-          class="py-4 text-center"
-        >
-          <span class="text-gray-500"
-            >No comments yet. Be the first to comment!</span
-          >
-        </div>
-
-        <div
-          *ngFor="let comment of comments"
-          class="py-4 border-t border-gray-200 first:border-t-0"
-        >
-          <div class="flex">
-            <!-- User avatar -->
-            <div class="flex-shrink-0 mr-4">
-              <div
-                class="flex items-center justify-center w-8 h-8 text-white bg-indigo-600 rounded-full"
-                [ngStyle]="{
-                  'background-color':
-                    comment.userId === userService.getCurrentUserId()
-                      ? '#4f46e5'
-                      : '#9333ea'
-                }"
-              >
-                {{
-                  comment.user
-                    ? getInitials(
-                        comment.user.firstName + " " + comment.user.lastName
-                      )
-                    : "?"
-                }}
-              </div>
-            </div>
-
-            <!-- Comment content -->
-            <div class="flex-grow">
-              <div class="flex items-center">
-                <h4 class="text-sm font-semibold text-gray-900">
-                  {{
-                    comment.user
-                      ? comment.user.firstName + " " + comment.user.lastName
-                      : "Unknown user"
-                  }}
-                </h4>
-                <span class="ml-2 text-xs text-gray-500">
-                  {{ comment.createdAt | date : "MMM d, y, h:mm a" }}
-                </span>
-              </div>
-
-              <!-- View mode -->
-              <div *ngIf="editingCommentId !== comment.id" class="mt-1">
-                <p class="text-sm text-gray-700">{{ comment.content }}</p>
-
-                <!-- Actions for own comments only -->
-                <div
-                  *ngIf="comment.userId === userService.getCurrentUserId()"
-                  class="mt-2"
-                >
-                  <button
-                    class="mr-3 text-xs text-blue-600 hover:underline"
-                    (click)="startEditingComment(comment)"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    class="text-xs text-red-600 hover:underline"
-                    (click)="deleteComment(comment.id)"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-
-              <!-- Edit mode -->
-              <div *ngIf="editingCommentId === comment.id" class="mt-1">
-                <textarea
-                  [(ngModel)]="editingCommentContent"
-                  class="w-full p-2 text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  rows="3"
-                ></textarea>
-                <div class="flex mt-2 space-x-2">
-                  <button
-                    class="px-2 py-1 text-xs text-white bg-blue-600 rounded-md hover:bg-blue-700"
-                    (click)="saveComment(comment.id)"
-                    [disabled]="!editingCommentContent.trim()"
-                  >
-                    Save
-                  </button>
-                  <button
-                    class="px-2 py-1 text-xs text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
-                    (click)="cancelEditingComment()"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+          <app-create-card-form
+            (createCard)="onCreateCardInBacklog($event)"
+            class="w-full"
+          ></app-create-card-form>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Create Issue Modal -->
-  <div
-    *ngIf="showCreateIssueModal"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-gray-600 bg-opacity-50"
-  >
-    <div
-      class="w-full max-w-md mx-4 overflow-hidden bg-white rounded-lg shadow-lg"
-    >
-      <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-        <h3 class="text-lg font-medium text-gray-900">Create Issue</h3>
-      </div>
-      <div class="p-6">
-        <div class="mb-4">
-          <label
-            class="block mb-1 text-sm font-medium text-gray-700"
-            for="issueType"
-            >Issue Type</label
-          >
-          <select
-            id="issueType"
-            [(ngModel)]="newIssue.type"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          >
-            <option value="Epic">Epic</option>
-            <option value="Story">Story</option>
-            <option value="Task">Task</option>
-            <option value="Bug">Bug</option>
-            <option value="Sub-task">Sub-task</option>
-          </select>
-        </div>
-
-        <div class="mb-4">
-          <label
-            class="block mb-1 text-sm font-medium text-gray-700"
-            for="issueTitle"
-            >Summary <span class="text-red-500">*</span></label
-          >
-          <input
-            type="text"
-            id="issueTitle"
-            [(ngModel)]="newIssue.title"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            placeholder="Issue summary"
-          />
-        </div>
-        <div class="mb-4">
-          <label
-            class="block mb-1 text-sm font-medium text-gray-700"
-            for="issueDescription"
-            >Description</label
-          >
-          <textarea
-            id="issueDescription"
-            [(ngModel)]="newIssue.description"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            rows="3"
-            placeholder="Describe the issue..."
-          ></textarea>
-        </div>
-        <div class="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <label
-              class="block mb-1 text-sm font-medium text-gray-700"
-              for="issuePriority"
-              >Priority</label
-            >
-            <select
-              id="issuePriority"
-              [(ngModel)]="newIssue.priority"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              <option value="Highest">Highest</option>
-              <option value="High">High</option>
-              <option value="Medium">Medium</option>
-              <option value="Low">Low</option>
-              <option value="Lowest">Lowest</option>
-            </select>
-          </div>
-          <div>
-            <label
-              class="block mb-1 text-sm font-medium text-gray-700"
-              for="storyPoints"
-              >Story Points</label
-            >
-            <input
-              type="number"
-              id="storyPoints"
-              [(ngModel)]="newIssue.storyPoints"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              min="0"
-              max="100"
-            />
-          </div>
-        </div>
-        <div class="mt-4">
-          <label
-            class="block mb-1 text-sm font-medium text-gray-700"
-            for="sprintSelect"
-            >Sprint</label
-          >
-          <select
-            id="sprintSelect"
-            [(ngModel)]="newIssue.sprintId"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          >
-            <option [ngValue]="undefined">Backlog</option>
-            <option *ngFor="let sprint of sprints" [value]="sprint.id">
-              {{ sprint.name }}
-            </option>
-          </select>
-        </div>
-      </div>
-      <div
-        class="flex justify-end px-6 py-4 border-t border-gray-200 bg-gray-50"
-      >
-        <button
-          type="button"
-          (click)="showCreateIssueModal = false"
-          class="px-4 py-2 mr-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          (click)="createIssue()"
-          class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          [disabled]="!newIssue.title"
-        >
-          Create
-        </button>
-      </div>
-    </div>
-  </div>
+  <!-- Xóa modal cũ -->
 
   <!-- Create Sprint Modal -->
   <div
     *ngIf="showCreateSprintModal"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-gray-600 bg-opacity-50"
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50"
   >
-    <div
-      class="w-full max-w-md mx-4 overflow-hidden bg-white rounded-lg shadow-lg"
-    >
-      <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-        <h3 class="text-lg font-medium text-gray-900">
-          {{ isEditingExistingSprint ? "Edit Sprint" : "Create Sprint" }}
-        </h3>
-      </div>
-      <div class="p-6">
-        <!-- Error message display -->
-        <div
-          *ngIf="errorMessage"
-          class="p-3 mb-4 text-red-700 bg-red-100 rounded-md"
+    <div class="w-full max-w-md p-6 bg-white rounded-md shadow-xl">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-semibold text-gray-800">
+          {{ isEditingExistingSprint ? "Edit Sprint" : "Create New Sprint" }}
+        </h2>
+        <button
+          class="text-gray-500 hover:text-gray-700"
+          (click)="showCreateSprintModal = false; resetSprintForm()"
         >
-          <p class="text-sm">{{ errorMessage }}</p>
-        </div>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-6 h-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
 
-        <div class="mb-4">
+      <div class="mb-4">
+        <label
+          for="sprint-name"
+          class="block mb-2 text-sm font-medium text-gray-700"
+          >Sprint Name</label
+        >
+        <input
+          type="text"
+          id="sprint-name"
+          [(ngModel)]="newSprint.name"
+          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Sprint name"
+          required
+        />
+      </div>
+
+      <div class="mb-4">
+        <label
+          for="sprint-goal"
+          class="block mb-2 text-sm font-medium text-gray-700"
+          >Sprint Goal</label
+        >
+        <textarea
+          id="sprint-goal"
+          [(ngModel)]="newSprint.goal"
+          rows="3"
+          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="What do you want to achieve in this sprint?"
+        ></textarea>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <div>
           <label
-            class="block mb-1 text-sm font-medium text-gray-700"
-            for="sprintName"
-            >Sprint Name <span class="text-red-500">*</span></label
+            for="start-date"
+            class="block mb-2 text-sm font-medium text-gray-700"
+            >Start Date</label
           >
           <input
-            type="text"
-            id="sprintName"
-            [(ngModel)]="newSprint.name"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            placeholder="e.g. SCRUM Sprint 1"
-            [disabled]="isLoading"
+            type="date"
+            id="start-date"
+            [value]="getDateForInput(newSprint.startDate)"
+            (change)="onStartDateChange($event)"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
           />
         </div>
 
-        <div class="mb-4">
-          <label
-            class="block mb-1 text-sm font-medium text-gray-700"
-            for="sprintGoal"
-            >Sprint Goal</label
-          >
-          <textarea
-            id="sprintGoal"
-            [(ngModel)]="newSprint.goal"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            placeholder="What do you want to achieve in this sprint?"
-            rows="2"
-            [disabled]="isLoading"
-          ></textarea>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <label
-              class="block mb-1 text-sm font-medium text-gray-700"
-              for="startDate"
-              >Start Date <span class="text-red-500">*</span></label
-            >
-            <input
-              type="date"
-              id="startDate"
-              [value]="getDateForInput(newSprint.startDate)"
-              (change)="onStartDateChange($event)"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              [disabled]="isLoading"
-            />
-          </div>
-          <div>
-            <label
-              class="block mb-1 text-sm font-medium text-gray-700"
-              for="endDate"
-              >End Date <span class="text-red-500">*</span></label
-            >
-            <input
-              type="date"
-              id="endDate"
-              [value]="getDateForInput(newSprint.endDate)"
-              (change)="onEndDateChange($event)"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              [disabled]="isLoading"
-            />
-          </div>
-        </div>
         <div>
           <label
-            class="block mb-1 text-sm font-medium text-gray-700"
-            for="sprintStatus"
-            >Status</label
+            for="end-date"
+            class="block mb-2 text-sm font-medium text-gray-700"
+            >End Date</label
           >
-          <select
-            id="sprintStatus"
-            [(ngModel)]="newSprint.status"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            [disabled]="isLoading"
-          >
-            <option value="Planning">Planning</option>
-            <option value="Active">Active</option>
-            <option value="Completed">Completed</option>
-          </select>
-        </div>
-
-        <!-- Board ID info if available -->
-        <div *ngIf="currentBoardId" class="mt-4">
-          <p class="text-xs text-gray-500">Board ID: {{ currentBoardId }}</p>
+          <input
+            type="date"
+            id="end-date"
+            [value]="getDateForInput(newSprint.endDate)"
+            (change)="onEndDateChange($event)"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
         </div>
       </div>
-      <div
-        class="flex justify-end px-6 py-4 border-t border-gray-200 bg-gray-50"
-      >
+
+      <div class="flex justify-end gap-3">
         <button
-          type="button"
-          (click)="
-            showCreateSprintModal = false;
-            isEditingExistingSprint = false;
-            resetSprintForm()
-          "
-          class="px-4 py-2 mr-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          [disabled]="isLoading"
+          class="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+          (click)="showCreateSprintModal = false; resetSprintForm()"
         >
           Cancel
         </button>
         <button
-          type="button"
+          [disabled]="isCreatingSprint"
+          class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
           (click)="createSprint()"
-          class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          [disabled]="!newSprint.name || isLoading"
         >
-          <span *ngIf="isLoading" class="mr-2">
+          <span *ngIf="isCreatingSprint" class="mr-2">
             <svg
-              class="w-4 h-4 mr-2 -ml-1 text-white animate-spin"
+              class="inline-block w-4 h-4 animate-spin"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
@@ -1804,17 +913,11 @@
               ></path>
             </svg>
           </span>
-          {{
-            isLoading
-              ? isEditingExistingSprint
-                ? "Updating..."
-                : "Creating..."
-              : isEditingExistingSprint
-              ? "Update"
-              : "Create"
-          }}
+          {{ isEditingExistingSprint ? "Update Sprint" : "Create Sprint" }}
         </button>
       </div>
     </div>
   </div>
+
+  <!-- End of content -->
 </div>

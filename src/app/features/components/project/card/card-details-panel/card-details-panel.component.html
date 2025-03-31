@@ -16,11 +16,12 @@
       [nzValue]="c.id"
       *ngFor="let c of columns"
     >
-      <div class="w-48">
-        <span
-          class="px-1 py-0 font-medium leading-none uppercase bg-blue-500 rounded text-xxs"
-          [ngStyle]="{ backgroundColor: c.bgBadge, color: c.textColor }"
-        >
+      <div class="w-48 flex gap-2 items-center py-1">
+        <div
+          class="w-2 h-2 rounded-full"
+          [ngStyle]="{ backgroundColor: c.bgBadge }"
+        ></div>
+        <span class="font-medium leading-none">
           {{ c.name }}
         </span>
       </div>
@@ -35,7 +36,7 @@
 
   <ng-template #defaultTemplate let-selected>
     <div class="font-medium text-center text-white capitalize">
-      {{ selected.nzLabel.toLowerCase() }}
+      {{ selected.nzLabel }}
     </div>
   </ng-template>
 

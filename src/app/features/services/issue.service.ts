@@ -139,7 +139,7 @@ export class IssueService {
     // Convert from UI model to API model
     const createTaskDto: any = {
       taskName: issue.title || '',
-      taskDescription: issue.description || '',
+      taskDescription: issue.description || ' ',
       status: this.mapStatusToBackend(issue.status || 'To Do'),
       responsableName: userId || 'Unassigned',
     };

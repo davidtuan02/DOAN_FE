@@ -7,6 +7,7 @@ import {
   map,
   mergeMap,
   withLatestFrom,
+  tap,
 } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { select, Store } from '@ngrx/store';
@@ -64,12 +65,28 @@ export class CardEffects {
   updateCard$ = createEffect(() =>
     this.actions$.pipe(
       ofType(actions.updateCard),
-      mergeMap(({ partial }) =>
-        this.boardService.updateCard(partial).pipe(
+      withLatestFrom(
+        this.store.pipe(select((state: any) => state.cards.entities))
+      ),
+      mergeMap(([{ partial }, entities]) => {
+        // Nếu card chưa tồn tại trong store, chúng ta cần thêm nó
+        const cardExists = !!entities[partial.id];
+
+        if (!cardExists) {
+          console.log(
+            'Card không tồn tại trong store, updating with new card:',
+            partial.id
+          );
+          // Card không tồn tại, chỉ trả về action success mà không cần gọi API
+          return of(actions.updateCardSuccess({ partial }));
+        }
+
+        // Card đã tồn tại, tiến hành cập nhật
+        return this.boardService.updateCard(partial).pipe(
           map((_) => actions.updateCardSuccess({ partial })),
           catchError((error) => of(actions.updateCardError({ error })))
-        )
-      )
+        );
+      })
     )
   );
 
@@ -103,6 +120,21 @@ export class CardEffects {
       withLatestFrom(this.store.pipe(select(selectSelectedCardId))),
       filter(([_, cardId]) => !!cardId),
       mergeMap(([{ comment }, cardId]) => {
+        // Kiểm tra nếu content là rỗng hoặc chỉ chứa HTML trống
+        if (
+          !comment.content ||
+          comment.content.trim() === '' ||
+          comment.content === '<p></p>' ||
+          comment.content === '<p><br></p>'
+        ) {
+          // Trả về action lỗi nếu comment rỗng
+          return of(
+            actions.addCommentError({
+              error: 'Comment content cannot be empty',
+            })
+          );
+        }
+
         const newComment: Comment = {
           ...comment,
           id: nanoid(),
@@ -110,9 +142,26 @@ export class CardEffects {
           createdAt: new Date().toISOString(),
         };
 
+        console.log(
+          'Effect: Adding new comment to card:',
+          cardId,
+          'Content:',
+          comment.content
+        );
+
         return this.boardService.addComment(newComment).pipe(
+          tap((response) =>
+            console.log('Comment API response in effect:', response)
+          ),
           map((_) => actions.addCommentSuccess({ comment: newComment })),
-          catchError((error) => of(actions.addCommentError({ error })))
+          catchError((error) => {
+            console.error('Error in addComment effect:', error);
+            return of(
+              actions.addCommentError({
+                error: error.message || 'Failed to add comment',
+              })
+            );
+          })
         );
       })
     )

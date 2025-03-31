@@ -1,4 +1,9 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  HostListener,
+  ViewContainerRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -9,7 +14,7 @@ import {
 } from '@angular/cdk/drag-drop';
 import { BacklogService, Issue, Sprint } from './backlog.service';
 import { ProjectService } from '../../../../core/services/project.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { BASE_URL } from '../../../../core/constants/api.const';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -18,11 +23,19 @@ import { map, catchError } from 'rxjs/operators';
 import { IssueService } from '../../../services/issue.service';
 import { UserService } from '../../../../core/services/user.service';
 import { CommentService, Comment } from '../../../services/comment.service';
+import { NzModalService } from 'ng-zorro-antd/modal';
+import { NzModalRef } from 'ng-zorro-antd/modal/modal-ref';
+import { CardDetailsComponent } from '../../project/card/card-details/card-details.component';
+import { Store } from '@ngrx/store';
+import * as fromStore from '../../../../core/store';
+import { CardTypesEnum } from '../../../../core/enums';
+import { CreateCardFormComponent } from '../../project/card/create-card-form/create-card-form.component';
+import { nanoid } from 'nanoid';
 
 @Component({
   selector: 'app-backlog',
   standalone: true,
-  imports: [CommonModule, FormsModule, DragDropModule],
+  imports: [CommonModule, FormsModule, DragDropModule, CreateCardFormComponent],
   templateUrl: './backlog.component.html',
 })
 export class BacklogComponent implements OnInit {
@@ -115,15 +128,21 @@ export class BacklogComponent implements OnInit {
   isLoadingComments = false;
   commentSortOrder: 'newest' | 'oldest' = 'newest';
 
+  modalRef!: NzModalRef;
+
   constructor(
     private backlogService: BacklogService,
     private projectService: ProjectService,
     private route: ActivatedRoute,
+    private router: Router,
     private http: HttpClient,
     private snackBar: MatSnackBar,
     private issueService: IssueService,
     public userService: UserService,
-    private commentService: CommentService
+    private commentService: CommentService,
+    private modal: NzModalService,
+    private viewContainerRef: ViewContainerRef,
+    private store: Store<fromStore.AppState>
   ) {}
 
   ngOnInit(): void {
@@ -326,16 +345,115 @@ export class BacklogComponent implements OnInit {
 
   // Issue Detail Methods
   openIssueDetail(issue: Issue): void {
-    this.selectedIssue = issue;
-    this.editingIssue = { ...issue };
-    this.loadComments(); // Load comments when opening issue detail
+    // Close existing modal if open
+    if (this.modalRef) {
+      this.modalRef.close();
+    }
+
+    // Dispatch action to get users data if needed
+    this.store.dispatch(fromStore.getUsers());
+
+    // Map issue type to CardTypesEnum
+    let cardType: CardTypesEnum;
+    switch (issue.type) {
+      case 'Bug':
+        cardType = CardTypesEnum.BUG;
+        break;
+      case 'Story':
+        cardType = CardTypesEnum.STORY;
+        break;
+      default:
+        cardType = CardTypesEnum.TASK;
+    }
+
+    const card = {
+      id: issue.id,
+      title: issue.title,
+      description: issue.description || '',
+      type: cardType, // Now using CardTypesEnum
+      priority: issue.priority || 'Medium',
+      status: issue.status || 'To Do',
+      // Map IDs correctly
+      assigneeId: issue.assignee?.id || '',
+      reporterId: issue.reporter?.id || '',
+      // Map columnId based on status
+      columnId:
+        issue.status === 'To Do'
+          ? 'todo'
+          : issue.status === 'In Progress'
+          ? 'inprogress'
+          : issue.status === 'Review'
+          ? 'review'
+          : issue.status === 'Done'
+          ? 'done'
+          : 'todo',
+      // Parse ordinalId from key (e.g., "PROJECT-123" to 123)
+      ordinalId: issue.key ? parseInt(issue.key.split('-')[1]) : 0,
+      // Add other required fields
+      labels: issue.labels || [],
+      environment: '',
+      startDate: issue.created
+        ? new Date(issue.created).toISOString()
+        : new Date().toISOString(),
+      dueDate: issue.dueDate ? new Date(issue.dueDate).toISOString() : '',
+      createdAt: issue.created
+        ? new Date(issue.created).toISOString()
+        : new Date().toISOString(),
+      updatedAt: issue.updated
+        ? new Date(issue.updated).toISOString()
+        : new Date().toISOString(),
+    };
+
+    // Đảm bảo card được thêm vào store trước khi hiển thị modal,
+    // nhưng không gọi API tạo mới (createCardSuccess sẽ thêm vào store mà không gọi API)
+    this.store.dispatch(fromStore.createCardSuccess({ card }));
+
+    // Set the selected card in the store
+    this.store.dispatch(fromStore.setSelectedCardId({ id: issue.id }));
+
+    // Load other related data if needed
+    this.store.dispatch(fromStore.getComments());
+    this.store.dispatch(fromStore.getLabels());
+
+    // Open card details in modal
+    const cardComponent = this.modal.create({
+      nzContent: CardDetailsComponent,
+      nzClosable: false,
+      nzAutofocus: null,
+      nzViewContainerRef: this.viewContainerRef,
+      nzWidth: '85%',
+      nzFooter: null,
+      nzStyle: { top: '5%' },
+      nzMaskClosable: false,
+      nzData: {
+        onClose: () => this.closeIssueDetail(),
+      },
+    });
+
+    this.modalRef = cardComponent;
+
+    // Update URL with selected issue (optional)
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { selectedIssue: issue.id },
+      queryParamsHandling: 'merge',
+    });
   }
 
   closeIssueDetail(): void {
-    this.selectedIssue = null;
-    this.editingIssue = {};
-    this.isEditingTitle = false;
-    this.isEditingDescription = false;
+    if (this.modalRef) {
+      this.modalRef.close();
+    }
+
+    // Clear selection in store
+    this.store.dispatch(fromStore.setSelectedCardId({ id: null }));
+
+    // Remove from URL
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { selectedIssue: null },
+      queryParamsHandling: 'merge',
+    });
   }
 
   // Title Editing
@@ -527,6 +645,55 @@ export class BacklogComponent implements OnInit {
   }
 
   // CRUD Operations
+  createIssue(): void {
+    if (!this.newIssue.title) {
+      this.snackBar.open('Please enter a title for the issue', 'Close', {
+        duration: 3000,
+      });
+      return;
+    }
+
+    this.isLoading = true;
+
+    // Prepopulate fields if missing
+    const issueToCreate = {
+      ...this.newIssue,
+      description: this.newIssue.description || '',
+      priority: this.newIssue.priority || 'Medium',
+      status: this.newIssue.status || 'To Do',
+      type: this.newIssue.type || 'Task',
+    };
+
+    this.issueService
+      .createIssue(this.currentProjectId, issueToCreate)
+      .pipe(finalize(() => (this.isLoading = false)))
+      .subscribe({
+        next: (createdIssue) => {
+          console.log('Issue created successfully:', createdIssue);
+
+          // Cập nhật state thống nhất qua backlogService thay vì thêm trực tiếp
+          this.backlogService.updateLocalIssueState(createdIssue, 'create');
+
+          // Reset form
+          this.newIssue = {
+            type: 'Task',
+            priority: 'Medium',
+            status: 'To Do',
+            storyPoints: 0,
+          };
+
+          this.showCreateIssueModal = false;
+          this.snackBar.open('Issue created successfully', 'Close', {
+            duration: 3000,
+          });
+        },
+        error: (err) => {
+          console.error('Error creating issue:', err);
+          this.handleError(err, 'Failed to create issue');
+        },
+      });
+  }
+
   updateIssue(issue: Issue): void {
     if (!issue || !issue.id) {
       this.snackBar.open('Invalid issue data', 'Close', { duration: 3000 });
@@ -541,10 +708,13 @@ export class BacklogComponent implements OnInit {
       .subscribe({
         next: (updatedIssue) => {
           console.log('Issue updated successfully:', updatedIssue);
-          this.updateIssueInLists(updatedIssue);
+
+          // Cập nhật state thống nhất qua backlogService thay vì cập nhật trực tiếp
+          this.backlogService.updateLocalIssueState(updatedIssue, 'update');
 
           if (this.selectedIssue && this.selectedIssue.id === updatedIssue.id) {
             this.selectedIssue = updatedIssue;
+            this.editingIssue = { ...updatedIssue };
           }
 
           this.snackBar.open('Issue updated successfully', 'Close', {
@@ -573,8 +743,11 @@ export class BacklogComponent implements OnInit {
             next: () => {
               console.log('Issue deleted successfully');
 
-              // Remove the issue from UI lists
-              this.removeIssueFromLists(this.selectedIssue!.id);
+              // Lưu bản sao của selected issue trước khi nó bị xóa
+              const deletedIssue = { ...this.selectedIssue! };
+
+              // Cập nhật state thống nhất qua backlogService thay vì xóa trực tiếp
+              this.backlogService.updateLocalIssueState(deletedIssue, 'delete');
 
               // Close the issue details panel
               this.closeIssueDetail();
@@ -592,99 +765,322 @@ export class BacklogComponent implements OnInit {
     }
   }
 
-  createIssue(): void {
-    if (!this.newIssue.title) {
-      this.snackBar.open('Please enter a title for the issue', 'Close', {
+  // Update issue status from dropdown
+  updateIssueStatus(status: 'To Do' | 'In Progress' | 'Review' | 'Done'): void {
+    if (!this.selectedIssue || !this.editingIssue) {
+      this.snackBar.open('Cannot update: no issue selected', 'Close', {
         duration: 3000,
       });
       return;
     }
 
+    // If status doesn't change, no need to call API
+    if (status === this.selectedIssue.status) {
+      return;
+    }
+
+    const oldStatus = this.selectedIssue.status;
+
+    // Update UI first for smooth experience
+    this.editingIssue.status = status;
+    this.selectedIssue.status = status;
+
+    // Show loading notification
+    const loadingSnackbarRef = this.snackBar.open(
+      `Updating status: ${oldStatus} → ${status}`,
+      '',
+      {
+        duration: undefined,
+      }
+    );
+
     this.isLoading = true;
-
-    // Prepopulate fields if missing
-    const issueToCreate = {
-      ...this.newIssue,
-      description: this.newIssue.description || '',
-      priority: this.newIssue.priority || 'Medium',
-      status: this.newIssue.status || 'To Do',
-      type: this.newIssue.type || 'Task',
-    };
-
     this.issueService
-      .createIssue(this.currentProjectId, issueToCreate)
-      .pipe(finalize(() => (this.isLoading = false)))
+      .updateIssueStatus(this.selectedIssue.id, status)
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          loadingSnackbarRef.dismiss();
+        })
+      )
       .subscribe({
-        next: (createdIssue) => {
-          console.log('Issue created successfully:', createdIssue);
+        next: (updatedIssue) => {
+          // Update issue in all lists
+          this.updateIssueInLists(updatedIssue);
 
-          // Add the issue to the appropriate list based on sprint
-          if (this.newIssue.sprintId) {
-            const sprint = this.sprints.find(
-              (s) => s.id === this.newIssue.sprintId
-            );
-            if (sprint) {
-              sprint.issues.push(createdIssue);
-              // Update sprint stats
-              if (createdIssue.storyPoints) {
-                sprint.totalStoryPoints += createdIssue.storyPoints;
-              }
-            }
-          } else {
-            this.backlogIssues.push(createdIssue);
-          }
+          // Update in store for card details view consistency
+          const card = this.convertIssueToCard(updatedIssue);
+          this.store.dispatch(fromStore.updateCard({ partial: card }));
 
-          // Reset form
-          this.newIssue = {
-            type: 'Task',
-            priority: 'Medium',
-            status: 'To Do',
-            storyPoints: 0,
-          };
-
-          this.showCreateIssueModal = false;
-          this.snackBar.open('Issue created successfully', 'Close', {
+          this.snackBar.open(`Status updated to: ${status}`, 'Close', {
             duration: 3000,
           });
         },
         error: (err) => {
-          console.error('Error creating issue:', err);
-          this.handleError(err, 'Failed to create issue');
+          // Restore old status if error
+          if (this.editingIssue) this.editingIssue.status = oldStatus;
+          if (this.selectedIssue) this.selectedIssue.status = oldStatus;
+
+          this.handleError(err, 'Failed to update status');
         },
       });
   }
 
-  // Mới: Phương thức để cập nhật issue trong các danh sách UI
+  // Helper method to convert Issue to Card for store operations
+  private convertIssueToCard(issue: Issue): any {
+    // Map issue type to CardTypesEnum
+    const cardType = this.mapIssueTypeToCardType(issue.type);
+
+    return {
+      id: issue.id,
+      title: issue.title,
+      description: issue.description || '',
+      type: cardType,
+      priority: issue.priority || 'Medium',
+      status: issue.status || 'To Do',
+      assigneeId: issue.assignee?.id || '',
+      reporterId: issue.reporter?.id || '',
+      columnId:
+        issue.status === 'To Do'
+          ? 'todo'
+          : issue.status === 'In Progress'
+          ? 'inprogress'
+          : issue.status === 'Review'
+          ? 'review'
+          : issue.status === 'Done'
+          ? 'done'
+          : 'todo',
+      ordinalId: issue.key ? parseInt(issue.key.split('-')[1]) : 0,
+      labels: issue.labels || [],
+      environment: '',
+      startDate: issue.created
+        ? new Date(issue.created).toISOString()
+        : new Date().toISOString(),
+      dueDate: issue.dueDate ? new Date(issue.dueDate).toISOString() : '',
+      createdAt: issue.created
+        ? new Date(issue.created).toISOString()
+        : new Date().toISOString(),
+      updatedAt: issue.updated
+        ? new Date(issue.updated).toISOString()
+        : new Date().toISOString(),
+    };
+  }
+
+  // Helper to map Issue type to CardTypesEnum
+  private mapIssueTypeToCardType(issueType: string): CardTypesEnum {
+    switch (issueType) {
+      case 'Bug':
+        return CardTypesEnum.BUG;
+      case 'Story':
+        return CardTypesEnum.STORY;
+      default:
+        return CardTypesEnum.TASK;
+    }
+  }
+
+  // New method for quick status update from the list view without opening details
+  quickUpdateStatus(
+    event: Event,
+    issue: Issue,
+    newStatus: 'To Do' | 'In Progress' | 'Review' | 'Done'
+  ): void {
+    event.stopPropagation(); // Prevent opening issue detail
+
+    if (issue.status === newStatus) return;
+
+    const oldStatus = issue.status;
+
+    // Update UI immediately
+    issue.status = newStatus;
+
+    // Show loading notification
+    const loadingSnackbarRef = this.snackBar.open(
+      `Updating status: ${oldStatus} → ${newStatus}`,
+      '',
+      {
+        duration: undefined,
+      }
+    );
+
+    this.issueService
+      .updateIssueStatus(issue.id, newStatus)
+      .pipe(
+        finalize(() => {
+          loadingSnackbarRef.dismiss();
+        })
+      )
+      .subscribe({
+        next: (updatedIssue) => {
+          // Update in lists
+          this.updateIssueInLists(updatedIssue);
+
+          // Update in store for consistency
+          const card = this.convertIssueToCard(updatedIssue);
+          this.store.dispatch(fromStore.updateCard({ partial: card }));
+
+          this.snackBar.open(`Status updated to: ${newStatus}`, 'Close', {
+            duration: 3000,
+          });
+        },
+        error: (err) => {
+          // Revert UI change on error
+          issue.status = oldStatus;
+          this.handleError(err, 'Failed to update status');
+        },
+      });
+  }
+
+  // Assign issue to user
+  assignToUser(issue: Issue, userId: string): void {
+    if (userId) {
+      this.isLoading = true;
+      this.issueService
+        .assignIssue(issue.id, userId)
+        .pipe(finalize(() => (this.isLoading = false)))
+        .subscribe({
+          next: (updatedIssue) => {
+            this.updateIssueInLists(updatedIssue);
+
+            // Update in store
+            const card = this.convertIssueToCard(updatedIssue);
+            this.store.dispatch(fromStore.updateCard({ partial: card }));
+
+            this.snackBar.open('Issue assigned successfully', 'Close', {
+              duration: 3000,
+            });
+          },
+          error: (err) => {
+            this.handleError(err, 'Failed to assign issue');
+          },
+        });
+    }
+  }
+
+  // Improved method to update issue in all lists and store
   private updateIssueInLists(updatedIssue: Issue): void {
+    // Kiểm tra xem issue đã tồn tại trong danh sách backlog chưa
     const backlogIndex = this.backlogIssues.findIndex(
       (i) => i.id === updatedIssue.id
     );
+
+    // Nếu issue đã có trong backlog, thì cập nhật nó
     if (backlogIndex >= 0) {
       this.backlogIssues[backlogIndex] = updatedIssue;
     }
 
+    // Kiểm tra xem issue thuộc sprint nào
+    let foundInSprint = false;
+
+    // Cập nhật trong các sprint list
     for (const sprint of this.sprints) {
       const sprintIssueIndex = sprint.issues.findIndex(
         (i) => i.id === updatedIssue.id
       );
+
       if (sprintIssueIndex >= 0) {
+        // Nếu issue đã có trong sprint, thì cập nhật nó
         sprint.issues[sprintIssueIndex] = updatedIssue;
+        foundInSprint = true;
+
+        // Cập nhật metrics của sprint nếu cần
+        this.recalculateSprintMetrics(sprint);
+
+        // Nếu issue đang được cập nhật có sprintId khác, ta cần di chuyển nó
+        if (updatedIssue.sprintId && updatedIssue.sprintId !== sprint.id) {
+          // Xóa issue khỏi sprint hiện tại
+          sprint.issues = sprint.issues.filter((i) => i.id !== updatedIssue.id);
+          this.recalculateSprintMetrics(sprint);
+
+          // Thêm vào sprint mới
+          const targetSprint = this.sprints.find(
+            (s) => s.id === updatedIssue.sprintId
+          );
+          if (targetSprint) {
+            targetSprint.issues.push(updatedIssue);
+            this.recalculateSprintMetrics(targetSprint);
+          } else {
+            // Nếu không tìm thấy sprint mới, thêm vào backlog
+            if (backlogIndex === -1) {
+              this.backlogIssues.push(updatedIssue);
+            }
+          }
+        }
+
         break;
       }
     }
 
+    // Nếu issue không thuộc sprint nào và không có trong backlog, thêm vào backlog
+    if (!foundInSprint && backlogIndex === -1 && !updatedIssue.sprintId) {
+      this.backlogIssues.push(updatedIssue);
+    }
+
+    // Nếu issue có sprintId mới nhưng chưa được thêm vào sprint
+    if (!foundInSprint && updatedIssue.sprintId) {
+      const targetSprint = this.sprints.find(
+        (s) => s.id === updatedIssue.sprintId
+      );
+      if (targetSprint) {
+        // Kiểm tra xem issue đã tồn tại trong sprint mới chưa
+        const alreadyExists = targetSprint.issues.some(
+          (i) => i.id === updatedIssue.id
+        );
+        if (!alreadyExists) {
+          targetSprint.issues.push(updatedIssue);
+          this.recalculateSprintMetrics(targetSprint);
+        }
+
+        // Xóa khỏi backlog nếu đã tồn tại trong đó
+        if (backlogIndex >= 0) {
+          this.backlogIssues.splice(backlogIndex, 1);
+        }
+      }
+    }
+
+    // Cập nhật selectedIssue và editingIssue nếu cần
     if (this.selectedIssue && this.selectedIssue.id === updatedIssue.id) {
       this.selectedIssue = updatedIssue;
       this.editingIssue = { ...updatedIssue };
     }
   }
 
-  // Mới: Phương thức để xóa issue khỏi các danh sách UI
+  // Helper method to recalculate sprint metrics
+  private recalculateSprintMetrics(sprint: Sprint): void {
+    sprint.totalStoryPoints = sprint.issues.reduce(
+      (sum, issue) => sum + (issue.storyPoints || 0),
+      0
+    );
+
+    sprint.completedStoryPoints = sprint.issues
+      .filter((issue) => issue.status === 'Done')
+      .reduce((sum, issue) => sum + (issue.storyPoints || 0), 0);
+  }
+
+  // Improved method to remove issue from all lists and store
   private removeIssueFromLists(issueId: string): void {
+    // Find issue in backlog first
+    const backlogIssue = this.backlogIssues.find((i) => i.id === issueId);
+
+    // Remove from backlog list
     this.backlogIssues = this.backlogIssues.filter((i) => i.id !== issueId);
 
+    // Remove from sprint lists
     for (const sprint of this.sprints) {
-      sprint.issues = sprint.issues.filter((i) => i.id !== issueId);
+      const issueToRemove = sprint.issues.find((i) => i.id === issueId);
+
+      if (issueToRemove) {
+        // Update sprint metrics before removing
+        if (issueToRemove.storyPoints) {
+          sprint.totalStoryPoints -= issueToRemove.storyPoints;
+
+          if (issueToRemove.status === 'Done') {
+            sprint.completedStoryPoints -= issueToRemove.storyPoints;
+          }
+        }
+
+        // Remove the issue
+        sprint.issues = sprint.issues.filter((i) => i.id !== issueId);
+      }
     }
   }
 
@@ -771,131 +1167,6 @@ export class BacklogComponent implements OnInit {
   // Mới: Phương thức để tải lại toàn bộ dữ liệu backlog
   private reloadBacklog(): void {
     this.backlogService.refreshData();
-  }
-
-  // Update issue status from dropdown
-  updateIssueStatus(status: 'To Do' | 'In Progress' | 'Review' | 'Done'): void {
-    if (!this.selectedIssue || !this.editingIssue) {
-      this.snackBar.open('Cannot update: no issue selected', 'Close', {
-        duration: 3000,
-      });
-      return;
-    }
-
-    // If status doesn't change, no need to call API
-    if (status === this.selectedIssue.status) {
-      return;
-    }
-
-    const oldStatus = this.selectedIssue.status;
-
-    // Update UI first for smooth experience
-    this.editingIssue.status = status;
-    this.selectedIssue.status = status;
-
-    // Show loading notification
-    const loadingSnackbarRef = this.snackBar.open(
-      `Updating status: ${oldStatus} → ${status}`,
-      '',
-      {
-        duration: undefined,
-      }
-    );
-
-    this.isLoading = true;
-    this.issueService
-      .updateIssueStatus(this.selectedIssue.id, status)
-      .pipe(
-        finalize(() => {
-          this.isLoading = false;
-          loadingSnackbarRef.dismiss();
-        })
-      )
-      .subscribe({
-        next: (updatedIssue) => {
-          // Update issue in all lists
-          this.updateIssueInLists(updatedIssue);
-
-          this.snackBar.open(`Status updated to: ${status}`, 'Close', {
-            duration: 3000,
-          });
-        },
-        error: (err) => {
-          // Restore old status if error
-          if (this.editingIssue) this.editingIssue.status = oldStatus;
-          if (this.selectedIssue) this.selectedIssue.status = oldStatus;
-
-          this.handleError(err, 'Failed to update status');
-        },
-      });
-  }
-
-  // New method for quick status update from the list view without opening details
-  quickUpdateStatus(
-    event: Event,
-    issue: Issue,
-    newStatus: 'To Do' | 'In Progress' | 'Review' | 'Done'
-  ): void {
-    event.stopPropagation(); // Prevent opening issue detail
-
-    if (issue.status === newStatus) return;
-
-    const oldStatus = issue.status;
-
-    // Update UI immediately
-    issue.status = newStatus;
-
-    // Show loading notification
-    const loadingSnackbarRef = this.snackBar.open(
-      `Updating status: ${oldStatus} → ${newStatus}`,
-      '',
-      {
-        duration: undefined,
-      }
-    );
-
-    this.issueService
-      .updateIssueStatus(issue.id, newStatus)
-      .pipe(
-        finalize(() => {
-          loadingSnackbarRef.dismiss();
-        })
-      )
-      .subscribe({
-        next: (updatedIssue) => {
-          // Update in lists
-          this.updateIssueInLists(updatedIssue);
-          this.snackBar.open(`Status updated to: ${newStatus}`, 'Close', {
-            duration: 3000,
-          });
-        },
-        error: (err) => {
-          // Revert UI change on error
-          issue.status = oldStatus;
-          this.handleError(err, 'Failed to update status');
-        },
-      });
-  }
-
-  // Assign issue to user
-  assignToUser(issue: Issue, userId: string): void {
-    if (userId) {
-      this.isLoading = true;
-      this.issueService
-        .assignIssue(issue.id, userId)
-        .pipe(finalize(() => (this.isLoading = false)))
-        .subscribe({
-          next: (updatedIssue) => {
-            this.updateIssueInLists(updatedIssue);
-            this.snackBar.open('Issue assigned successfully', 'Close', {
-              duration: 3000,
-            });
-          },
-          error: (err) => {
-            this.handleError(err, 'Failed to assign issue');
-          },
-        });
-    }
   }
 
   // Helper methods for template calculations
@@ -1730,5 +2001,118 @@ export class BacklogComponent implements OnInit {
       const bDate = new Date(b.createdAt).getTime();
       return this.commentSortOrder === 'newest' ? bDate - aDate : aDate - bDate;
     });
+  }
+
+  /**
+   * Handles creating a new card in the backlog
+   */
+  onCreateCardInBacklog(cardData: any): void {
+    console.log('Creating card in backlog with data:', cardData);
+
+    // First convert Card to Issue format
+    const newIssue: Partial<Issue> = {
+      title: cardData.title || '',
+      type: this.mapCardTypeToIssueType(cardData.type || 'TASK'),
+      description: '',
+      priority: 'Medium',
+      status: 'To Do',
+      storyPoints: 0,
+    };
+
+    if (!newIssue.title || newIssue.title.trim() === '') {
+      this.snackBar.open('Please enter a title for the issue', 'Close', {
+        duration: 3000,
+      });
+      return;
+    }
+
+    this.isLoading = true;
+    this.issueService
+      .createIssue(this.currentProjectId, newIssue)
+      .pipe(finalize(() => (this.isLoading = false)))
+      .subscribe({
+        next: (createdIssue) => {
+          console.log('Issue created successfully:', createdIssue);
+
+          // Cập nhật state thống nhất qua backlogService thay vì thêm trực tiếp
+          this.backlogService.updateLocalIssueState(createdIssue, 'create');
+
+          this.snackBar.open('Issue created in backlog', 'Close', {
+            duration: 3000,
+          });
+        },
+        error: (err) => {
+          console.error('Error creating issue:', err);
+          this.handleError(err, 'Failed to create issue');
+        },
+      });
+  }
+
+  /**
+   * Handles creating a new card in a specific sprint
+   */
+  onCreateCardInSprint(cardData: any, sprintId: string): void {
+    console.log(
+      'Creating card in sprint with data:',
+      cardData,
+      'Sprint ID:',
+      sprintId
+    );
+
+    // First convert Card to Issue format
+    const newIssue: Partial<Issue> = {
+      title: cardData.title || '',
+      type: this.mapCardTypeToIssueType(cardData.type || 'TASK'),
+      description: '',
+      priority: 'Medium',
+      status: 'To Do',
+      storyPoints: 0,
+      sprintId: sprintId,
+    };
+
+    if (!newIssue.title || newIssue.title.trim() === '') {
+      this.snackBar.open('Please enter a title for the issue', 'Close', {
+        duration: 3000,
+      });
+      return;
+    }
+
+    this.isLoading = true;
+    this.issueService
+      .createIssue(this.currentProjectId, newIssue)
+      .pipe(finalize(() => (this.isLoading = false)))
+      .subscribe({
+        next: (createdIssue) => {
+          console.log('Issue created successfully in sprint:', createdIssue);
+
+          // Cập nhật state thống nhất qua backlogService thay vì thêm trực tiếp
+          this.backlogService.updateLocalIssueState(createdIssue, 'create');
+
+          this.snackBar.open('Issue created in sprint', 'Close', {
+            duration: 3000,
+          });
+        },
+        error: (err) => {
+          console.error('Error creating issue in sprint:', err);
+          this.handleError(err, 'Failed to create issue');
+        },
+      });
+  }
+
+  /**
+   * Converts CardTypesEnum to Issue type string
+   */
+  private mapCardTypeToIssueType(
+    cardType: string
+  ): 'Epic' | 'Story' | 'Task' | 'Bug' | 'Sub-task' {
+    switch (cardType) {
+      case CardTypesEnum.BUG:
+        return 'Bug';
+      case CardTypesEnum.STORY:
+        return 'Story';
+      case CardTypesEnum.TASK:
+      default:
+        return 'Task';
+    }
   }
 }

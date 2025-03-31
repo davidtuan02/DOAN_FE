@@ -453,6 +453,135 @@ export class BacklogService {
 
   // Phương thức để tải lại dữ liệu sau khi có thay đổi
   refreshData(): void {
-    this.loadProjectData();
+    console.log('Refreshing backlog data...');
+    if (this.currentProjectId) {
+      this.loadProjectData();
+    } else {
+      console.error('Cannot refresh: No current project set');
+    }
+  }
+
+  // Thêm phương thức để cập nhật local state sau khi thực hiện thành công một thao tác CRUD
+  updateLocalIssueState(
+    updatedIssue: Issue,
+    operation: 'create' | 'update' | 'delete'
+  ): void {
+    if (!updatedIssue || !updatedIssue.id) {
+      console.error('Invalid issue data provided for local state update');
+      return;
+    }
+
+    console.log(
+      `Updating local state after ${operation} operation:`,
+      updatedIssue
+    );
+
+    // Lấy state hiện tại
+    const currentSprints = this.sprints.getValue();
+    const currentBacklogIssues = this.backlogIssues.getValue();
+
+    if (operation === 'delete') {
+      // Xử lý xóa issue
+      // Xóa khỏi backlog nếu có
+      const newBacklogIssues = currentBacklogIssues.filter(
+        (i) => i.id !== updatedIssue.id
+      );
+
+      // Xóa khỏi tất cả sprint
+      const newSprints = currentSprints.map((sprint) => {
+        return {
+          ...sprint,
+          issues: sprint.issues.filter((i) => i.id !== updatedIssue.id),
+        };
+      });
+
+      this.sprints.next(newSprints);
+      this.backlogIssues.next(newBacklogIssues);
+      return;
+    }
+
+    // Xử lý tạo mới hoặc cập nhật
+    if (updatedIssue.sprintId) {
+      // Issue thuộc về một sprint
+      let sprintFound = false;
+
+      // Cập nhật trong sprint
+      const newSprints = currentSprints.map((sprint) => {
+        if (sprint.id === updatedIssue.sprintId) {
+          sprintFound = true;
+
+          // Kiểm tra xem issue đã tồn tại trong sprint này chưa
+          const issueIndex = sprint.issues.findIndex(
+            (i) => i.id === updatedIssue.id
+          );
+
+          if (issueIndex >= 0) {
+            // Cập nhật issue hiện có
+            const updatedIssues = [...sprint.issues];
+            updatedIssues[issueIndex] = updatedIssue;
+            return {
+              ...sprint,
+              issues: updatedIssues,
+            };
+          } else {
+            // Thêm issue mới vào sprint
+            return {
+              ...sprint,
+              issues: [...sprint.issues, updatedIssue],
+            };
+          }
+        }
+
+        // Kiểm tra và xóa issue khỏi các sprint khác nếu đã được di chuyển
+        if (operation === 'update') {
+          const issueIndex = sprint.issues.findIndex(
+            (i) => i.id === updatedIssue.id
+          );
+          if (issueIndex >= 0) {
+            return {
+              ...sprint,
+              issues: sprint.issues.filter((i) => i.id !== updatedIssue.id),
+            };
+          }
+        }
+
+        return sprint;
+      });
+
+      // Xóa khỏi backlog nếu issue đã được chuyển vào sprint
+      const newBacklogIssues = currentBacklogIssues.filter(
+        (i) => i.id !== updatedIssue.id
+      );
+
+      this.sprints.next(newSprints);
+      this.backlogIssues.next(newBacklogIssues);
+    } else {
+      // Issue thuộc về backlog
+
+      // Xóa khỏi tất cả sprint
+      const newSprints = currentSprints.map((sprint) => {
+        return {
+          ...sprint,
+          issues: sprint.issues.filter((i) => i.id !== updatedIssue.id),
+        };
+      });
+
+      // Cập nhật trong backlog
+      const backlogIssueIndex = currentBacklogIssues.findIndex(
+        (i) => i.id === updatedIssue.id
+      );
+      let newBacklogIssues = [...currentBacklogIssues];
+
+      if (backlogIssueIndex >= 0) {
+        // Cập nhật issue hiện có
+        newBacklogIssues[backlogIssueIndex] = updatedIssue;
+      } else {
+        // Thêm issue mới vào backlog
+        newBacklogIssues.push(updatedIssue);
+      }
+
+      this.sprints.next(newSprints);
+      this.backlogIssues.next(newBacklogIssues);
+    }
   }
 }

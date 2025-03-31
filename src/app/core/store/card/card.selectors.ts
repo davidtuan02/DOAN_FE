@@ -158,3 +158,8 @@ export const allCommentsWithUser = createSelector(
     }));
   }
 );
+
+export const selectCardError = createSelector(
+  selectCardState,
+  (state) => state.error
+);
