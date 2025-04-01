@@ -46,11 +46,22 @@ export class CardAssigneeComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    console.log(
+      'CardAssigneeComponent initialized with assignee:',
+      this.assignee
+    );
+    console.log('CardAssigneeComponent initialized with users:', this.users);
+
+    // Initialize form control with assignee if available
+    this.updateFormValue();
+
+    // Listen for changes to assignee control
     this.assigneeControl.valueChanges
       .pipe(
         filter((value) => !!value),
         takeUntilDestroyed(this),
         tap((assignee) => {
+          console.log('Assignee selected:', assignee);
           this.updateAssignee.emit({
             id: this.cardId,
             assigneeId: assignee.id,
@@ -63,13 +74,17 @@ export class CardAssigneeComponent implements OnInit {
   ngOnChanges(changes: SimpleChanges): void {
     const assignee = changes['assignee'];
 
-    if (
-      assignee &&
-      assignee.previousValue !== assignee.currentValue &&
-      this.assignee
-    ) {
-      this.assigneeControl.patchValue(this.assignee, { emitEvent: false });
+    if (assignee) {
+      console.log('Assignee changed:', assignee.currentValue);
+      this.updateFormValue();
     }
+  }
+
+  private updateFormValue(): void {
+    console.log('Updating form value with assignee:', this.assignee);
+    this.assigneeControl.patchValue(this.assignee || null, {
+      emitEvent: false,
+    });
   }
 
   onEnableEditMode(): void {

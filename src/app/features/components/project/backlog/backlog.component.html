@@ -313,13 +313,12 @@
 
           <div class="flex items-center ml-auto">
             <!-- Add reporter avatar if available -->
-            <div
+            <app-avatar
               *ngIf="issue.reporter"
-              class="flex items-center justify-center mr-2 bg-purple-200 rounded-full w-7 h-7"
-              title="Reporter: {{ issue.reporter.name }}"
-            >
-              <span class="text-xs text-purple-800">R</span>
-            </div>
+              [user]="convertToFullUser(issue.reporter)"
+              [size]="28"
+              class="mr-2"
+            ></app-avatar>
 
             <!-- Status dropdown -->
             <div class="relative inline-block mr-2 text-left">
@@ -427,17 +426,12 @@
             </div>
 
             <!-- Assignee avatar if available -->
-            <div
+            <app-avatar
               *ngIf="issue.assignee"
-              class="flex items-center justify-center mr-2 bg-gray-200 rounded-full w-7 h-7"
-              title="Assignee: {{ issue.assignee.name }}"
-            >
-              <span class="text-xs text-gray-600">{{
-                issue.assignee && issue.assignee.name
-                  ? issue.assignee.name.charAt(0)
-                  : "U"
-              }}</span>
-            </div>
+              [user]="convertToFullUser(issue.assignee)"
+              [size]="28"
+              class="mr-2"
+            ></app-avatar>
 
             <button class="p-1 mr-2 text-gray-400 hover:text-gray-700">
               <svg
@@ -622,13 +616,12 @@
 
           <div class="flex items-center ml-auto">
             <!-- Add reporter avatar if available -->
-            <div
+            <app-avatar
               *ngIf="issue.reporter"
-              class="flex items-center justify-center mr-2 bg-purple-200 rounded-full w-7 h-7"
-              title="Reporter: {{ issue.reporter.name }}"
-            >
-              <span class="text-xs text-purple-800">R</span>
-            </div>
+              [user]="convertToFullUser(issue.reporter)"
+              [size]="28"
+              class="mr-2"
+            ></app-avatar>
 
             <!-- Status dropdown -->
             <div class="relative inline-block mr-2 text-left">
@@ -736,17 +729,12 @@
             </div>
 
             <!-- Assignee avatar if available -->
-            <div
+            <app-avatar
               *ngIf="issue.assignee"
-              class="flex items-center justify-center mr-2 bg-gray-200 rounded-full w-7 h-7"
-              title="Assignee: {{ issue.assignee.name }}"
-            >
-              <span class="text-xs text-gray-600">{{
-                issue.assignee && issue.assignee.name
-                  ? issue.assignee.name.charAt(0)
-                  : "U"
-              }}</span>
-            </div>
+              [user]="convertToFullUser(issue.assignee)"
+              [size]="28"
+              class="mr-2"
+            ></app-avatar>
 
             <button class="p-1 mr-2 text-gray-400 hover:text-gray-700">
               <svg

@@ -43,6 +43,8 @@ import { SvgIconComponent } from '../../../../shared/components';
 import { CardFilter } from '../../../../core/models/card/card-filter';
 import { takeUntilDestroyed } from '../../../../shared/utils';
 import { NzSelectModule } from 'ng-zorro-antd/select';
+import { AvatarComponent } from '../../../../shared/components/avatar/avatar.component';
+import { User } from '../../../../core/models';
 
 @Component({
   selector: 'app-backlog',
@@ -58,6 +60,7 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
     TypeFilterControlComponent,
     SvgIconComponent,
     NzSelectModule,
+    AvatarComponent,
   ],
   templateUrl: './backlog.component.html',
   styleUrls: ['./backlog.component.scss'],
@@ -415,7 +418,7 @@ export class BacklogComponent implements OnInit {
       id: issue.id,
       title: issue.title,
       description: issue.description || '',
-      type: cardType, // Now using CardTypesEnum
+      type: cardType,
       priority: issue.priority || 'Medium',
       status: issue.status || 'To Do',
       // Map IDs correctly
@@ -437,9 +440,8 @@ export class BacklogComponent implements OnInit {
       // Add other required fields
       labels: issue.labels || [],
       environment: '',
-      startDate: issue.created
-        ? new Date(issue.created).toISOString()
-        : new Date().toISOString(),
+      storyPoints: issue.storyPoints || 0,
+      startDate: issue.startDate ? new Date(issue.startDate).toISOString() : '',
       dueDate: issue.dueDate ? new Date(issue.dueDate).toISOString() : '',
       createdAt: issue.created
         ? new Date(issue.created).toISOString()
@@ -449,14 +451,13 @@ export class BacklogComponent implements OnInit {
         : new Date().toISOString(),
     };
 
-    // Đảm bảo card được thêm vào store trước khi hiển thị modal,
-    // nhưng không gọi API tạo mới (createCardSuccess sẽ thêm vào store mà không gọi API)
+    // Dispatch action to create a temporary card in the store
     this.store.dispatch(fromStore.createCardSuccess({ card }));
 
     // Set the selected card in the store
     this.store.dispatch(fromStore.setSelectedCardId({ id: issue.id }));
 
-    // Load other related data if needed
+    // Load other related data
     this.store.dispatch(fromStore.getComments());
     this.store.dispatch(fromStore.getLabels());
 
@@ -477,7 +478,7 @@ export class BacklogComponent implements OnInit {
 
     this.modalRef = cardComponent;
 
-    // Update URL with selected issue (optional)
+    // Update URL with selected issue
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { selectedIssue: issue.id },
@@ -898,9 +899,8 @@ export class BacklogComponent implements OnInit {
       ordinalId: issue.key ? parseInt(issue.key.split('-')[1]) : 0,
       labels: issue.labels || [],
       environment: '',
-      startDate: issue.created
-        ? new Date(issue.created).toISOString()
-        : new Date().toISOString(),
+      storyPoints: issue.storyPoints || 0,
+      startDate: issue.startDate ? new Date(issue.startDate).toISOString() : '',
       dueDate: issue.dueDate ? new Date(issue.dueDate).toISOString() : '',
       createdAt: issue.created
         ? new Date(issue.created).toISOString()
@@ -1003,86 +1003,38 @@ export class BacklogComponent implements OnInit {
 
   // Improved method to update issue in all lists and store
   private updateIssueInLists(updatedIssue: Issue): void {
-    // Kiểm tra xem issue đã tồn tại trong danh sách backlog chưa
+    // Check if issue is already in backlog
     const backlogIndex = this.backlogIssues.findIndex(
       (i) => i.id === updatedIssue.id
     );
 
-    // Nếu issue đã có trong backlog, thì cập nhật nó
-    if (backlogIndex >= 0) {
-      this.backlogIssues[backlogIndex] = updatedIssue;
-    }
-
-    // Kiểm tra xem issue thuộc sprint nào
+    // Check if issue exists in any sprint and update it
     let foundInSprint = false;
-
-    // Cập nhật trong các sprint list
     for (const sprint of this.sprints) {
       const sprintIssueIndex = sprint.issues.findIndex(
         (i) => i.id === updatedIssue.id
       );
 
       if (sprintIssueIndex >= 0) {
-        // Nếu issue đã có trong sprint, thì cập nhật nó
+        // Issue already exists in this sprint, update it
         sprint.issues[sprintIssueIndex] = updatedIssue;
         foundInSprint = true;
 
-        // Cập nhật metrics của sprint nếu cần
+        // Recalculate sprint metrics
         this.recalculateSprintMetrics(sprint);
-
-        // Nếu issue đang được cập nhật có sprintId khác, ta cần di chuyển nó
-        if (updatedIssue.sprintId && updatedIssue.sprintId !== sprint.id) {
-          // Xóa issue khỏi sprint hiện tại
-          sprint.issues = sprint.issues.filter((i) => i.id !== updatedIssue.id);
-          this.recalculateSprintMetrics(sprint);
-
-          // Thêm vào sprint mới
-          const targetSprint = this.sprints.find(
-            (s) => s.id === updatedIssue.sprintId
-          );
-          if (targetSprint) {
-            targetSprint.issues.push(updatedIssue);
-            this.recalculateSprintMetrics(targetSprint);
-          } else {
-            // Nếu không tìm thấy sprint mới, thêm vào backlog
-            if (backlogIndex === -1) {
-              this.backlogIssues.push(updatedIssue);
-            }
-          }
-        }
-
         break;
       }
     }
 
-    // Nếu issue không thuộc sprint nào và không có trong backlog, thêm vào backlog
-    if (!foundInSprint && backlogIndex === -1 && !updatedIssue.sprintId) {
+    // If issue isn't in any sprint and isn't in backlog, add to backlog
+    if (!foundInSprint && backlogIndex === -1) {
       this.backlogIssues.push(updatedIssue);
+    } else if (backlogIndex >= 0) {
+      // Update existing issue in backlog
+      this.backlogIssues[backlogIndex] = updatedIssue;
     }
 
-    // Nếu issue có sprintId mới nhưng chưa được thêm vào sprint
-    if (!foundInSprint && updatedIssue.sprintId) {
-      const targetSprint = this.sprints.find(
-        (s) => s.id === updatedIssue.sprintId
-      );
-      if (targetSprint) {
-        // Kiểm tra xem issue đã tồn tại trong sprint mới chưa
-        const alreadyExists = targetSprint.issues.some(
-          (i) => i.id === updatedIssue.id
-        );
-        if (!alreadyExists) {
-          targetSprint.issues.push(updatedIssue);
-          this.recalculateSprintMetrics(targetSprint);
-        }
-
-        // Xóa khỏi backlog nếu đã tồn tại trong đó
-        if (backlogIndex >= 0) {
-          this.backlogIssues.splice(backlogIndex, 1);
-        }
-      }
-    }
-
-    // Cập nhật selectedIssue và editingIssue nếu cần
+    // Update selectedIssue and editingIssue if needed
     if (this.selectedIssue && this.selectedIssue.id === updatedIssue.id) {
       this.selectedIssue = updatedIssue;
       this.editingIssue = { ...updatedIssue };
@@ -1209,9 +1161,18 @@ export class BacklogComponent implements OnInit {
     }
   }
 
-  // Mới: Phương thức để tải lại toàn bộ dữ liệu backlog
+  // Method to reload the entire backlog data
   private reloadBacklog(): void {
+    // Reset any error states
+    this.errorMessage = '';
+
+    // Show loading indicator
+    this.isLoading = true;
+
+    // Refresh data through the service
     this.backlogService.refreshData();
+
+    // Once data is refreshed, loading state will be updated by the subscription
   }
 
   // Helper methods for template calculations
@@ -2127,48 +2088,65 @@ export class BacklogComponent implements OnInit {
    * Handles creating a new card in a specific sprint
    */
   onCreateCardInSprint(cardData: any, sprintId: string): void {
-    console.log(
-      'Creating card in sprint with data:',
-      cardData,
-      'Sprint ID:',
-      sprintId
-    );
+    const { title, description, type, priority, assignee } = cardData;
 
-    // First convert Card to Issue format
+    // Create a new issue object
     const newIssue: Partial<Issue> = {
-      title: cardData.title || '',
-      type: this.mapCardTypeToIssueType(cardData.type || 'TASK'),
-      description: '',
-      priority: 'Medium',
+      title,
+      description,
+      type: this.mapCardTypeToIssueType(type),
+      priority,
       status: 'To Do',
-      storyPoints: 0,
-      sprintId: sprintId,
+      labels: [],
+      components: [],
     };
 
-    if (!newIssue.title || newIssue.title.trim() === '') {
-      this.snackBar.open('Please enter a title for the issue', 'Close', {
-        duration: 3000,
-      });
-      return;
+    // Add assignee if provided
+    if (assignee) {
+      newIssue.assignee = {
+        id: assignee.id,
+        name: assignee.name,
+        avatar: assignee.avatar,
+      };
     }
 
+    // Create the issue
     this.isLoading = true;
     this.issueService
       .createIssue(this.currentProjectId, newIssue)
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
         next: (createdIssue) => {
-          console.log('Issue created successfully in sprint:', createdIssue);
+          console.log('Created issue:', createdIssue);
 
-          // Cập nhật state thống nhất qua backlogService thay vì thêm trực tiếp
-          this.backlogService.updateLocalIssueState(createdIssue, 'create');
+          // Then move the issue to the sprint
+          this.issueService
+            .moveIssueToSprint(createdIssue.id, sprintId)
+            .subscribe({
+              next: (updatedIssue) => {
+                console.log('Moved to sprint:', updatedIssue);
 
-          this.snackBar.open('Issue created in sprint', 'Close', {
-            duration: 3000,
-          });
+                // Find the sprint and add the issue to it
+                const targetSprint = this.sprints.find(
+                  (s) => s.id === sprintId
+                );
+                if (targetSprint) {
+                  targetSprint.issues.push(updatedIssue);
+                  this.recalculateSprintMetrics(targetSprint);
+                }
+
+                this.snackBar.open('Issue created in sprint', 'Close', {
+                  duration: 3000,
+                });
+              },
+              error: (err) => {
+                console.error('Error moving to sprint:', err);
+                this.handleError(err, 'Failed to add issue to sprint');
+              },
+            });
         },
         error: (err) => {
-          console.error('Error creating issue in sprint:', err);
+          console.error('Error creating issue:', err);
           this.handleError(err, 'Failed to create issue');
         },
       });
@@ -2204,5 +2182,23 @@ export class BacklogComponent implements OnInit {
 
   clearFilters(): void {
     this.filterFormGroup.reset({ assignees: [], labels: [], types: [] });
+  }
+
+  // Convert simple user objects to full User objects for avatar component
+  convertToFullUser(user: any): User {
+    if (!user) return null as any;
+
+    return {
+      id: user.id || '',
+      createdAt: '',
+      updatedAt: '',
+      firstName: user.name ? user.name.split(' ')[0] : '',
+      lastName: user.name ? user.name.split(' ').slice(1).join(' ') : '',
+      email: '',
+      age: 0,
+      username: user.name || '',
+      role: 'BASIC' as any,
+      avatar: user.avatar || '',
+    };
   }
 }

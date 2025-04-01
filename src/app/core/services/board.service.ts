@@ -110,7 +110,7 @@ export class BoardService {
 
             this.currentSprint$.next(activeSprint);
 
-            // Get issues for the active sprint
+            // Check if the active sprint has an ID
             if (!activeSprint.id) {
               this.errorSubject.next('Active sprint has no ID');
               this.loadingSubject.next(false);
@@ -118,12 +118,10 @@ export class BoardService {
             }
 
             // Get issues for the project - ideally we would have an API to get issues by sprint directly
-            return this.issueService.getIssuesByProjectId(project.id!).pipe(
-              map((issues) => {
-                // Filter issues that belong to the active sprint
-                const sprintIssues = issues.filter(
-                  (issue) => issue.sprintId === activeSprint.id
-                );
+            return this.sprintService.getSprintById(activeSprint.id).pipe(
+              map((activeSprint) => {
+                // Use the issues directly from the sprint
+                const sprintIssues = activeSprint.issues || [];
 
                 // Convert issues to cards
                 const cards = this.mapIssuesToCards(sprintIssues);
@@ -190,7 +188,7 @@ export class BoardService {
   }
 
   getBoardCards(): Observable<Array<Card>> {
-    // Get the current project
+    // Get the current project and active sprint
     return this.projectService.selectedProject$.pipe(
       switchMap((project) => {
         const projectId = project?.id;
@@ -199,11 +197,35 @@ export class BoardService {
           return of([]);
         }
 
-        // Get issues for the project
-        return this.issueService.getIssuesByProjectId(projectId).pipe(
-          map((issues) => this.mapIssuesToCards(issues)),
+        // First get all sprints for the project
+        return this.sprintService.getSprintsByProjectId(projectId).pipe(
+          switchMap((sprints) => {
+            // Find active sprint
+            const activeSprint = sprints.find(
+              (sprint) => sprint.status === 'active'
+            );
+
+            if (!activeSprint || !activeSprint.id) {
+              console.warn(
+                'No active sprint found, returning empty cards array'
+              );
+              return of([]);
+            }
+
+            // Get issues specifically from the active sprint
+            return this.sprintService.getSprintById(activeSprint.id).pipe(
+              map((sprint) => {
+                const sprintIssues = sprint.issues || [];
+                return this.mapIssuesToCards(sprintIssues);
+              }),
+              catchError((error) => {
+                console.error('Error loading sprint issues:', error);
+                return of([]);
+              })
+            );
+          }),
           catchError((error) => {
-            console.error('Error loading board cards:', error);
+            console.error('Error loading sprints:', error);
             return of([]);
           })
         );
@@ -212,8 +234,25 @@ export class BoardService {
   }
 
   getUsers(): Observable<Array<User>> {
-    return this.http.get<User[]>(`${this.apiUrl}/users/all`).pipe(
-      tap((users) => console.log('Fetched users for board:', users.length)),
+    return this.http.get<any[]>(`${this.apiUrl}/users/all`).pipe(
+      map((users) => {
+        // Transform users data to match User interface
+        return users.map((user) => ({
+          id: user.id,
+          email: user.email || '',
+          firstName: user.firstName || '',
+          lastName: user.lastName || '',
+          username: user.username || user.email || '',
+          age: user.age || 0,
+          role: user.role || 'BASIC',
+          createdAt: user.createdAt || new Date().toISOString(),
+          updatedAt: user.updatedAt || new Date().toISOString(),
+          avatar: `https://ui-avatars.com/api/?name=${
+            user.firstName?.charAt(0) || '?'
+          }${user.lastName?.charAt(0) || '?'}&background=0052CC&color=fff`,
+        }));
+      }),
+      tap((users) => console.log('Processed users for board:', users)),
       catchError((error) => {
         console.error('Error fetching users:', error);
         return of([]);
@@ -227,10 +266,6 @@ export class BoardService {
     const existingCards = this.cardsSubject.getValue();
     const existingCard = existingCards.find((c) => c.id === card.id);
     if (existingCard) {
-      console.log(
-        'Card already exists in local state, not creating again:',
-        card.id
-      );
       return of(existingCard);
     }
 
@@ -262,6 +297,12 @@ export class BoardService {
       return of({});
     }
 
+    // Special handling for assignee changes
+    if (card.assigneeId !== undefined) {
+      console.log('Updating assignee using dedicated API:', card.assigneeId);
+      return this.issueService.assignUser(card.id, card.assigneeId || '');
+    }
+
     // Prepare issue update data
     const issueUpdate: Partial<Issue> = {};
 
@@ -277,11 +318,31 @@ export class BoardService {
       issueUpdate.priority = this.mapCardPriorityToIssuePriority(card.priority);
     if (card.type !== undefined)
       issueUpdate.type = this.mapCardTypeToIssueType(card.type);
-    if (card.assigneeId) {
-      issueUpdate.assignee = { id: card.assigneeId, name: '', avatar: '' };
+    if (card.reporterId) {
+      issueUpdate.reporter = { id: card.reporterId, name: '', avatar: '' };
     }
     if (card.labels) issueUpdate.labels = card.labels;
+    if (card.storyPoints !== undefined)
+      issueUpdate.storyPoints = card.storyPoints;
 
+    // Add date fields
+    if (card.startDate !== undefined) {
+      try {
+        issueUpdate.startDate = new Date(card.startDate);
+      } catch (e) {
+        console.error('Invalid start date format:', card.startDate);
+      }
+    }
+
+    if (card.dueDate !== undefined) {
+      try {
+        issueUpdate.dueDate = new Date(card.dueDate);
+      } catch (e) {
+        console.error('Invalid due date format:', card.dueDate);
+      }
+    }
+
+    console.log('Updating issue with data:', issueUpdate);
     return this.issueService.updateIssue(card.id, issueUpdate);
   }
 
@@ -376,26 +437,97 @@ export class BoardService {
   }
 
   // Helper methods
-  private mapIssuesToCards(issues: Issue[]): Card[] {
+  private mapIssuesToCards(issues: any[]): Card[] {
+    console.log('Mapping issues to cards, issues:', issues);
     return issues.map((issue) => {
-      return {
+      // Handle direct API response format
+      const title = issue.taskName || issue.title || '';
+      const description = issue.taskDescription || issue.description || '';
+      const status = this.normalizeStatus(issue.status);
+
+      console.log(
+        `Issue ${issue.id} status: ${issue.status} -> normalized: ${status}`
+      );
+
+      const card = {
         id: issue.id,
-        ordinalId: this.getOrdinalIdFromKey(issue.key),
-        title: issue.title,
-        description: issue.description || '',
-        columnId: this.mapStatusToColumnId(issue.status),
-        priority: issue.priority || 'Medium',
+        ordinalId: this.getOrdinalIdFromKey(issue.key || ''),
+        title: title,
+        description: description,
+        columnId: this.mapStatusToColumnId(status),
+        priority: this.normalizePriority(issue.priority) || 'Medium',
         type: this.mapIssueTypeToCardType(issue.type || 'Task'),
-        assigneeId: issue.assignee?.id || '',
+        assigneeId: issue.assignee?.id || issue.assignedTo?.id || '',
         reporterId: issue.reporter?.id || '',
         labels: issue.labels || [],
         environment: '',
-        startDate: issue.created?.toISOString() || new Date().toISOString(),
-        dueDate: issue.dueDate?.toISOString() || '',
-        createdAt: issue.created?.toISOString() || new Date().toISOString(),
-        updatedAt: issue.updated?.toISOString() || new Date().toISOString(),
+        startDate: issue.startDate
+          ? new Date(issue.startDate).toISOString()
+          : '',
+        dueDate: issue.dueDate ? new Date(issue.dueDate).toISOString() : '',
+        storyPoints: issue.storyPoints || 0,
+        createdAt:
+          issue.created?.toISOString() ||
+          issue.createdAt ||
+          new Date().toISOString(),
+        updatedAt:
+          issue.updated?.toISOString() ||
+          issue.updatedAt ||
+          new Date().toISOString(),
       };
+
+      console.log(
+        `Mapped to card with title: ${card.title}, columnId: ${card.columnId}`
+      );
+      return card;
     });
+  }
+
+  // Helper method to normalize status values
+  private normalizeStatus(status: string): string {
+    if (!status) return 'To Do';
+
+    switch (status.toUpperCase()) {
+      case 'TODO':
+      case 'TO_DO':
+      case 'TO DO':
+      case 'CREATED':
+        return 'To Do';
+      case 'IN_PROGRESS':
+      case 'INPROGRESS':
+        return 'In Progress';
+      case 'REVIEW':
+        return 'Review';
+      case 'DONE':
+      case 'COMPLETED':
+        return 'Done';
+      default:
+        return 'To Do';
+    }
+  }
+
+  // Helper method to normalize priority values
+  private normalizePriority(priority: string): string {
+    if (!priority) return 'Medium';
+
+    if (typeof priority === 'string') {
+      switch (priority.toUpperCase()) {
+        case 'HIGHEST':
+          return 'Highest';
+        case 'HIGH':
+          return 'High';
+        case 'MEDIUM':
+          return 'Medium';
+        case 'LOW':
+          return 'Low';
+        case 'LOWEST':
+          return 'Lowest';
+        default:
+          return 'Medium';
+      }
+    }
+
+    return priority; // If already in correct format
   }
 
   private getOrdinalIdFromKey(key: string): number {

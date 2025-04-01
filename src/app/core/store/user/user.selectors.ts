@@ -21,8 +21,11 @@ export const selectUsersByIds = (ids: Array<string> | undefined) =>
 
 export const selectUserById = (id: string | undefined) =>
   createSelector(allUsers, (users) => {
+    console.log('Selecting user by id:', id, 'from users:', users);
     if (!!users && !!id) {
-      return users.find((u) => u.id === id);
+      const foundUser = users.find((u) => u.id === id);
+      console.log('Found user:', foundUser);
+      return foundUser;
     }
 
     return null;

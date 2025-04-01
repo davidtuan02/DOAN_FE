@@ -80,9 +80,6 @@ export class SprintService {
   createSprint(boardId: string, sprint: CreateSprintDto): Observable<Sprint> {
     const jwtToken = this.userService['jwtService'].getToken();
 
-    console.log(`Creating sprint for board ${boardId}:`, sprint);
-    console.log('Authorization token:', jwtToken);
-
     return this.http
       .post<Sprint>(`${this.apiUrl}/create/${boardId}`, sprint, {
         headers: new HttpHeaders({
@@ -102,9 +99,6 @@ export class SprintService {
   // Update a sprint
   updateSprint(id: string, sprint: UpdateSprintDto): Observable<Sprint> {
     const jwtToken = this.userService['jwtService'].getToken();
-
-    console.log(`Updating sprint ${id}:`, sprint);
-    console.log('Authorization token:', jwtToken);
 
     // Ensure dates are properly formatted for the API
     const formattedSprint: any = { ...sprint };
@@ -146,9 +140,6 @@ export class SprintService {
   deleteSprint(id: string): Observable<void> {
     const jwtToken = this.userService['jwtService'].getToken();
 
-    console.log(`Deleting sprint ${id}`);
-    console.log('Authorization token:', jwtToken);
-
     return this.http
       .delete<void>(`${this.apiUrl}/${id}`, {
         headers: new HttpHeaders({
@@ -168,9 +159,6 @@ export class SprintService {
   // Start a sprint
   startSprint(id: string): Observable<Sprint> {
     const jwtToken = this.userService['jwtService'].getToken();
-
-    console.log(`Starting sprint ${id}`);
-    console.log('Authorization token:', jwtToken);
 
     return this.http
       .put<Sprint>(
@@ -195,9 +183,6 @@ export class SprintService {
   // Complete a sprint
   completeSprint(id: string): Observable<Sprint> {
     const jwtToken = this.userService['jwtService'].getToken();
-
-    console.log(`Completing sprint ${id}`);
-    console.log('Authorization token:', jwtToken);
 
     return this.http
       .put<Sprint>(

@@ -18,7 +18,7 @@ import * as actions from './card.actions';
 import { BoardService } from '../../services/board.service';
 import { CardState } from './card.reducers';
 import { selectLatestOrdinalId, selectSelectedCardId } from './card.selectors';
-import { Card, Comment } from '../../models';
+import { Card, Comment, PartialCard } from '../../models';
 import { selectCurrentUser } from '../user/user.selectors';
 
 @Injectable()
@@ -65,26 +65,48 @@ export class CardEffects {
   updateCard$ = createEffect(() =>
     this.actions$.pipe(
       ofType(actions.updateCard),
-      withLatestFrom(
-        this.store.pipe(select((state: any) => state.cards.entities))
-      ),
-      mergeMap(([{ partial }, entities]) => {
-        // Nếu card chưa tồn tại trong store, chúng ta cần thêm nó
-        const cardExists = !!entities[partial.id];
+      mergeMap(({ partial }) => {
+        console.log('Effect: Updating card with data:', partial);
 
-        if (!cardExists) {
-          console.log(
-            'Card không tồn tại trong store, updating with new card:',
-            partial.id
-          );
-          // Card không tồn tại, chỉ trả về action success mà không cần gọi API
-          return of(actions.updateCardSuccess({ partial }));
+        // Create a proper update object for the API call
+        const updateData: PartialCard = {
+          id: partial.id,
+        };
+
+        // Only include the properties that were changed
+        if (partial.title !== undefined) updateData.title = partial.title;
+        if (partial.description !== undefined)
+          updateData.description = partial.description;
+        if (partial.columnId !== undefined)
+          updateData.columnId = partial.columnId;
+        if (partial.priority !== undefined)
+          updateData.priority = partial.priority;
+        if (partial.type !== undefined) updateData.type = partial.type;
+        if (partial.assigneeId !== undefined) {
+          updateData.assigneeId = partial.assigneeId;
+          console.log('Effect: Updating assignee to:', partial.assigneeId);
         }
+        if (partial.reporterId !== undefined)
+          updateData.reporterId = partial.reporterId;
+        if (partial.labels !== undefined) updateData.labels = partial.labels;
+        if (partial.startDate !== undefined)
+          updateData.startDate = partial.startDate;
+        if (partial.dueDate !== undefined) updateData.dueDate = partial.dueDate;
+        if (partial.storyPoints !== undefined)
+          updateData.storyPoints = partial.storyPoints;
 
-        // Card đã tồn tại, tiến hành cập nhật
-        return this.boardService.updateCard(partial).pipe(
+        // Update the card using the boardService
+        return this.boardService.updateCard(updateData).pipe(
+          tap((response) => console.log('Card update API response:', response)),
           map((_) => actions.updateCardSuccess({ partial })),
-          catchError((error) => of(actions.updateCardError({ error })))
+          catchError((error) => {
+            console.error('Error updating card:', error);
+            return of(
+              actions.updateCardError({
+                error: error.message || 'Failed to update card',
+              })
+            );
+          })
         );
       })
     )

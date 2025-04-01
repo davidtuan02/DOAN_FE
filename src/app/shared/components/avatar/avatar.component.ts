@@ -44,4 +44,14 @@ export class AvatarComponent {
 
     return 'U'; // Ultimate fallback
   }
+
+  getFullName(): string {
+    if (!this.user) return '';
+
+    if (this.user.firstName && this.user.lastName) {
+      return `${this.user.firstName} ${this.user.lastName}`;
+    }
+
+    return this.user.username || this.user.email || 'Unknown User';
+  }
 }

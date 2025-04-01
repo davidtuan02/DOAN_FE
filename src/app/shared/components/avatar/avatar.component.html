@@ -7,7 +7,7 @@
     [src]="user?.avatar"
     alt="avatar"
     nz-tooltip
-    [nzTooltipTitle]="user?.username"
+    [nzTooltipTitle]="getFullName()"
     (click)="onSelect()"
   />
 </ng-container>
@@ -21,7 +21,7 @@
     [style.line-height.px]="size"
     [style.font-size.px]="size / 2.5"
     nz-tooltip
-    [nzTooltipTitle]="user?.username"
+    [nzTooltipTitle]="getFullName()"
     (click)="onSelect()"
   >
     {{ getUserInitials() }}

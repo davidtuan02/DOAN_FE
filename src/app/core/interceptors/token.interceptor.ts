@@ -22,10 +22,6 @@ export class TokenInterceptor implements HttpInterceptor {
 
     // Log for all requests to API
     if (req.url.includes('/api/')) {
-      console.log(
-        `[API REQUEST] ${req.method} ${req.url} - Token exists: ${!!token}`
-      );
-
       if (token) {
         // Check if token looks valid (simple structure check)
         try {
@@ -35,10 +31,6 @@ export class TokenInterceptor implements HttpInterceptor {
               '[TOKEN WARNING] Token does not have valid JWT structure'
             );
           } else {
-            console.log(
-              '[TOKEN DEBUG] Token first 10 chars:',
-              token.substring(0, 10) + '...'
-            );
           }
         } catch (e) {
           console.error('[TOKEN ERROR] Token validation error:', e);
@@ -48,14 +40,6 @@ export class TokenInterceptor implements HttpInterceptor {
 
     // Log project-related requests in detail
     if (req.url.includes('/projects')) {
-      console.log('[PROJECT API] Request details:', {
-        method: req.method,
-        url: req.url,
-        headers: req.headers
-          .keys()
-          .map((key) => `${key}: ${req.headers.get(key)}`),
-        body: req.body,
-      });
     }
 
     if (token) {

@@ -75,6 +75,7 @@ export class CardDetailsPanelComponent implements OnInit {
   }
 
   onUpdateCard(partial: PartialCard): void {
+    console.log('Updating card with partial:', partial);
     this.store.dispatch(fromStore.updateCard({ partial }));
   }
 
@@ -149,15 +150,33 @@ export class CardDetailsPanelComponent implements OnInit {
         filter((card) => !!card),
         takeUntilDestroyed(this),
         tap((card) => {
+          console.log('Card selected in details panel:', card);
           this.card = card;
           this.columnControl.patchValue(card?.columnId, { emitEvent: false });
 
-          this.assignee$ = this.store.pipe(
-            select(fromStore.selectUserById(this.card?.assigneeId))
-          );
-          this.reporter$ = this.store.pipe(
-            select(fromStore.selectUserById(this.card?.reporterId))
-          );
+          // Handle assignee properly, ensuring we have the correct assigneeId
+          if (card?.assigneeId) {
+            console.log('Setting assignee from card with ID:', card.assigneeId);
+            this.assignee$ = this.store.pipe(
+              select(fromStore.selectUserById(card.assigneeId))
+            );
+          } else {
+            console.log('No assigneeId found on card');
+            this.assignee$ = this.store.pipe(
+              select(fromStore.selectUserById(undefined))
+            );
+          }
+
+          // Handle reporter
+          if (card?.reporterId) {
+            this.reporter$ = this.store.pipe(
+              select(fromStore.selectUserById(card.reporterId))
+            );
+          } else {
+            this.reporter$ = this.store.pipe(
+              select(fromStore.selectUserById(undefined))
+            );
+          }
         })
       )
       .subscribe();

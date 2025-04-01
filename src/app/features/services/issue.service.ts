@@ -12,7 +12,6 @@ export interface CreateIssueDto {
   status: 'TODO' | 'IN_PROGRESS' | 'REVIEW' | 'DONE';
   type: 'Epic' | 'Story' | 'Task' | 'Bug' | 'Sub-task';
   storyPoints?: number;
-  sprintId?: string;
   epicId?: string;
   assigneeId?: string;
   labels?: string[];
@@ -27,7 +26,6 @@ export interface UpdateIssueDto {
   status?: 'TODO' | 'IN_PROGRESS' | 'REVIEW' | 'DONE';
   type?: 'Epic' | 'Story' | 'Task' | 'Bug' | 'Sub-task';
   storyPoints?: number;
-  sprintId?: string;
   epicId?: string;
   assigneeId?: string;
   labels?: string[];
@@ -37,21 +35,31 @@ export interface UpdateIssueDto {
 
 export interface IssueDto {
   id: string;
+  createdAt: string;
+  updatedAt: string;
   title?: string;
-  description?: string;
   taskName?: string;
+  description?: string;
   taskDescription?: string;
-  priority: string;
   status: string;
+  priority: string;
   type: string;
-  storyPoints?: number;
-  sprintId?: string;
-  epicId?: string;
   assignedTo?: {
     id: string;
     firstName: string;
     lastName: string;
     email: string;
+  };
+  assignee?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    role: string;
+    username: string;
+    age: number;
+    createdAt: string;
+    updatedAt: string;
   };
   reporter?: {
     id: string;
@@ -59,13 +67,13 @@ export interface IssueDto {
     lastName: string;
     email: string;
   };
+  storyPoints: number;
+  epicId?: string;
+  order?: number;
   labels?: string[];
   components?: string[];
-  order?: number;
   startDate?: string;
   dueDate?: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
 // UI Friendly model
@@ -90,7 +98,6 @@ export interface Issue {
   dueDate?: Date;
   startDate?: Date;
   storyPoints?: number;
-  sprintId?: string;
   epicId?: string;
   order: number;
   labels: string[];
@@ -154,7 +161,7 @@ export class IssueService {
       priority: issue.priority || 'Medium',
       storyPoints: issue.storyPoints || 0,
       labels: issue.labels || [],
-      sprintId: issue.sprintId || null,
+      epicId: issue.epicId || null,
       dueDate: issue.dueDate || null,
       startDate: issue.startDate || null,
     };
@@ -178,41 +185,60 @@ export class IssueService {
       );
   }
 
-  // Cập nhật issue
-  updateIssue(issueId: string, updateData: Partial<Issue>): Observable<Issue> {
-    const jwtToken = this.userService['jwtService'].getToken();
-
-    // Map from UI model to API model
+  // Update an existing issue
+  updateIssue(id: string, updateData: Partial<Issue>): Observable<Issue> {
     const updateTaskDto: any = {};
 
+    // Only include fields that have been changed
     if (updateData.title !== undefined)
       updateTaskDto.taskName = updateData.title;
     if (updateData.description !== undefined)
       updateTaskDto.taskDescription = updateData.description;
     if (updateData.status !== undefined)
       updateTaskDto.status = this.mapStatusToBackend(updateData.status);
-    if (updateData.assignee?.id !== undefined)
-      updateTaskDto.assigneeId = updateData.assignee.id;
-    if (updateData.reporter?.id !== undefined)
-      updateTaskDto.reporterId = updateData.reporter.id;
-    if (updateData.type !== undefined) updateTaskDto.type = updateData.type;
     if (updateData.priority !== undefined)
-      updateTaskDto.priority = updateData.priority;
+      updateTaskDto.priority = this.reverseMapPriority(updateData.priority);
+    if (updateData.type !== undefined) updateTaskDto.type = updateData.type;
+    if (updateData.assignee !== undefined)
+      updateTaskDto.assigneeId = updateData.assignee.id;
+    if (updateData.reporter !== undefined)
+      updateTaskDto.reporterId = updateData.reporter.id;
     if (updateData.storyPoints !== undefined)
       updateTaskDto.storyPoints = updateData.storyPoints;
     if (updateData.labels !== undefined)
       updateTaskDto.labels = updateData.labels;
-    if (updateData.sprintId !== undefined)
-      updateTaskDto.sprintId = updateData.sprintId;
-    if (updateData.dueDate !== undefined)
-      updateTaskDto.dueDate = updateData.dueDate;
-    if (updateData.startDate !== undefined)
-      updateTaskDto.startDate = updateData.startDate;
+    if (updateData.epicId !== undefined)
+      updateTaskDto.epicId = updateData.epicId;
 
-    console.log(`Updating issue ${issueId}:`, updateTaskDto);
+    // Handle date fields
+    if (updateData.startDate !== undefined) {
+      const startDate =
+        updateData.startDate instanceof Date
+          ? updateData.startDate
+          : new Date(updateData.startDate);
+
+      if (!isNaN(startDate.getTime())) {
+        updateTaskDto.startDate = startDate.toISOString();
+      }
+    }
+
+    if (updateData.dueDate !== undefined) {
+      const dueDate =
+        updateData.dueDate instanceof Date
+          ? updateData.dueDate
+          : new Date(updateData.dueDate);
+
+      if (!isNaN(dueDate.getTime())) {
+        updateTaskDto.dueDate = dueDate.toISOString();
+      }
+    }
+
+    const jwtToken = this.userService['jwtService'].getToken();
+
+    console.log(`Updating issue ${id} with:`, updateTaskDto);
 
     return this.http
-      .put<IssueDto>(`${this.apiUrl}/${issueId}`, updateTaskDto, {
+      .put<any>(`${this.apiUrl}/${id}`, updateTaskDto, {
         headers: new HttpHeaders({
           'Content-Type': 'application/json',
           Authorization: `Bearer ${jwtToken}`,
@@ -220,7 +246,9 @@ export class IssueService {
       })
       .pipe(
         map((task) => this.mapTaskToIssue(task)),
-        tap((updatedIssue) => console.log('Updated issue:', updatedIssue)),
+        tap((updatedIssue) =>
+          console.log('Updated issue response:', updatedIssue)
+        ),
         catchError((error) => {
           console.error('Error updating issue:', error);
           return throwError(() => new Error(this.getErrorMessage(error)));
@@ -279,33 +307,15 @@ export class IssueService {
 
   // Move issue to a sprint
   moveIssueToSprint(issueId: string, sprintId?: string): Observable<Issue> {
-    const jwtToken = this.userService['jwtService'].getToken();
+    const url = `${this.apiUrl}/${issueId}/sprint`;
+    const body = sprintId ? { sprintId } : null;
 
-    console.log(
-      `Moving issue ${issueId} to ${
-        sprintId ? 'sprint ' + sprintId : 'backlog'
-      }`
-    );
-
-    // Backend có một endpoint "/tasks/:id/sprint" cho việc thêm task vào sprint
-    const apiUrl = `${this.apiUrl}/${issueId}/sprint`;
-    const payload = { sprintId: sprintId || null };
-
-    return this.http
-      .put<IssueDto>(apiUrl, payload, {
-        headers: new HttpHeaders({
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${jwtToken}`,
-        }),
+    return this.http.put<any>(url, body).pipe(
+      map((response) => this.mapTaskToIssue(response)),
+      catchError((error) => {
+        return throwError(() => new Error(this.getErrorMessage(error)));
       })
-      .pipe(
-        map((task) => this.mapTaskToIssue(task)),
-        tap((issue) => console.log('Issue moved to sprint:', issue)),
-        catchError((error) => {
-          console.error(`Error moving issue ${issueId} to sprint:`, error);
-          return throwError(() => new Error(this.getErrorMessage(error)));
-        })
-      );
+    );
   }
 
   // Cập nhật trạng thái issue
@@ -390,31 +400,58 @@ export class IssueService {
       );
   }
 
+  // Assign user to an issue
+  assignUser(issueId: string, userId: string): Observable<Issue> {
+    const jwtToken = this.userService['jwtService'].getToken();
+
+    console.log(`Assigning user ${userId} to issue ${issueId}`);
+
+    return this.http
+      .put<IssueDto>(
+        `${this.apiUrl}/${issueId}/assign`,
+        { userId },
+        {
+          headers: new HttpHeaders({
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${jwtToken}`,
+          }),
+        }
+      )
+      .pipe(
+        map((task) => this.mapTaskToIssue(task)),
+        tap((updatedIssue) => console.log('Assignee updated:', updatedIssue)),
+        catchError((error) => {
+          console.error(`Error assigning user to issue ${issueId}:`, error);
+          return throwError(() => new Error(this.getErrorMessage(error)));
+        })
+      );
+  }
+
   // Helper methods
   private mapTasksToIssues(tasks: IssueDto[]): Issue[] {
     return tasks.map((task) => this.mapTaskToIssue(task));
   }
 
   private mapTaskToIssue(task: IssueDto): Issue {
-    // Map từ dữ liệu API sang mô hình UI
+    const assigneeObj = task.assignee || task.assignedTo;
+
     return {
       id: task.id,
-      key: `SCRUM-${task.id.substring(0, 4)}`,
+      key: task.id.slice(0, 8).toUpperCase(),
       title: task.title || task.taskName || '',
       description: task.description || task.taskDescription || '',
-      priority: this.mapTaskPriority(task.priority || 'MEDIUM'),
-      status: this.mapTaskStatus(task.status || 'CREATED'),
-      type:
-        (task.type as 'Epic' | 'Story' | 'Task' | 'Bug' | 'Sub-task') || 'Task',
-      assignee: task.assignedTo
+      priority: this.mapTaskPriority(task.priority),
+      status: this.mapTaskStatus(task.status),
+      type: task.type as 'Epic' | 'Story' | 'Task' | 'Bug' | 'Sub-task',
+      assignee: assigneeObj
         ? {
-            id: task.assignedTo.id,
-            name: `${task.assignedTo.firstName} ${task.assignedTo.lastName}`,
-            avatar: `https://ui-avatars.com/api/?name=${task.assignedTo.firstName.charAt(
-              0
-            )}${task.assignedTo.lastName.charAt(
-              0
-            )}&background=6554C0&color=fff`,
+            id: assigneeObj.id,
+            name: `${assigneeObj.firstName} ${assigneeObj.lastName}`,
+            avatar: `https://ui-avatars.com/api/?name=${
+              assigneeObj.firstName.charAt(0) || '?'
+            }${
+              assigneeObj.lastName.charAt(0) || '?'
+            }&background=0052CC&color=fff`,
           }
         : undefined,
       reporter: task.reporter
@@ -429,7 +466,6 @@ export class IssueService {
           }
         : undefined,
       storyPoints: task.storyPoints || 0,
-      sprintId: task.sprintId,
       epicId: task.epicId,
       order: task.order || 0,
       labels: task.labels || [],
@@ -464,6 +500,7 @@ export class IssueService {
     } = {
       CREATED: 'To Do',
       IN_PROGRESS: 'In Progress',
+      REVIEW: 'Review',
       FINISH: 'Done',
     };
     return statusMap[status] || 'To Do';
@@ -500,13 +537,13 @@ export class IssueService {
 
   private mapStatusToBackend(
     status: string
-  ): 'CREATED' | 'IN_PROGRESS' | 'FINISH' {
+  ): 'CREATED' | 'IN_PROGRESS' | 'REVIEW' | 'FINISH' {
     const statusMap: {
-      [key: string]: 'CREATED' | 'IN_PROGRESS' | 'FINISH';
+      [key: string]: 'CREATED' | 'IN_PROGRESS' | 'REVIEW' | 'FINISH';
     } = {
       'To Do': 'CREATED',
       'In Progress': 'IN_PROGRESS',
-      Review: 'IN_PROGRESS',
+      Review: 'REVIEW',
       Done: 'FINISH',
     };
     return statusMap[status] || 'CREATED';

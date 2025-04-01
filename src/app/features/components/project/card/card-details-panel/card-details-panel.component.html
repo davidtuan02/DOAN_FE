@@ -16,7 +16,7 @@
       [nzValue]="c.id"
       *ngFor="let c of columns"
     >
-      <div class="w-48 flex gap-2 items-center py-1">
+      <div class="flex items-center w-48 gap-2 py-1">
         <div
           class="w-2 h-2 rounded-full"
           [ngStyle]="{ backgroundColor: c.bgBadge }"
@@ -95,10 +95,8 @@
         <div class="title">Reporter</div>
         <app-card-reporter
           class="w-full"
-          [users]="users$ | async"
           [cardId]="card.id"
           [reporter]="reporter$ | async"
-          (updateReporter)="onUpdateCard($event)"
         >
         </app-card-reporter>
       </div>
