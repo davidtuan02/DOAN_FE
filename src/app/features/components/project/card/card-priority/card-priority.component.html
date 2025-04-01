@@ -1,47 +1,53 @@
-<div class="flex items-center justify-between">
+<ng-container *ngIf="priority || editMode">
   <nz-select
-    class="w-full"
-    nzSize="default"
-    nzBorderless
+    [nzCustomTemplate]="defaultTemplate"
     [nzDropdownMatchSelectWidth]="false"
+    nzBorderless
+    [nzSuffixIcon]="customDropdownIcon"
     [formControl]="priorityControl"
-    [nzSuffixIcon]="suffixIconTemplate"
-    [nzCustomTemplate]="defaultOptionTemplate"
+    [nzOptionHeightPx]="34"
+    [nzShowArrow]="false"
+    class="w-full priority-control"
   >
     <nz-option
-      *ngFor="let item of priorities"
-      [nzValue]="item.value"
-      [nzLabel]="item.label"
       nzCustomContent
+      [nzLabel]="p.icon"
+      [nzValue]="p.name"
+      [nzHide]="p.name === priorityControl.value"
+      *ngFor="let p of CardPriorities"
     >
-      <div class="flex items-center gap-2">
-        <app-svg-icon
-          [name]="item.iconName"
-          [width]="16"
-          [height]="16"
-        ></app-svg-icon>
-        <span>{{ item.label }}</span>
+      <div class="flex gap-2 py-1">
+        <app-svg-icon [name]="p.icon" [height]="16" [width]="16"></app-svg-icon>
+        <div class="leading-none capitalize text-textDark">{{ p.name }}</div>
       </div>
     </nz-option>
   </nz-select>
-</div>
+</ng-container>
 
-<ng-template #suffixIconTemplate>
-  <app-svg-icon
-    name="arrowDown"
-    [width]="20"
-    [height]="20"
-    class="text-textDark"
-  ></app-svg-icon>
-</ng-template>
+<button
+  *ngIf="!priority && !editMode"
+  class="px-3 hover:bg-backgroundDark py-1 rounded w-full text-left text-textMedium"
+  (click)="onEnableEditMode()"
+>
+  None
+</button>
 
-<ng-template #defaultOptionTemplate let-selected>
+<ng-template #defaultTemplate let-selected>
   <div class="flex items-center gap-2">
     <app-svg-icon
-      [name]="getPriorityIcon()"
-      [width]="16"
+      [name]="selected.nzLabel"
       [height]="16"
+      [width]="16"
     ></app-svg-icon>
-    <span>{{ selected.nzLabel }}</span>
+    <div class="text-textDark">{{ selected.nzValue }}</div>
   </div>
+</ng-template>
+
+<ng-template #customDropdownIcon>
+  <app-svg-icon
+    class="text-textDark"
+    name="arrowDown"
+    [width]="24"
+    [height]="24"
+  ></app-svg-icon>
 </ng-template>

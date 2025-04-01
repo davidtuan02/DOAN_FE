@@ -1,21 +1,19 @@
-import { Component, forwardRef, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import {
-  ControlValueAccessor,
-  FormControl,
-  NG_VALUE_ACCESSOR,
-  ReactiveFormsModule,
-} from '@angular/forms';
-import { NzSelectModule } from 'ng-zorro-antd/select';
-import { UserService } from '../../../../../core/services/user.service';
+import { Component, forwardRef } from '@angular/core';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { User } from '../../../../../core/models';
-import { AvatarComponent } from '../../../../../shared/components/avatar/avatar.component';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { Destroyable, takeUntilDestroyed } from '../../../../../shared/utils';
+import { CommonModule } from '@angular/common';
+import { AvatarComponent } from '../../../../../shared/components';
+import { select, Store } from '@ngrx/store';
+import * as fromStore from '../../../../../core/store';
 
+@Destroyable()
 @Component({
   selector: 'app-assignee-filter-control',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NzSelectModule, AvatarComponent],
+  imports: [CommonModule, AvatarComponent],
   templateUrl: './assignee-filter-control.component.html',
   styleUrls: ['./assignee-filter-control.component.scss'],
   providers: [
@@ -26,71 +24,44 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
     },
   ],
 })
-export class AssigneeFilterControlComponent
-  implements OnInit, ControlValueAccessor
-{
-  users: User[] = [];
-  selectedAssignees: string[] = [];
-  formControl = new FormControl<string[]>([]);
-  usersLoaded = false;
+export class AssigneeFilterControlComponent implements ControlValueAccessor {
+  users$!: Observable<Array<User>>;
+  users: Array<User> = [];
 
-  private onChange: (value: string[]) => void = () => {};
-  private onTouched: () => void = () => {};
+  selectedAssignees: Array<string> = [];
 
-  constructor(private userService: UserService) {}
+  private onTouched!: Function;
+  private onChanged!: Function;
 
-  ngOnInit(): void {
-    if (!this.usersLoaded) {
-      this.loadUsers();
-    }
-
-    this.formControl.valueChanges
+  constructor(private store: Store<fromStore.AppState>) {
+    this.users$ = this.store.pipe(select(fromStore.allUsers));
+    this.users$
       .pipe(
-        debounceTime(300),
-        distinctUntilChanged((prev, curr) => {
-          // Check if arrays are the same
-          if (!prev && !curr) return true;
-          if (!prev || !curr) return false;
-          if (prev.length !== curr.length) return false;
-          return prev.every((val, idx) => val === curr[idx]);
-        })
+        takeUntilDestroyed(this),
+        tap((users) => (this.users = users))
       )
-      .subscribe((value) => {
-        this.selectedAssignees = value || [];
-        this.onChange(this.selectedAssignees);
-      });
+      .subscribe();
   }
 
-  loadUsers(): void {
-    this.userService.getUsers().subscribe({
-      next: (users: User[]) => {
-        this.users = users;
-        this.usersLoaded = true;
-      },
-      error: (err) => {
-        console.error('Error loading users:', err);
-      },
-    });
+  writeValue(assignees: Array<string>): void {
+    this.selectedAssignees = [...assignees];
   }
 
-  writeValue(value: string[]): void {
-    this.selectedAssignees = value || [];
-    this.formControl.setValue(this.selectedAssignees, { emitEvent: false });
+  registerOnChange(fn: any): void {
+    this.onChanged = fn;
   }
 
-  registerOnChange(fn: (value: string[]) => void): void {
-    this.onChange = fn;
-  }
-
-  registerOnTouched(fn: () => void): void {
+  registerOnTouched(fn: any): void {
     this.onTouched = fn;
   }
 
-  setDisabledState(isDisabled: boolean): void {
-    if (isDisabled) {
-      this.formControl.disable();
+  onChangeAssignee(id: string): void {
+    if (this.selectedAssignees.includes(id)) {
+      this.selectedAssignees = this.selectedAssignees.filter((id) => id !== id);
     } else {
-      this.formControl.enable();
+      this.selectedAssignees = [...this.selectedAssignees, id];
     }
+
+    this.onChanged(this.selectedAssignees);
   }
 }

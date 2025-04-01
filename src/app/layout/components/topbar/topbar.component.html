@@ -352,7 +352,7 @@
 
     <ng-container *ngIf="currentUser$ | async as user">
       <a nz-dropdown [nzDropdownMenu]="userMenu" class="cursor-pointer">
-        <app-avatar [user]="user" [size]="48"></app-avatar>
+        <app-avatar [user]="user" [size]="48"> </app-avatar>
       </a>
       <nz-dropdown-menu #userMenu="nzDropdownMenu" class="w-64">
         <div class="px-4 py-3 border-b border-gray-200">

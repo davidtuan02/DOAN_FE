@@ -105,11 +105,9 @@
         ></app-svg-icon>
       </ng-container>
 
-      <div class="absolute bottom-2 right-2 flex items-center gap-1">
-        <ng-container *ngIf="assignee$ | async as assignee">
-          <app-avatar [user]="assignee" size="small"></app-avatar>
-        </ng-container>
-      </div>
+      <ng-container *ngIf="assignee$ | async as assignee">
+        <app-avatar [user]="assignee" [size]="24"></app-avatar>
+      </ng-container>
     </div>
   </div>
 </button>

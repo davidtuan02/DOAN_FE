@@ -197,42 +197,17 @@ export class IssueService {
       updateTaskDto.reporterId = updateData.reporter.id;
     if (updateData.type !== undefined) updateTaskDto.type = updateData.type;
     if (updateData.priority !== undefined)
-      updateTaskDto.priority = this.reverseMapPriority(updateData.priority);
+      updateTaskDto.priority = updateData.priority;
     if (updateData.storyPoints !== undefined)
       updateTaskDto.storyPoints = updateData.storyPoints;
     if (updateData.labels !== undefined)
       updateTaskDto.labels = updateData.labels;
     if (updateData.sprintId !== undefined)
       updateTaskDto.sprintId = updateData.sprintId;
-
-    // Handle dates properly
-    if (updateData.dueDate !== undefined) {
-      if (typeof updateData.dueDate === 'string') {
-        // If it's already a string in the correct format, use it directly
-        updateTaskDto.dueDate = updateData.dueDate;
-      } else if (updateData.dueDate instanceof Date) {
-        // If it's a Date object, convert to ISO string YYYY-MM-DD format
-        updateTaskDto.dueDate = updateData.dueDate.toISOString().split('T')[0];
-      } else {
-        // If it's null or undefined, set to null
-        updateTaskDto.dueDate = null;
-      }
-    }
-
-    if (updateData.startDate !== undefined) {
-      if (typeof updateData.startDate === 'string') {
-        // If it's already a string in the correct format, use it directly
-        updateTaskDto.startDate = updateData.startDate;
-      } else if (updateData.startDate instanceof Date) {
-        // If it's a Date object, convert to ISO string YYYY-MM-DD format
-        updateTaskDto.startDate = updateData.startDate
-          .toISOString()
-          .split('T')[0];
-      } else {
-        // If it's null or undefined, set to null
-        updateTaskDto.startDate = null;
-      }
-    }
+    if (updateData.dueDate !== undefined)
+      updateTaskDto.dueDate = updateData.dueDate;
+    if (updateData.startDate !== undefined)
+      updateTaskDto.startDate = updateData.startDate;
 
     console.log(`Updating issue ${issueId}:`, updateTaskDto);
 

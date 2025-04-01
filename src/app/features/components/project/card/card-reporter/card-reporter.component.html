@@ -1,47 +1,38 @@
-<div class="flex items-center justify-between">
-  <nz-select
-    class="w-full"
-    nzSize="default"
-    nzBorderless
-    [nzDropdownMatchSelectWidth]="false"
-    [formControl]="reporterControl"
-    [nzSuffixIcon]="suffixIconTemplate"
-    [nzCustomTemplate]="defaultOptionTemplate"
+<nz-select
+  [nzCustomTemplate]="defaultTemplate"
+  [nzDropdownMatchSelectWidth]="false"
+  nzBorderless
+  nzShowSearch
+  [nzSuffixIcon]="customDropdownIcon"
+  [nzShowArrow]="false"
+  [formControl]="reporterControl"
+  class="w-full"
+>
+  <nz-option
+    nzCustomContent
+    [nzLabel]="u.avatar"
+    [nzValue]="u"
+    *ngFor="let u of users"
   >
-    <nz-option
-      *ngFor="let user of users"
-      [nzValue]="user"
-      [nzLabel]="user.firstName + ' ' + user.lastName"
-      nzCustomContent
-    >
-      <div class="flex items-center gap-2">
-        <app-avatar [user]="user" size="small"></app-avatar>
-        <span>{{ user.firstName }} {{ user.lastName }}</span>
-      </div>
-    </nz-option>
-  </nz-select>
+    <div class="flex gap-2 py-1 item-centers">
+      <app-avatar [user]="u" [size]="24"></app-avatar>
+      <div class="capitalize text-textDark">{{ u.name }}</div>
+    </div>
+  </nz-option>
+</nz-select>
 
-  <button
-    *ngIf="reporter"
-    (click)="unassign($event)"
-    class="ml-2 flex-shrink-0 text-gray-400 hover:text-gray-600"
-  >
-    <app-svg-icon name="close" [width]="16" [height]="16"></app-svg-icon>
-  </button>
-</div>
-
-<ng-template #suffixIconTemplate>
-  <app-svg-icon
-    name="arrowDown"
-    [width]="20"
-    [height]="20"
-    class="text-textDark"
-  ></app-svg-icon>
+<ng-template #defaultTemplate let-selected>
+  <div class="flex items-center gap-2 h-full">
+    <app-avatar [user]="selected.nzValue" [size]="24"></app-avatar>
+    <div class="capitalize text-textDark">{{ selected.nzValue.name }}</div>
+  </div>
 </ng-template>
 
-<ng-template #defaultOptionTemplate let-selected>
-  <div class="flex items-center gap-2">
-    <app-avatar *ngIf="reporter" [user]="reporter" size="small"></app-avatar>
-    <span>{{ selected.nzLabel }}</span>
-  </div>
+<ng-template #customDropdownIcon>
+  <app-svg-icon
+    class="text-textDark"
+    name="arrowDown"
+    [width]="24"
+    [height]="24"
+  ></app-svg-icon>
 </ng-template>
