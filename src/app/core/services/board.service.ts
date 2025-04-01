@@ -261,8 +261,7 @@ export class BoardService {
   }
 
   createCard(card: Card): Observable<unknown> {
-    // Kiểm tra xem card này đã tồn tại trong danh sách cards chưa
-    // Nếu đã tồn tại, trả về không làm gì
+    // Check if card already exists
     const existingCards = this.cardsSubject.getValue();
     const existingCard = existingCards.find((c) => c.id === card.id);
     if (existingCard) {
@@ -288,7 +287,40 @@ export class BoardService {
       labels: card.labels || [],
     };
 
-    return this.issueService.createIssue(currentProject.id, issue);
+    // Two-step process: 1) Create the issue, 2) Move it to active sprint if available
+    return this.sprintService.getSprintsByProjectId(currentProject.id).pipe(
+      switchMap((sprints) => {
+        // Create the issue first
+        return this.issueService.createIssue(currentProject.id!, issue).pipe(
+          switchMap((createdIssue) => {
+            // Find active sprint
+            const activeSprint = sprints.find(
+              (sprint) => sprint.status === 'active'
+            );
+
+            // If no active sprint, just return the created issue
+            if (!activeSprint || !activeSprint.id) {
+              console.warn(
+                'No active sprint found, issue created without sprint association'
+              );
+              return of(createdIssue);
+            }
+
+            // Move the issue to the active sprint
+            console.log(`Moving issue to active sprint: ${activeSprint.id}`);
+            return this.issueService
+              .moveIssueToSprint(createdIssue.id, activeSprint.id!)
+              .pipe(
+                catchError((error) => {
+                  console.error('Error moving issue to sprint:', error);
+                  // Return the created issue even if moving to sprint fails
+                  return of(createdIssue);
+                })
+              );
+          })
+        );
+      })
+    );
   }
 
   updateCard(card: PartialCard): Observable<unknown> {

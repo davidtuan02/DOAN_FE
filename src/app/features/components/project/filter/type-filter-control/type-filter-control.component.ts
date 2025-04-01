@@ -9,24 +9,36 @@ import { SvgIconComponent } from '../../../../../shared/components';
 @Component({
   selector: 'app-type-filter-control',
   standalone: true,
-  imports: [CommonModule, NzCheckboxModule, NzPopoverModule, NzBadgeComponent, SvgIconComponent],
+  imports: [
+    CommonModule,
+    NzCheckboxModule,
+    NzPopoverModule,
+    NzBadgeComponent,
+    SvgIconComponent,
+  ],
   templateUrl: './type-filter-control.component.html',
   styleUrls: ['./type-filter-control.component.scss'],
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => TypeFilterControlComponent),
-    multi: true,
-  }]
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => TypeFilterControlComponent),
+      multi: true,
+    },
+  ],
 })
 export class TypeFilterControlComponent implements ControlValueAccessor {
   cardTypes = [
     {
       label: 'TASK',
-      icon: 'blueCheck'
+      icon: 'blueCheck',
     },
     {
       label: 'BUG',
-      icon: 'bug'
+      icon: 'bug',
+    },
+    {
+      label: 'STORY',
+      icon: 'story',
     },
   ];
 
@@ -51,7 +63,7 @@ export class TypeFilterControlComponent implements ControlValueAccessor {
 
   onChangeFilter(selected: boolean, type: string) {
     if (this.selectedTypes.includes(type)) {
-      this.selectedTypes = this.selectedTypes.filter(l => l !== type);
+      this.selectedTypes = this.selectedTypes.filter((l) => l !== type);
     } else {
       this.selectedTypes = [...this.selectedTypes, type];
     }

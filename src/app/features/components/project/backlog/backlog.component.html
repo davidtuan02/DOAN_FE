@@ -300,6 +300,12 @@
               [width]="16"
               [height]="16"
             ></app-svg-icon>
+            <app-svg-icon
+              *ngIf="issue.type === 'Story'"
+              name="story"
+              [width]="16"
+              [height]="16"
+            ></app-svg-icon>
           </div>
 
           <div class="flex-grow">
@@ -600,6 +606,12 @@
             <app-svg-icon
               *ngIf="issue.type === 'Bug'"
               name="bug"
+              [width]="16"
+              [height]="16"
+            ></app-svg-icon>
+            <app-svg-icon
+              *ngIf="issue.type === 'Story'"
+              name="story"
               [width]="16"
               [height]="16"
             ></app-svg-icon>

@@ -2163,6 +2163,10 @@ export class BacklogComponent implements OnInit {
         return 'Bug';
       case CardTypesEnum.STORY:
         return 'Story';
+      case 'Bug':
+        return 'Bug';
+      case 'Story':
+        return 'Story';
       case CardTypesEnum.TASK:
       default:
         return 'Task';

@@ -13,6 +13,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { SvgIconComponent } from '../../../../shared/components';
 
 @Component({
   selector: 'app-summary',
@@ -23,6 +24,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     MatSnackBarModule,
     MatButtonModule,
     MatProgressSpinnerModule,
+    SvgIconComponent,
   ],
   templateUrl: './summary.component.html',
 })
@@ -37,10 +39,14 @@ export class SummaryComponent implements OnInit {
     completedStoryPoints: 0,
     inProgressStoryPoints: 0,
     todoStoryPoints: 0,
+    reviewStoryPoints: 0,
     overdueIssues: 0,
     highPriorityIssues: 0,
     mediumPriorityIssues: 0,
     lowPriorityIssues: 0,
+    bugCount: 0,
+    storyCount: 0,
+    taskCount: 0,
   };
 
   currentSprint: SprintProgress | null = null;
@@ -80,6 +86,7 @@ export class SummaryComponent implements OnInit {
       .subscribe({
         next: (stats) => {
           this.projectStats = stats;
+          console.log('Project stats loaded:', stats);
           // Once stats are loaded, load additional data
           this.loadSprintData();
           this.loadTeamData();
@@ -98,6 +105,7 @@ export class SummaryComponent implements OnInit {
     this.projectStatsService.getCurrentSprint(this.currentProjectId).subscribe({
       next: (sprint) => {
         this.currentSprint = sprint;
+        console.log('Current sprint data loaded:', sprint);
       },
       error: (err) => {
         console.error('Error loading sprint data:', err);
@@ -112,6 +120,7 @@ export class SummaryComponent implements OnInit {
       .subscribe({
         next: (members) => {
           this.teamMembers = members;
+          console.log('Team data loaded:', members.length, 'members');
         },
         error: (err) => {
           console.error('Error loading team data:', err);

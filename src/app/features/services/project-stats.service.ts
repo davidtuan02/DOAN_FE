@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, forkJoin, map, catchError } from 'rxjs';
+import { Observable, of, forkJoin, map, catchError, switchMap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { IssueService } from './issue.service';
 import { UserService } from '../../core/services/user.service';
 import { ProjectService } from '../../core/services/project.service';
+import { SprintService, Sprint } from './sprint.service';
 import { Issue } from './issue.service';
 
 export interface ProjectStats {
@@ -17,20 +18,28 @@ export interface ProjectStats {
   completedStoryPoints: number;
   inProgressStoryPoints: number;
   todoStoryPoints: number;
+  reviewStoryPoints: number;
   overdueIssues: number;
   highPriorityIssues: number;
   mediumPriorityIssues: number;
   lowPriorityIssues: number;
+  bugCount: number;
+  storyCount: number;
+  taskCount: number;
 }
 
 export interface SprintProgress {
   id: string;
   name: string;
+  goal?: string;
+  status: string;
   startDate: Date;
   endDate: Date;
   totalStoryPoints: number;
   completedStoryPoints: number;
   progress: number;
+  totalIssues: number;
+  completedIssues: number;
 }
 
 export interface TeamMemberStats {
@@ -53,7 +62,8 @@ export class ProjectStatsService {
     private http: HttpClient,
     private userService: UserService,
     private issueService: IssueService,
-    private projectService: ProjectService
+    private projectService: ProjectService,
+    private sprintService: SprintService
   ) {}
 
   /**
@@ -74,10 +84,14 @@ export class ProjectStatsService {
           completedStoryPoints: 0,
           inProgressStoryPoints: 0,
           todoStoryPoints: 0,
+          reviewStoryPoints: 0,
           overdueIssues: 0,
           highPriorityIssues: 0,
           mediumPriorityIssues: 0,
           lowPriorityIssues: 0,
+          bugCount: 0,
+          storyCount: 0,
+          taskCount: 0,
         });
       })
     );
@@ -97,10 +111,14 @@ export class ProjectStatsService {
       completedStoryPoints: 0,
       inProgressStoryPoints: 0,
       todoStoryPoints: 0,
+      reviewStoryPoints: 0,
       overdueIssues: 0,
       highPriorityIssues: 0,
       mediumPriorityIssues: 0,
       lowPriorityIssues: 0,
+      bugCount: 0,
+      storyCount: 0,
+      taskCount: 0,
     };
 
     const now = new Date();
@@ -118,8 +136,7 @@ export class ProjectStatsService {
         stats.todoStoryPoints += issue.storyPoints || 0;
       } else if (issue.status === 'Review') {
         stats.reviewIssues++;
-        // Add these to in progress for now
-        stats.inProgressStoryPoints += issue.storyPoints || 0;
+        stats.reviewStoryPoints += issue.storyPoints || 0;
       }
 
       // Calculate total story points
@@ -142,6 +159,15 @@ export class ProjectStatsService {
       } else if (issue.priority === 'Low' || issue.priority === 'Lowest') {
         stats.lowPriorityIssues++;
       }
+
+      // Count by issue type
+      if (issue.type === 'Bug') {
+        stats.bugCount++;
+      } else if (issue.type === 'Story') {
+        stats.storyCount++;
+      } else if (issue.type === 'Task') {
+        stats.taskCount++;
+      }
     });
 
     return stats;
@@ -151,17 +177,64 @@ export class ProjectStatsService {
    * Gets current sprint progress
    */
   getCurrentSprint(projectId: string): Observable<SprintProgress | null> {
-    // For now, return mock data as we don't have a sprint API yet
-    // TODO: Replace with real API call when available
-    return of({
-      id: '1',
-      name: 'Sprint 1',
-      startDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
-      endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
-      totalStoryPoints: 40,
-      completedStoryPoints: 15,
-      progress: 37.5,
-    });
+    return this.sprintService.getSprintsByProjectId(projectId).pipe(
+      map((sprints) => {
+        // Find the active sprint
+        const activeSprint = sprints.find(
+          (sprint) => sprint.status === 'active'
+        );
+
+        if (!activeSprint) {
+          return null;
+        }
+
+        // Calculate sprint statistics
+        let totalStoryPoints = 0;
+        let completedStoryPoints = 0;
+        let totalIssues = 0;
+        let completedIssues = 0;
+
+        if (activeSprint.issues && activeSprint.issues.length > 0) {
+          totalIssues = activeSprint.issues.length;
+
+          activeSprint.issues.forEach((issue) => {
+            totalStoryPoints += issue.storyPoints || 0;
+
+            if (issue.status === 'Done') {
+              completedIssues++;
+              completedStoryPoints += issue.storyPoints || 0;
+            }
+          });
+        }
+
+        const progress =
+          totalStoryPoints > 0
+            ? Math.round((completedStoryPoints / totalStoryPoints) * 100)
+            : 0;
+
+        return {
+          id: activeSprint.id!,
+          name: activeSprint.name,
+          goal: activeSprint.goal,
+          status: activeSprint.status,
+          startDate: activeSprint.startDate
+            ? new Date(activeSprint.startDate)
+            : new Date(),
+          endDate: activeSprint.endDate
+            ? new Date(activeSprint.endDate)
+            : new Date(),
+          totalStoryPoints,
+          completedStoryPoints,
+          progress,
+          totalIssues,
+          completedIssues,
+        };
+      }),
+      catchError((error) => {
+        console.error('Error fetching current sprint:', error);
+        return of(null);
+      })
+    );
   }
 
   /**
@@ -180,7 +253,7 @@ export class ProjectStatsService {
         members.forEach((member) => {
           memberStats.set(member.id, {
             id: member.id,
-            name: member.name,
+            name: `${member.firstName} ${member.lastName}`,
             avatar: member.avatar,
             role: member.role || 'Team Member',
             assignedIssues: 0,
@@ -203,9 +276,9 @@ export class ProjectStatsService {
         });
 
         // Convert map to array and sort by assignedIssues
-        return Array.from(memberStats.values()).sort(
-          (a, b) => b.assignedIssues - a.assignedIssues
-        );
+        return Array.from(memberStats.values())
+          .filter((member) => member.assignedIssues > 0)
+          .sort((a, b) => b.assignedIssues - a.assignedIssues);
       }),
       catchError((error) => {
         console.error('Error fetching team performance', error);
