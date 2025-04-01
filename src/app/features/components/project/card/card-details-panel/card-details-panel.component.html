@@ -102,6 +102,46 @@
         >
         </app-card-reporter>
       </div>
+
+      <!-- Story Points Field -->
+      <div class="detail-item">
+        <div class="title">Story Points</div>
+        <div class="w-full">
+          <input
+            type="number"
+            class="w-full px-2 py-1 border border-gray-300 rounded"
+            [value]="card.storyPoints || 0"
+            (change)="onStoryPointsChange($event)"
+            min="0"
+          />
+        </div>
+      </div>
+
+      <!-- Start Date Field -->
+      <div class="detail-item">
+        <div class="title">Start Date</div>
+        <div class="w-full">
+          <input
+            type="date"
+            class="w-full px-2 py-1 border border-gray-300 rounded"
+            [value]="formatDateForInput(card.startDate)"
+            (change)="onStartDateChange($event)"
+          />
+        </div>
+      </div>
+
+      <!-- Due Date Field -->
+      <div class="detail-item">
+        <div class="title">Due Date</div>
+        <div class="w-full">
+          <input
+            type="date"
+            class="w-full px-2 py-1 border border-gray-300 rounded"
+            [value]="formatDateForInput(card.dueDate)"
+            (change)="onDueDateChange($event)"
+          />
+        </div>
+      </div>
     </div>
   </nz-collapse-panel>
 </nz-collapse>

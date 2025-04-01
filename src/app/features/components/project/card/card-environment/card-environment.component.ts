@@ -1,4 +1,10 @@
-import { Component, EventEmitter, Input, Output, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { PartialCard } from '../../../../../core/models';
 import { RichTextEditorComponent } from '../../../../../shared/components';
@@ -8,7 +14,12 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-card-environment',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RichTextEditorComponent, QuillModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RichTextEditorComponent,
+    QuillModule,
+  ],
   templateUrl: './card-environment.component.html',
 })
 export class CardEnvironmentComponent {
@@ -34,15 +45,5 @@ export class CardEnvironmentComponent {
         environment: this.environment,
       });
     }
-  }
-
-  onUpdateEnvironment(): void {
-    this.editMode = false;
-    const partial: PartialCard = {
-      id: this.cardId,
-      environment: this.envForm.value.environment
-    };
-
-    this.updateCardEnvironment.emit(partial);
   }
 }

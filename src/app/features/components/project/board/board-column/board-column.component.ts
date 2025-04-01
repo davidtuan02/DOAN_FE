@@ -19,6 +19,8 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { Store, select } from '@ngrx/store';
 import * as fromStore from '../../../../../core/store';
 import { filter, take } from 'rxjs/operators';
+import { Issue } from '../../../../../features/services/issue.service';
+import { CardTypesEnum } from '../../../../../core/enums';
 
 @Component({
   selector: 'app-board-column',
@@ -79,11 +81,23 @@ export class BoardColumnComponent implements OnInit, OnChanges {
     }
   }
 
-  onCreateCard(card: Card): void {
+  onCreateCard(issueData: Partial<Issue>): void {
+    // Map Issue type to Card type
     const newCard: Card = {
-      ...card,
-      columnId: this.column.id,
       id: nanoid(),
+      ordinalId: 0,
+      title: issueData.title || '',
+      type: this.mapIssueTypeToCardType(issueData.type),
+      columnId: this.column.id,
+      priority: issueData.priority || 'Medium',
+      assigneeId: issueData.assignee?.id || '',
+      reporterId: issueData.reporter?.id || '',
+      labels: issueData.labels || [],
+      description: issueData.description || '',
+      startDate: new Date().toISOString(),
+      dueDate: issueData.dueDate ? issueData.dueDate.toISOString() : '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
     this.store.dispatch(fromStore.createCard({ card: newCard }));
@@ -99,5 +113,17 @@ export class BoardColumnComponent implements OnInit, OnChanges {
 
   onContextMenuClick(): void {
     this.contextMenuVisible = false;
+  }
+
+  private mapIssueTypeToCardType(type?: string): CardTypesEnum {
+    switch (type) {
+      case 'Bug':
+        return CardTypesEnum.BUG;
+      case 'Story':
+        return CardTypesEnum.STORY;
+      case 'Task':
+      default:
+        return CardTypesEnum.TASK;
+    }
   }
 }

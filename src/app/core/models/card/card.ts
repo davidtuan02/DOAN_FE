@@ -11,9 +11,9 @@ export interface Card {
   reporterId: string;
   labels: Array<string>;
   description: string;
-  environment: string;
   startDate: string;
   dueDate: string;
+  storyPoints?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -25,11 +25,11 @@ export interface PartialCard {
   type?: CardTypesEnum;
   columnId?: string;
   description?: string;
-  environment?: string;
   priority?: string;
   assigneeId?: string;
   reporterId?: string;
   labels?: Array<string>;
   startDate?: string;
   dueDate?: string;
+  storyPoints?: number;
 }

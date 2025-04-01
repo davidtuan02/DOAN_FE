@@ -1,24 +1,39 @@
-<ng-container *ngIf="(labels && labels.length > 0) || editMode">
-  <nz-select nzMode="tags" nzBorderless class="w-full label-control"
-             nzAllowClear
-             #labelSelect
-             [formControl]="labelsControl"
-             [nzCustomTemplate]="defaultTemplate"
-             [nzDropdownMatchSelectWidth]="false">
-    <nz-option *ngFor="let label of availableLabels"
-               [nzLabel]="label"
-               [nzValue]="label">
-    </nz-option>
+<div class="flex flex-col">
+  <div class="flex flex-wrap gap-1 mb-2" *ngIf="labels?.length">
+    <nz-tag
+      *ngFor="let label of labels"
+      [nzColor]="getBackgroundColorForLabel(label)"
+      class="px-2 py-1 rounded text-white"
+      (nzOnClose)="removeLabel(label, $event)"
+      nzMode="closeable"
+    >
+      {{ label }}
+    </nz-tag>
+  </div>
+
+  <nz-select
+    class="w-full"
+    nzMode="tags"
+    nzPlaceHolder="Add labels..."
+    [nzMaxTagCount]="3"
+    [formControl]="labelsControl"
+    [nzDropdownMatchSelectWidth]="false"
+    [nzShowArrow]="true"
+    [nzSuffixIcon]="suffixIconTemplate"
+  >
+    <nz-option
+      *ngFor="let label of availableLabels"
+      [nzValue]="label"
+      [nzLabel]="label"
+    ></nz-option>
   </nz-select>
+</div>
 
-  <ng-template #defaultTemplate let-selected>
-    <div class="h-full text-primary items-baseline mr-1 text-sm">{{selected.nzLabel}}</div>
-  </ng-template>
-
-</ng-container>
-
-<button *ngIf="(!labels || labels.length === 0) && !editMode"
-        class="px-3 hover:bg-backgroundDark py-1 rounded w-full text-left text-textMedium"
-        (click)="onEnableEditMode()">
-  None
-</button>
+<ng-template #suffixIconTemplate>
+  <app-svg-icon
+    name="arrowDown"
+    [width]="20"
+    [height]="20"
+    class="text-textDark"
+  ></app-svg-icon>
+</ng-template>

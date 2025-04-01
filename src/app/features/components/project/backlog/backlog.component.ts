@@ -5,7 +5,12 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import {
+  FormsModule,
+  ReactiveFormsModule,
+  FormGroup,
+  FormControl,
+} from '@angular/forms';
 import {
   DragDropModule,
   CdkDragDrop,
@@ -19,7 +24,7 @@ import { HttpClient } from '@angular/common/http';
 import { BASE_URL } from '../../../../core/constants/api.const';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Observable, of, finalize } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { map, catchError, tap } from 'rxjs/operators';
 import { IssueService } from '../../../services/issue.service';
 import { UserService } from '../../../../core/services/user.service';
 import { CommentService, Comment } from '../../../services/comment.service';
@@ -31,12 +36,31 @@ import * as fromStore from '../../../../core/store';
 import { CardTypesEnum } from '../../../../core/enums';
 import { CreateCardFormComponent } from '../../project/card/create-card-form/create-card-form.component';
 import { nanoid } from 'nanoid';
+import { AssigneeFilterControlComponent } from '../../project/filter/assignee-filter-control/assignee-filter-control.component';
+import { LabelFilterControlComponent } from '../../project/filter/label-filter-control/label-filter-control.component';
+import { TypeFilterControlComponent } from '../../project/filter/type-filter-control/type-filter-control.component';
+import { SvgIconComponent } from '../../../../shared/components';
+import { CardFilter } from '../../../../core/models/card/card-filter';
+import { takeUntilDestroyed } from '../../../../shared/utils';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 
 @Component({
   selector: 'app-backlog',
   standalone: true,
-  imports: [CommonModule, FormsModule, DragDropModule, CreateCardFormComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    DragDropModule,
+    CreateCardFormComponent,
+    AssigneeFilterControlComponent,
+    LabelFilterControlComponent,
+    TypeFilterControlComponent,
+    SvgIconComponent,
+    NzSelectModule,
+  ],
   templateUrl: './backlog.component.html',
+  styleUrls: ['./backlog.component.scss'],
 })
 export class BacklogComponent implements OnInit {
   // Main data
@@ -130,6 +154,11 @@ export class BacklogComponent implements OnInit {
 
   modalRef!: NzModalRef;
 
+  // Filter form controls
+  filterFormGroup: FormGroup;
+  groupByControl: FormControl;
+  clearFiltersVisible = false;
+
   constructor(
     private backlogService: BacklogService,
     private projectService: ProjectService,
@@ -143,7 +172,15 @@ export class BacklogComponent implements OnInit {
     private modal: NzModalService,
     private viewContainerRef: ViewContainerRef,
     private store: Store<fromStore.AppState>
-  ) {}
+  ) {
+    // Initialize filter form controls
+    this.groupByControl = new FormControl('None');
+    this.filterFormGroup = new FormGroup({
+      assignees: new FormControl([]),
+      labels: new FormControl([]),
+      types: new FormControl([]),
+    });
+  }
 
   ngOnInit(): void {
     this.isLoading = true;
@@ -222,6 +259,14 @@ export class BacklogComponent implements OnInit {
         }
       });
     }
+
+    // Setup filter form change listener
+    this.filterFormGroup.valueChanges
+      .pipe(
+        takeUntilDestroyed(this),
+        tap((filters) => this.updateFilters(filters))
+      )
+      .subscribe();
   }
 
   // Method to load the board ID from the project
@@ -1175,49 +1220,79 @@ export class BacklogComponent implements OnInit {
   }
 
   getFilteredIssues(issues: Issue[]): Issue[] {
-    return issues.filter((issue) => {
-      // Filter by search query
-      if (
-        this.searchQuery &&
-        !issue.title.toLowerCase().includes(this.searchQuery.toLowerCase()) &&
-        !issue.key.toLowerCase().includes(this.searchQuery.toLowerCase())
-      ) {
-        return false;
-      }
+    if (!issues) return [];
 
-      // Filter by priority
-      if (
-        this.selectedPriority !== 'All' &&
-        issue.priority !== this.selectedPriority
-      ) {
-        return false;
-      }
+    // Get the filter values from the filterFormGroup
+    const filterValues = this.filterFormGroup?.value || {
+      assignees: [],
+      labels: [],
+      types: [],
+    };
+    const selectedAssignees = filterValues.assignees || [];
+    const selectedLabels = filterValues.labels || [];
+    const selectedTypes = filterValues.types || [];
 
-      // Filter by type
-      if (this.selectedType !== 'All' && issue.type !== this.selectedType) {
-        return false;
-      }
+    let filtered = [...issues];
 
-      // Filter by status
-      if (
-        this.selectedStatus !== 'All' &&
-        issue.status !== this.selectedStatus
-      ) {
-        return false;
-      }
+    // Apply search filter
+    if (this.searchQuery) {
+      const searchLower = this.searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (issue) =>
+          issue.title?.toLowerCase().includes(searchLower) ||
+          issue.description?.toLowerCase().includes(searchLower) ||
+          issue.key?.toLowerCase().includes(searchLower)
+      );
+    }
 
-      // Filter by issue type toggles
-      if (
-        (this.showEpicsOnly && issue.type !== 'Epic') ||
-        (this.showStoriesOnly && issue.type !== 'Story') ||
-        (this.showTasksOnly && issue.type !== 'Task') ||
-        (this.showBugsOnly && issue.type !== 'Bug')
-      ) {
-        return false;
-      }
+    // Apply assignee filter
+    if (selectedAssignees.length > 0) {
+      filtered = filtered.filter(
+        (issue) => issue.assignee && selectedAssignees.includes(issue.assignee)
+      );
+    }
 
-      return true;
-    });
+    // Apply label filter
+    if (selectedLabels.length > 0) {
+      filtered = filtered.filter((issue) => {
+        if (!issue.labels || issue.labels.length === 0) return false;
+        return issue.labels.some((label) => selectedLabels.includes(label));
+      });
+    }
+
+    // Apply type filter
+    if (selectedTypes.length > 0) {
+      filtered = filtered.filter(
+        (issue) =>
+          issue.type &&
+          selectedTypes.includes(
+            this.mapIssueTypeToCardType(issue.type).toString()
+          )
+      );
+    }
+
+    // Apply existing filters
+    if (this.selectedPriority !== 'All') {
+      filtered = filtered.filter(
+        (issue) => issue.priority === this.selectedPriority
+      );
+    }
+
+    if (this.selectedType !== 'All') {
+      filtered = filtered.filter((issue) => issue.type === this.selectedType);
+    }
+
+    if (this.selectedStatus !== 'All') {
+      filtered = filtered.filter(
+        (issue) => issue.status === this.selectedStatus
+      );
+    }
+
+    if (this.selectedEpic !== 'All') {
+      filtered = filtered.filter((issue) => issue.epicId === this.selectedEpic);
+    }
+
+    return filtered;
   }
 
   getSprintStatusColor(status: string): string {
@@ -2114,5 +2189,20 @@ export class BacklogComponent implements OnInit {
       default:
         return 'Task';
     }
+  }
+
+  updateFilters(filters: CardFilter): void {
+    // Update filter logic
+    const hasFilters = Object.values(filters).some(
+      (value) => Array.isArray(value) && value.length > 0
+    );
+    this.clearFiltersVisible = hasFilters;
+
+    // Apply filters to the issues
+    this.reloadBacklog();
+  }
+
+  clearFilters(): void {
+    this.filterFormGroup.reset({ assignees: [], labels: [], types: [] });
   }
 }

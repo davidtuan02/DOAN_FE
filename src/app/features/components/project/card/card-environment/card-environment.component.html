@@ -1,25 +1,7 @@
 <div *ngIf="!editMode" (click)="editMode = true">
   <quill-view *ngIf="environment" [content]="environment"></quill-view>
 
-  <div *ngIf="!environment"
-       class="hover:bg-backgroundDark p-2 rounded">
+  <div *ngIf="!environment" class="p-2 rounded hover:bg-backgroundDark">
     None
   </div>
 </div>
-
-<form *ngIf="editMode" [formGroup]="envForm" (ngSubmit)="onUpdateEnvironment()">
-  <app-rich-text-editor formControlName="environment"
-                        (blur)="editMode = false">
-  </app-rich-text-editor>
-  <div class="flex gap-2 mt-4">
-    <button type="submit"
-            class="bg-primary text-white font-medium rounded p-1.5 hover:opacity-90">
-      Save
-    </button>
-    <button type="button"
-            (click)="editMode = false"
-            class="bg-transparent text-textDark font-medium rounded p-1.5 hover:bg-backgroundGray">
-      Cancel
-    </button>
-  </div>
-</form>

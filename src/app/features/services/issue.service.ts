@@ -53,12 +53,19 @@ export interface IssueDto {
     lastName: string;
     email: string;
   };
+  reporter?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
   labels?: string[];
   components?: string[];
   order?: number;
+  startDate?: string;
+  dueDate?: string;
   createdAt: string;
   updatedAt: string;
-  responsableName: string;
 }
 
 // UI Friendly model
@@ -81,6 +88,7 @@ export interface Issue {
     avatar: string;
   };
   dueDate?: Date;
+  startDate?: Date;
   storyPoints?: number;
   sprintId?: string;
   epicId?: string;
@@ -141,7 +149,14 @@ export class IssueService {
       taskName: issue.title || '',
       taskDescription: issue.description || ' ',
       status: this.mapStatusToBackend(issue.status || 'To Do'),
-      responsableName: userId || 'Unassigned',
+      reporterId: userId || null,
+      type: issue.type || 'Task',
+      priority: issue.priority || 'Medium',
+      storyPoints: issue.storyPoints || 0,
+      labels: issue.labels || [],
+      sprintId: issue.sprintId || null,
+      dueDate: issue.dueDate || null,
+      startDate: issue.startDate || null,
     };
 
     console.log(`Creating issue for project ${projectId}:`, createTaskDto);
@@ -164,29 +179,60 @@ export class IssueService {
   }
 
   // Cập nhật issue
-  updateIssue(issueId: string, issue: Partial<Issue>): Observable<Issue> {
+  updateIssue(issueId: string, updateData: Partial<Issue>): Observable<Issue> {
     const jwtToken = this.userService['jwtService'].getToken();
 
-    // Convert from UI model to API model
+    // Map from UI model to API model
     const updateTaskDto: any = {};
 
-    // Map all fields correctly to backend expected format
-    if (issue.title !== undefined) updateTaskDto.taskName = issue.title;
-    if (issue.description !== undefined)
-      updateTaskDto.taskDescription = issue.description;
-    if (issue.status !== undefined)
-      updateTaskDto.status = this.mapStatusToBackend(issue.status);
-    if (issue.priority !== undefined) {
-      // Priority is not supported by the backend entity yet
-      // Log what we're trying to send for debugging
-      console.log(`Note: Backend may not support priority field yet`);
-      console.log(`Attempted to send priority: ${issue.priority}`);
+    if (updateData.title !== undefined)
+      updateTaskDto.taskName = updateData.title;
+    if (updateData.description !== undefined)
+      updateTaskDto.taskDescription = updateData.description;
+    if (updateData.status !== undefined)
+      updateTaskDto.status = this.mapStatusToBackend(updateData.status);
+    if (updateData.assignee?.id !== undefined)
+      updateTaskDto.assigneeId = updateData.assignee.id;
+    if (updateData.reporter?.id !== undefined)
+      updateTaskDto.reporterId = updateData.reporter.id;
+    if (updateData.type !== undefined) updateTaskDto.type = updateData.type;
+    if (updateData.priority !== undefined)
+      updateTaskDto.priority = this.reverseMapPriority(updateData.priority);
+    if (updateData.storyPoints !== undefined)
+      updateTaskDto.storyPoints = updateData.storyPoints;
+    if (updateData.labels !== undefined)
+      updateTaskDto.labels = updateData.labels;
+    if (updateData.sprintId !== undefined)
+      updateTaskDto.sprintId = updateData.sprintId;
+
+    // Handle dates properly
+    if (updateData.dueDate !== undefined) {
+      if (typeof updateData.dueDate === 'string') {
+        // If it's already a string in the correct format, use it directly
+        updateTaskDto.dueDate = updateData.dueDate;
+      } else if (updateData.dueDate instanceof Date) {
+        // If it's a Date object, convert to ISO string YYYY-MM-DD format
+        updateTaskDto.dueDate = updateData.dueDate.toISOString().split('T')[0];
+      } else {
+        // If it's null or undefined, set to null
+        updateTaskDto.dueDate = null;
+      }
     }
 
-    // Include other fields that need to be updated
-    if (issue.type !== undefined) updateTaskDto.type = issue.type;
-    if (issue.storyPoints !== undefined)
-      updateTaskDto.storyPoints = issue.storyPoints;
+    if (updateData.startDate !== undefined) {
+      if (typeof updateData.startDate === 'string') {
+        // If it's already a string in the correct format, use it directly
+        updateTaskDto.startDate = updateData.startDate;
+      } else if (updateData.startDate instanceof Date) {
+        // If it's a Date object, convert to ISO string YYYY-MM-DD format
+        updateTaskDto.startDate = updateData.startDate
+          .toISOString()
+          .split('T')[0];
+      } else {
+        // If it's null or undefined, set to null
+        updateTaskDto.startDate = null;
+      }
+    }
 
     console.log(`Updating issue ${issueId}:`, updateTaskDto);
 
@@ -201,7 +247,7 @@ export class IssueService {
         map((task) => this.mapTaskToIssue(task)),
         tap((updatedIssue) => console.log('Updated issue:', updatedIssue)),
         catchError((error) => {
-          console.error(`Error updating issue ${issueId}:`, error);
+          console.error('Error updating issue:', error);
           return throwError(() => new Error(this.getErrorMessage(error)));
         })
       );
@@ -322,6 +368,53 @@ export class IssueService {
       );
   }
 
+  // Set reporter for an issue
+  setReporter(issueId: string, userId: string): Observable<Issue> {
+    const jwtToken = this.userService['jwtService'].getToken();
+
+    console.log(`Setting reporter for issue ${issueId} to user ${userId}`);
+
+    return this.http
+      .put<IssueDto>(
+        `${this.apiUrl}/${issueId}/reporter`,
+        { userId },
+        {
+          headers: new HttpHeaders({
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${jwtToken}`,
+          }),
+        }
+      )
+      .pipe(
+        map((task) => this.mapTaskToIssue(task)),
+        tap((updatedIssue) => console.log('Reporter updated:', updatedIssue)),
+        catchError((error) => {
+          console.error(`Error setting reporter for issue ${issueId}:`, error);
+          return throwError(() => new Error(this.getErrorMessage(error)));
+        })
+      );
+  }
+
+  // Get reporter for an issue
+  getReporter(issueId: string): Observable<any> {
+    const jwtToken = this.userService['jwtService'].getToken();
+
+    return this.http
+      .get<any>(`${this.apiUrl}/${issueId}/reporter`, {
+        headers: new HttpHeaders({
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${jwtToken}`,
+        }),
+      })
+      .pipe(
+        tap((reporter) => console.log('Retrieved reporter:', reporter)),
+        catchError((error) => {
+          console.error(`Error getting reporter for issue ${issueId}:`, error);
+          return throwError(() => new Error(this.getErrorMessage(error)));
+        })
+      );
+  }
+
   // Helper methods
   private mapTasksToIssues(tasks: IssueDto[]): Issue[] {
     return tasks.map((task) => this.mapTaskToIssue(task));
@@ -349,12 +442,14 @@ export class IssueService {
             )}&background=6554C0&color=fff`,
           }
         : undefined,
-      reporter: task.responsableName
+      reporter: task.reporter
         ? {
-            id: 'unknown',
-            name: task.responsableName,
+            id: task.reporter.id,
+            name: `${task.reporter.firstName} ${task.reporter.lastName}`,
             avatar: `https://ui-avatars.com/api/?name=${
-              task.responsableName.charAt(0) || '?'
+              task.reporter.firstName.charAt(0) || '?'
+            }${
+              task.reporter.lastName.charAt(0) || '?'
             }&background=7747AF&color=fff`,
           }
         : undefined,
@@ -364,6 +459,8 @@ export class IssueService {
       order: task.order || 0,
       labels: task.labels || [],
       components: task.components || [],
+      startDate: task.startDate ? new Date(task.startDate) : undefined,
+      dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
       created: new Date(task.createdAt),
       updated: new Date(task.updatedAt),
     };

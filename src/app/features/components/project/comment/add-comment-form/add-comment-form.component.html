@@ -1,6 +1,8 @@
 <div class="flex flex-row justify-start gap-4 w-full py-4">
   <div class="py-1">
-    <app-avatar [user]="user"></app-avatar>
+    <div class="comment-form-avatar">
+      <app-avatar *ngIf="user" [user]="user"></app-avatar>
+    </div>
   </div>
   <div class="w-full">
     <div>

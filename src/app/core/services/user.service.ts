@@ -7,7 +7,7 @@ import {
   shareReplay,
   catchError,
 } from 'rxjs/operators';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { User, AuthResponse } from '../models';
 import { Router } from '@angular/router';
 import { JwtService } from './jwt.service';
@@ -195,26 +195,19 @@ export class UserService {
   /**
    * Returns the current authenticated user's ID if available
    */
-  getCurrentUserId(): string | null {
+  getCurrentUserId(): string {
     const user = this.currentUserSubject.getValue();
-    console.log('Getting current user ID:', user ? user.id : 'null');
-    console.log('Current token exists:', !!this.jwtService.getToken());
+    return user?.id || '';
+  }
 
-    if (!user) {
-      // Nếu không có user trong subject, thử lấy từ localStorage
-      try {
-        const tokenData = this.jwtService.getToken();
-        if (tokenData) {
-          // Thử decode token để lấy user ID nếu có thể
-          console.log('Trying to get user ID from token');
-          // Lưu ý: Đây chỉ là bước tạm thời, hãy đảm bảo refresh user data khi app khởi động
-          return null; // Không thể lấy user ID từ token, cần implement thêm nếu cần thiết
-        }
-      } catch (e) {
-        console.error('Error extracting user ID from token', e);
-      }
-    }
+  getUsers(): Observable<User[]> {
+    const jwtToken = this.jwtService.getToken();
 
-    return user ? user.id : null;
+    return this.http.get<User[]>(`${BASE_URL}/users`, {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwtToken}`,
+      }),
+    });
   }
 }

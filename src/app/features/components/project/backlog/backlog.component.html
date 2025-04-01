@@ -75,88 +75,78 @@
   </div>
 
   <!-- Search and Filter Bar -->
-  <div
-    class="flex items-center gap-2 px-6 py-3 bg-white border-b border-gray-200"
-  >
-    <div class="relative w-56">
-      <span class="absolute inset-y-0 left-0 flex items-center pl-2">
-        <svg
-          class="w-5 h-5 text-gray-500"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
+  <div class="action-container">
+    <form
+      [formGroup]="filterFormGroup"
+      class="flex flex-row items-center gap-4"
+    >
+      <div class="search-container">
+        <input
+          type="text"
+          class="search-input"
+          [(ngModel)]="searchQuery"
+          [ngModelOptions]="{ standalone: true }"
+        />
+        <div
+          class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
         >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-          />
-        </svg>
-      </span>
-      <input
-        type="text"
-        [(ngModel)]="searchQuery"
-        placeholder="Search"
-        class="w-full py-2 pr-4 bg-gray-100 border border-gray-300 rounded-md pl-9 focus:ring-blue-500 focus:border-blue-500"
-      />
-    </div>
-
-    <div class="flex items-center">
-      <div
-        class="flex items-center justify-center w-8 h-8 text-white bg-indigo-600 rounded-full"
-      >
-        GH
+          <app-svg-icon name="search"></app-svg-icon>
+        </div>
       </div>
-      <div
-        class="flex items-center justify-center w-8 h-8 ml-1 text-gray-600 bg-gray-100 border border-gray-300 rounded-full"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="w-5 h-5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-          />
-        </svg>
-      </div>
-    </div>
 
-    <div class="ml-4">
+      <app-assignee-filter-control
+        formControlName="assignees"
+      ></app-assignee-filter-control>
+
+      <app-label-filter-control
+        formControlName="labels"
+      ></app-label-filter-control>
+
+      <app-type-filter-control
+        formControlName="types"
+      ></app-type-filter-control>
+
       <button
-        class="flex items-center gap-1 px-3 py-1 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+        type="button"
+        class="px-2 py-1.5 rounded text-textDark font-medium hover:bg-backgroundGray"
+        *ngIf="clearFiltersVisible"
+        (click)="clearFilters()"
       >
-        <span>Epic</span>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="w-4 h-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
+        Clear filters
       </button>
-    </div>
+    </form>
 
-    <div class="flex items-center gap-3 ml-auto">
-      <!-- Buttons removed -->
+    <div class="grouping-action">
+      <label class="label">Group by</label>
+      <nz-select
+        class="custom-select"
+        [formControl]="groupByControl"
+        [nzDropdownMatchSelectWidth]="false"
+        nzBorderless
+        [nzSuffixIcon]="selectSuffixIcon"
+      >
+        <nz-option nzCustomContent nzLabel="None" nzValue="None">
+          <span>None</span>
+        </nz-option>
+        <nz-option nzCustomContent nzLabel="Assignee" nzValue="Assignee">
+          <span>Assignee</span>
+        </nz-option>
+        <nz-option nzCustomContent nzLabel="Subtask" nzValue="Subtask">
+          <span>Subtask</span>
+        </nz-option>
+      </nz-select>
     </div>
   </div>
 
+  <ng-template #selectSuffixIcon>
+    <app-svg-icon
+      name="arrowDown"
+      class="text-gray-900 text-bold"
+    ></app-svg-icon>
+  </ng-template>
+
   <!-- Main Backlog Content Area -->
-  <div class="p-6">
+  <div class="p-6 overflow-y-auto max-h-96">
     <!-- Sprint Section -->
     <div class="mb-6" *ngFor="let sprint of sprints">
       <!-- Sprint Header -->
@@ -298,28 +288,18 @@
           </div>
 
           <div class="flex-shrink-0 mr-3">
-            <svg
+            <app-svg-icon
               *ngIf="issue.type === 'Task'"
-              class="w-4 h-4 text-blue-600"
-              viewBox="0 0 16 16"
-              fill="currentColor"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.496 6.033a.5.5 0 0 1 .707 0L9 8.83l.146-.147a.5.5 0 0 1 .707.707l-.853.853a.5.5 0 0 1-.707 0L6 7.707a.5.5 0 0 1 0-.707z"
-              />
-            </svg>
-            <svg
+              name="blueCheck"
+              [width]="16"
+              [height]="16"
+            ></app-svg-icon>
+            <app-svg-icon
               *ngIf="issue.type === 'Bug'"
-              class="w-4 h-4 text-red-600"
-              viewBox="0 0 16 16"
-              fill="currentColor"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M4.355.522a.5.5 0 0 1 .623.333l.291.956A5 5 0 0 1 8 1c1.007 0 1.946.298 2.731.811l.29-.956a.5.5 0 1 1 .957.29l-.41 1.352A5 5 0 0 1 13 7h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H13a5 5 0 0 1-6.257 4.838l-.29.956a.5.5 0 0 1-.957-.29l.41-1.352A5 5 0 0 1 3 8H2a.5.5 0 0 1-.5-.5v-1A.5.5 0 0 1 2 6h1a5 5 0 0 1 1.09-3.132L3.8.522a.5.5 0 0 1 .554-.832z"
-              />
-            </svg>
+              name="bug"
+              [width]="16"
+              [height]="16"
+            ></app-svg-icon>
           </div>
 
           <div class="flex-grow">
@@ -332,6 +312,16 @@
           </div>
 
           <div class="flex items-center ml-auto">
+            <!-- Add reporter avatar if available -->
+            <div
+              *ngIf="issue.reporter"
+              class="flex items-center justify-center mr-2 bg-purple-200 rounded-full w-7 h-7"
+              title="Reporter: {{ issue.reporter.name }}"
+            >
+              <span class="text-xs text-purple-800">R</span>
+            </div>
+
+            <!-- Status dropdown -->
             <div class="relative inline-block mr-2 text-left">
               <button
                 class="flex items-center px-3 py-1 text-xs font-medium transition-colors duration-150 rounded-sm"
@@ -436,9 +426,11 @@
               </button>
             </div>
 
+            <!-- Assignee avatar if available -->
             <div
               *ngIf="issue.assignee"
               class="flex items-center justify-center mr-2 bg-gray-200 rounded-full w-7 h-7"
+              title="Assignee: {{ issue.assignee.name }}"
             >
               <span class="text-xs text-gray-600">{{
                 issue.assignee && issue.assignee.name
@@ -605,28 +597,18 @@
           </div>
 
           <div class="flex-shrink-0 mr-3">
-            <svg
+            <app-svg-icon
               *ngIf="issue.type === 'Task'"
-              class="w-4 h-4 text-blue-600"
-              viewBox="0 0 16 16"
-              fill="currentColor"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.496 6.033a.5.5 0 0 1 .707 0L9 8.83l.146-.147a.5.5 0 0 1 .707.707l-.853.853a.5.5 0 0 1-.707 0L6 7.707a.5.5 0 0 1 0-.707z"
-              />
-            </svg>
-            <svg
+              name="blueCheck"
+              [width]="16"
+              [height]="16"
+            ></app-svg-icon>
+            <app-svg-icon
               *ngIf="issue.type === 'Bug'"
-              class="w-4 h-4 text-red-600"
-              viewBox="0 0 16 16"
-              fill="currentColor"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M4.355.522a.5.5 0 0 1 .623.333l.291.956A5 5 0 0 1 8 1c1.007 0 1.946.298 2.731.811l.29-.956a.5.5 0 1 1 .957.29l-.41 1.352A5 5 0 0 1 13 7h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H13a5 5 0 0 1-6.257 4.838l-.29.956a.5.5 0 0 1-.957-.29l.41-1.352A5 5 0 0 1 3 8H2a.5.5 0 0 1-.5-.5v-1A.5.5 0 0 1 2 6h1a5 5 0 0 1 1.09-3.132L3.8.522a.5.5 0 0 1 .554-.832z"
-              />
-            </svg>
+              name="bug"
+              [width]="16"
+              [height]="16"
+            ></app-svg-icon>
           </div>
 
           <div class="flex-grow">
@@ -639,6 +621,16 @@
           </div>
 
           <div class="flex items-center ml-auto">
+            <!-- Add reporter avatar if available -->
+            <div
+              *ngIf="issue.reporter"
+              class="flex items-center justify-center mr-2 bg-purple-200 rounded-full w-7 h-7"
+              title="Reporter: {{ issue.reporter.name }}"
+            >
+              <span class="text-xs text-purple-800">R</span>
+            </div>
+
+            <!-- Status dropdown -->
             <div class="relative inline-block mr-2 text-left">
               <button
                 class="flex items-center px-3 py-1 text-xs font-medium transition-colors duration-150 rounded-sm"
@@ -743,9 +735,11 @@
               </button>
             </div>
 
+            <!-- Assignee avatar if available -->
             <div
               *ngIf="issue.assignee"
               class="flex items-center justify-center mr-2 bg-gray-200 rounded-full w-7 h-7"
+              title="Assignee: {{ issue.assignee.name }}"
             >
               <span class="text-xs text-gray-600">{{
                 issue.assignee && issue.assignee.name

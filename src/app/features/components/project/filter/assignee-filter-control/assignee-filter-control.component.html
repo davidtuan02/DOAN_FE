@@ -1,8 +1,19 @@
-<div class="contributors">
-  <app-avatar *ngFor="let user of users"
-              [bordered]="true"
-              [user]="user"
-              [selected]="selectedAssignees.includes(user.id)"
-              (select)="onChangeAssignee($event)">
-  </app-avatar>
-</div>
+<nz-select nzBorderless nzPlaceHolder="Assignee" [formControl]="formControl">
+  <nz-option
+    *ngFor="let user of users"
+    [nzValue]="user.id"
+    [nzLabel]="user.firstName + ' ' + user.lastName"
+  >
+    <div class="flex items-center">
+      <app-avatar
+        [user]="user"
+        size="small"
+        [backgroundColor]="
+          selectedAssignees.includes(user.id) ? '#0052CC' : '#DFE1E6'
+        "
+      >
+      </app-avatar>
+      <span class="ml-2">{{ user.firstName }} {{ user.lastName }}</span>
+    </div>
+  </nz-option>
+</nz-select>
