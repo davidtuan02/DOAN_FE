@@ -1,0 +1,57 @@
+<div class="save-filter-dialog">
+  <form nz-form [formGroup]="filterForm" (ngSubmit)="submitForm()">
+    <nz-form-item>
+      <nz-form-label [nzSpan]="24" nzRequired>Filter Name</nz-form-label>
+      <nz-form-control [nzSpan]="24" nzErrorTip="Please enter a filter name">
+        <input
+          nz-input
+          formControlName="name"
+          placeholder="Enter a name for this filter"
+        />
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+      <nz-form-label [nzSpan]="24">Description</nz-form-label>
+      <nz-form-control [nzSpan]="24">
+        <textarea
+          nz-input
+          formControlName="description"
+          placeholder="Describe what this filter is for"
+          [nzAutosize]="{ minRows: 3, maxRows: 5 }"
+        ></textarea>
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-divider></nz-divider>
+
+    <nz-form-item>
+      <nz-form-control [nzSpan]="24">
+        <label nz-checkbox formControlName="isStarred">Star this filter</label>
+        <div class="text-gray-500 text-sm mt-1">
+          Starred filters appear at the top of filter dropdowns
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+      <nz-form-control [nzSpan]="24">
+        <label nz-checkbox formControlName="isShared"
+          >Share with all users</label
+        >
+        <div class="text-gray-500 text-sm mt-1">
+          Make this filter available to all users in your organization
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+
+    <div class="flex justify-end mt-4">
+      <button nz-button nzType="default" class="mr-2" (click)="cancel()">
+        Cancel
+      </button>
+      <button nz-button nzType="primary" [nzLoading]="loading" type="submit">
+        Save
+      </button>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,223 @@
+<div class="filter-detail-container p-6">
+  <nz-breadcrumb class="mb-4">
+    <nz-breadcrumb-item>
+      <a routerLink="/filters">Filters</a>
+    </nz-breadcrumb-item>
+    <nz-breadcrumb-item>
+      <span *ngIf="!isEditMode && filter">{{ filter.name }}</span>
+      <span *ngIf="isEditMode">Edit Filter</span>
+      <span *ngIf="loading">Loading...</span>
+    </nz-breadcrumb-item>
+  </nz-breadcrumb>
+
+  <div class="bg-white p-6 rounded-lg shadow-sm">
+    <nz-skeleton
+      [nzActive]="true"
+      [nzLoading]="loading"
+      [nzParagraph]="{ rows: 6 }"
+    >
+      <div class="flex justify-between mb-6" *ngIf="filter">
+        <div>
+          <h1 class="text-2xl font-bold mb-1 flex items-center">
+            <button class="mr-2" (click)="toggleStar()" *ngIf="!isEditMode">
+              <span
+                nz-icon
+                [nzType]="filter.isStarred ? 'star' : 'star-outline'"
+                [nzTheme]="filter.isStarred ? 'fill' : 'outline'"
+                [ngClass]="
+                  filter.isStarred ? 'text-yellow-400' : 'text-gray-400'
+                "
+              ></span>
+            </button>
+            <span *ngIf="!isEditMode">{{ filter.name }}</span>
+            <span *ngIf="isEditMode">Edit Filter</span>
+          </h1>
+          <p class="text-gray-500" *ngIf="!isEditMode && filter.description">
+            {{ filter.description }}
+          </p>
+        </div>
+        <div class="flex gap-2" *ngIf="!isEditMode">
+          <button nz-button nzType="primary" (click)="applyFilter()">
+            Apply Filter
+          </button>
+          <button nz-button nzType="default" (click)="shareFilter()">
+            Share Link
+          </button>
+          <button
+            nz-button
+            nzType="default"
+            [routerLink]="['/filters', filterId, 'edit']"
+          >
+            Edit
+          </button>
+          <button
+            nz-button
+            nzType="default"
+            nzDanger
+            nz-popconfirm
+            nzPopconfirmTitle="Are you sure you want to delete this filter?"
+            nzPopconfirmPlacement="bottom"
+            (nzOnConfirm)="deleteFilter()"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="!isEditMode && filter">
+        <h3 class="text-lg font-medium mb-3">Filter Criteria</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div *ngIf="filter.criteria.projectId">
+            <div class="text-sm text-gray-500">Project</div>
+            <div class="mt-1">{{ filter.criteria.projectId }}</div>
+          </div>
+
+          <div *ngIf="filter.criteria.searchTerm">
+            <div class="text-sm text-gray-500">Search Term</div>
+            <div class="mt-1">{{ filter.criteria.searchTerm }}</div>
+          </div>
+
+          <div
+            *ngIf="filter.criteria.types && filter.criteria.types.length > 0"
+          >
+            <div class="text-sm text-gray-500">Types</div>
+            <div class="mt-1 flex flex-wrap gap-1">
+              <nz-tag *ngFor="let type of filter.criteria.types">{{
+                type
+              }}</nz-tag>
+            </div>
+          </div>
+
+          <div
+            *ngIf="
+              filter.criteria.statuses && filter.criteria.statuses.length > 0
+            "
+          >
+            <div class="text-sm text-gray-500">Statuses</div>
+            <div class="mt-1 flex flex-wrap gap-1">
+              <nz-tag *ngFor="let status of filter.criteria.statuses">{{
+                status
+              }}</nz-tag>
+            </div>
+          </div>
+
+          <div
+            *ngIf="
+              filter.criteria.priorities &&
+              filter.criteria.priorities.length > 0
+            "
+          >
+            <div class="text-sm text-gray-500">Priorities</div>
+            <div class="mt-1 flex flex-wrap gap-1">
+              <nz-tag *ngFor="let priority of filter.criteria.priorities">{{
+                priority
+              }}</nz-tag>
+            </div>
+          </div>
+
+          <div
+            *ngIf="
+              filter.criteria.assigneeIds &&
+              filter.criteria.assigneeIds.length > 0
+            "
+          >
+            <div class="text-sm text-gray-500">Assignees</div>
+            <div class="mt-1">
+              {{ filter.criteria.assigneeIds.join(", ") }}
+            </div>
+          </div>
+        </div>
+
+        <nz-divider></nz-divider>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <div class="text-sm text-gray-500">Shared with others</div>
+            <div class="mt-1">{{ filter.isShared ? "Yes" : "No" }}</div>
+          </div>
+          <div>
+            <div class="text-sm text-gray-500">Starred</div>
+            <div class="mt-1">{{ filter.isStarred ? "Yes" : "No" }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit Form -->
+      <form
+        *ngIf="isEditMode && filterForm"
+        nz-form
+        [formGroup]="filterForm"
+        (ngSubmit)="submitForm()"
+      >
+        <nz-form-item>
+          <nz-form-label [nzSpan]="24" nzRequired>Filter Name</nz-form-label>
+          <nz-form-control
+            [nzSpan]="24"
+            nzErrorTip="Please enter a filter name"
+          >
+            <input
+              nz-input
+              formControlName="name"
+              placeholder="Enter a name for this filter"
+            />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzSpan]="24">Description</nz-form-label>
+          <nz-form-control [nzSpan]="24">
+            <textarea
+              nz-input
+              formControlName="description"
+              placeholder="Describe what this filter is for"
+              [nzAutosize]="{ minRows: 3, maxRows: 5 }"
+            ></textarea>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-divider></nz-divider>
+
+        <nz-form-item>
+          <nz-form-control [nzSpan]="24">
+            <label nz-checkbox formControlName="isStarred"
+              >Star this filter</label
+            >
+            <div class="text-gray-500 text-sm mt-1">
+              Starred filters appear at the top of filter dropdowns
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-control [nzSpan]="24">
+            <label nz-checkbox formControlName="isShared"
+              >Share with all users</label
+            >
+            <div class="text-gray-500 text-sm mt-1">
+              Make this filter available to all users in your organization
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+
+        <div class="flex justify-end mt-4">
+          <button
+            nz-button
+            nzType="default"
+            class="mr-2"
+            (click)="cancelEdit()"
+          >
+            Cancel
+          </button>
+          <button
+            nz-button
+            nzType="primary"
+            [nzLoading]="loading"
+            type="submit"
+          >
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </nz-skeleton>
+  </div>
+</div>

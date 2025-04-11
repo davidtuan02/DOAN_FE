@@ -17,6 +17,9 @@ import { BoardContainerComponent } from './features/components/project/board/boa
 import { AuthGuard, RoleGuard, TeamRoleGuard } from './core/guards';
 import { YourWorkComponent } from './features/components/your-work/your-work.component';
 import { UserRole } from './core/models/user/user';
+import { IssuesPageComponent } from './features/components/project/issues/issues-page/issues-page.component';
+import { FiltersComponent } from './features/components/filters/filters.component';
+import { FilterDetailComponent } from './features/components/filters/filter-detail/filter-detail.component';
 
 export const routes: Routes = [
   {
@@ -53,6 +56,23 @@ export const routes: Routes = [
         path: '',
         component: BoardContainerComponent,
         title: 'Board',
+      },
+    ],
+  },
+  {
+    path: 'issues',
+    component: LayoutComponent,
+    canActivate: [AuthGuard],
+    children: [
+      {
+        path: '',
+        component: IssuesPageComponent,
+        title: 'Issues',
+      },
+      {
+        path: ':id',
+        component: BoardContainerComponent,
+        title: 'Issue Details',
       },
     ],
   },
@@ -180,6 +200,31 @@ export const routes: Routes = [
         canActivate: [TeamRoleGuard],
         data: {
           teamPermission: 'canManageProject',
+        },
+      },
+    ],
+  },
+  {
+    path: 'filters',
+    component: LayoutComponent,
+    canActivate: [AuthGuard],
+    children: [
+      {
+        path: '',
+        component: FiltersComponent,
+        title: 'Filters',
+      },
+      {
+        path: ':id',
+        component: FilterDetailComponent,
+        title: 'Filter Details',
+      },
+      {
+        path: ':id/edit',
+        component: FilterDetailComponent,
+        title: 'Edit Filter',
+        data: {
+          isEdit: true,
         },
       },
     ],

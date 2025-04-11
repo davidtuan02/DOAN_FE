@@ -1,0 +1,35 @@
+.filter-detail-container {
+  min-height: calc(100vh - 64px);
+  background-color: #f4f5f7;
+
+  ::ng-deep {
+    .ant-breadcrumb {
+      font-size: 14px;
+
+      a {
+        color: #0052cc;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+
+    .ant-divider {
+      margin: 16px 0;
+    }
+
+    .ant-tag {
+      margin-right: 0;
+      margin-bottom: 4px;
+    }
+  }
+}
+
+button {
+  &:hover {
+    span[nz-icon].text-gray-400 {
+      color: #0052cc;
+    }
+  }
+}

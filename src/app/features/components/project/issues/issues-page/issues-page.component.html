@@ -1,0 +1,363 @@
+<div class="p-5 issues-page-container">
+  <div class="flex justify-between mb-6">
+    <div>
+      <h1 class="mb-1 text-2xl font-bold">Issues</h1>
+      <p class="text-gray-500">
+        View and manage all issues in the current project
+      </p>
+    </div>
+    <div>
+      <button nz-button nzType="primary" [routerLink]="['/board']">
+        <span nz-icon nzType="plus"></span>
+        Create Issue
+      </button>
+    </div>
+  </div>
+
+  <!-- Jira style filters -->
+  <div class="flex items-center gap-2 mb-6 jira-filter-bar">
+    <button class="flex items-center justify-center ai-button">
+      <span class="flex items-center justify-center ai-icon">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path
+            d="M21 8v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"
+          ></path>
+          <path d="M7 3v4"></path>
+          <path d="M17 3v4"></path>
+          <path d="M7 15h.01"></path>
+          <path d="M11 15h.01"></path>
+          <path d="M15 15h.01"></path>
+        </svg>
+      </span>
+      <span class="ml-1">AI</span>
+    </button>
+
+    <!-- Search input -->
+    <div class="relative search-box">
+      <input
+        type="text"
+        placeholder="Search issues..."
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="applyFilters()"
+        class="pl-8 pr-4 py-1.5 border rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+      />
+      <span class="absolute left-2.5 top-2 text-gray-500">
+        <span nz-icon nzType="search" nzTheme="outline"></span>
+      </span>
+    </div>
+
+    <!-- Project filter -->
+    <div class="flex items-center filter-item">
+      <span class="filter-label">Project</span>
+      <span class="operator">=</span>
+      <div class="dropdown-button">
+        <button
+          nz-button
+          nzType="default"
+          class="flex items-center dropdown-trigger"
+        >
+          <span class="mr-1">My Scrum Project</span>
+          <span nz-icon nzType="down" nzTheme="outline"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Type filter -->
+    <div class="filter-item">
+      <button
+        nz-button
+        nzType="default"
+        class="flex items-center dropdown-trigger"
+        nz-dropdown
+        [nzDropdownMenu]="typeMenu"
+        [nzVisible]="typeMenuVisible"
+        (nzVisibleChange)="typeMenuVisible = $event"
+        nzTrigger="click"
+      >
+        <span class="mr-1">Type</span>
+        <span nz-icon nzType="down" nzTheme="outline"></span>
+      </button>
+      <nz-dropdown-menu #typeMenu="nzDropdownMenu">
+        <ul nz-menu nzSelectable class="type-options">
+          <li
+            nz-menu-item
+            *ngFor="let type of issueTypes"
+            (click)="toggleTypeSelection(type); $event.stopPropagation()"
+          >
+            <label
+              nz-checkbox
+              [ngModel]="typeFilter.includes(type)"
+              (ngModelChange)="toggleTypeSelection(type)"
+            >
+              <div class="flex items-center">
+                <i
+                  class="fa {{ getTypeIcon(type) }} mr-2"
+                  aria-hidden="true"
+                ></i>
+                <span>{{ type }}</span>
+              </div>
+            </label>
+          </li>
+        </ul>
+      </nz-dropdown-menu>
+    </div>
+
+    <!-- Status filter -->
+    <div class="filter-item">
+      <button
+        nz-button
+        nzType="default"
+        class="flex items-center dropdown-trigger"
+        nz-dropdown
+        [nzDropdownMenu]="statusMenu"
+        [nzVisible]="statusMenuVisible"
+        (nzVisibleChange)="statusMenuVisible = $event"
+        nzTrigger="click"
+      >
+        <span class="mr-1">Status</span>
+        <span nz-icon nzType="down" nzTheme="outline"></span>
+      </button>
+      <nz-dropdown-menu #statusMenu="nzDropdownMenu">
+        <ul nz-menu nzSelectable class="status-options">
+          <li
+            nz-menu-item
+            *ngFor="let status of issueStatuses"
+            (click)="toggleStatusSelection(status); $event.stopPropagation()"
+          >
+            <label
+              nz-checkbox
+              [ngModel]="statusFilter.includes(status)"
+              (ngModelChange)="toggleStatusSelection(status)"
+            >
+              <div class="flex items-center">
+                <nz-tag
+                  [nzColor]="getStatusColor(status)"
+                  class="mr-2"
+                ></nz-tag>
+                <span>{{ status }}</span>
+              </div>
+            </label>
+          </li>
+        </ul>
+      </nz-dropdown-menu>
+    </div>
+
+    <!-- Assignee filter -->
+    <div class="filter-item">
+      <button
+        nz-button
+        nzType="default"
+        class="flex items-center dropdown-trigger"
+        nz-dropdown
+        [nzDropdownMenu]="assigneeMenu"
+        [nzVisible]="assigneeMenuVisible"
+        (nzVisibleChange)="assigneeMenuVisible = $event"
+        nzTrigger="click"
+      >
+        <span class="mr-1">Assignee</span>
+        <span nz-icon nzType="down" nzTheme="outline"></span>
+      </button>
+      <nz-dropdown-menu #assigneeMenu="nzDropdownMenu">
+        <ul nz-menu nzSelectable class="assignee-options">
+          <li
+            nz-menu-item
+            *ngFor="let assignee of assignees"
+            (click)="
+              toggleAssigneeSelection(assignee.id); $event.stopPropagation()
+            "
+          >
+            <label
+              nz-checkbox
+              [ngModel]="assigneeFilter.includes(assignee.id)"
+              (ngModelChange)="toggleAssigneeSelection(assignee.id)"
+            >
+              <div class="flex items-center">
+                <div
+                  class="flex items-center justify-center w-6 h-6 mr-2 overflow-hidden bg-gray-200 rounded-full"
+                >
+                  <img
+                    *ngIf="assignee.avatar"
+                    [src]="assignee.avatar"
+                    alt="Avatar"
+                    class="object-cover w-full h-full"
+                  />
+                  <span *ngIf="!assignee.avatar" class="text-xs">{{
+                    assignee.name.charAt(0)
+                  }}</span>
+                </div>
+                <span>{{ assignee.name }}</span>
+              </div>
+            </label>
+          </li>
+        </ul>
+      </nz-dropdown-menu>
+    </div>
+
+    <!-- More button -->
+    <div class="filter-item">
+      <button nz-button nzType="default" class="flex items-center more-button">
+        <span class="mr-1">More</span>
+        <span nz-icon nzType="plus" nzTheme="outline"></span>
+      </button>
+    </div>
+
+    <!-- Save filter button -->
+    <div class="filter-item">
+      <button
+        nz-button
+        nzType="primary"
+        class="save-filter-button"
+        (click)="saveFilter()"
+      >
+        Save filter
+      </button>
+    </div>
+  </div>
+
+  <!-- Applied filters -->
+  <div
+    class="flex flex-wrap gap-2 mb-4 applied-filters"
+    *ngIf="hasActiveFilters()"
+  >
+    <nz-tag
+      *ngIf="searchTerm"
+      nzMode="closeable"
+      (nzOnClose)="clearSearchTerm()"
+    >
+      Contains: {{ searchTerm }}
+    </nz-tag>
+    <nz-tag
+      *ngFor="let type of typeFilter"
+      nzMode="closeable"
+      (nzOnClose)="removeTypeFilter(type)"
+    >
+      Type: {{ type }}
+    </nz-tag>
+    <nz-tag
+      *ngFor="let status of statusFilter"
+      nzMode="closeable"
+      (nzOnClose)="removeStatusFilter(status)"
+      [nzColor]="getStatusColor(status)"
+    >
+      Status: {{ status }}
+    </nz-tag>
+    <nz-tag
+      *ngFor="let id of assigneeFilter"
+      nzMode="closeable"
+      (nzOnClose)="removeAssigneeFilter(id)"
+    >
+      Assignee: {{ getAssigneeName(id) }}
+    </nz-tag>
+    <button
+      nz-button
+      nzType="link"
+      *ngIf="hasActiveFilters()"
+      (click)="clearFilters()"
+    >
+      Clear all
+    </button>
+  </div>
+
+  <!-- Issues Table -->
+  <div class="bg-white rounded-lg shadow-sm issues-table">
+    <nz-table
+      #issuesTable
+      [nzData]="filteredIssues"
+      [nzLoading]="loading"
+      [nzPageSize]="10"
+      [nzShowSizeChanger]="true"
+      nzShowPagination
+      class="w-full"
+    >
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Type</th>
+          <th>Summary</th>
+          <th>Status</th>
+          <th>Priority</th>
+          <th>Assignee</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let issue of issuesTable.data"
+          class="cursor-pointer hover:bg-gray-50"
+          (click)="viewIssueDetail(issue.id)"
+        >
+          <td>{{ issue.key }}</td>
+          <td>
+            <i
+              class="fa {{ getTypeIcon(issue.type) }}"
+              aria-hidden="true"
+              nz-tooltip
+              [nzTooltipTitle]="issue.type"
+            ></i>
+          </td>
+          <td class="max-w-xs truncate">{{ issue.title }}</td>
+          <td>
+            <nz-tag
+              [nzColor]="getStatusColor(mapStatusForDisplay(issue.status))"
+              >{{ mapStatusForDisplay(issue.status) }}</nz-tag
+            >
+          </td>
+          <td>
+            <nz-tag [nzColor]="getPriorityColor(issue.priority)">{{
+              issue.priority
+            }}</nz-tag>
+          </td>
+          <td>
+            <div *ngIf="issue.assignee" class="flex items-center">
+              <div
+                class="flex items-center justify-center w-8 h-8 mr-2 overflow-hidden bg-gray-200 rounded-full"
+              >
+                <img
+                  *ngIf="issue.assignee.avatar"
+                  [src]="issue.assignee.avatar"
+                  alt="Avatar"
+                  class="object-cover w-full h-full"
+                />
+                <span *ngIf="!issue.assignee.avatar">{{
+                  issue.assignee.name.charAt(0)
+                }}</span>
+              </div>
+              <span class="truncate max-w-[100px]">{{
+                issue.assignee.name
+              }}</span>
+            </div>
+            <span *ngIf="!issue.assignee" class="text-gray-400"
+              >Unassigned</span
+            >
+          </td>
+          <td>{{ issue.created | date : "MMM d, y" }}</td>
+          <td>
+            <button
+              nz-button
+              nzType="text"
+              nzShape="circle"
+              (click)="$event.stopPropagation()"
+              [routerLink]="['/board']"
+              [queryParams]="{ issueId: issue.id }"
+              nz-tooltip
+              nzTooltipTitle="Edit issue"
+            >
+              <span nz-icon nzType="edit" nzTheme="outline"></span>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </div>
+</div>
