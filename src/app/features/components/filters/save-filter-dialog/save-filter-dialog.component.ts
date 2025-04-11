@@ -58,8 +58,6 @@ export class SaveFilterDialogComponent implements OnInit {
   }
 
   initForm(): void {
-    const userId = this.userService.getCurrentUserId();
-
     this.filterForm = this.fb.group({
       name: [
         this.modalData.existingFilter?.name || '',
@@ -87,8 +85,45 @@ export class SaveFilterDialogComponent implements OnInit {
 
     const userId = this.userService.getCurrentUserId();
     if (!userId) {
-      this.modalRef.close();
+      this.modalRef.close({
+        error: true,
+        message: 'Bạn cần đăng nhập để lưu bộ lọc',
+      });
       return;
+    }
+
+    // Validate criteria
+    if (
+      !this.modalData.filterCriteria ||
+      !this.modalData.filterCriteria.projectId
+    ) {
+      console.error(
+        'Thiếu hoặc không hợp lệ filter criteria',
+        this.modalData.filterCriteria
+      );
+      // Show error message to user
+      this.modalRef.close({
+        error: true,
+        message: 'Thiếu project ID trong bộ lọc. Không thể lưu bộ lọc.',
+      });
+      return;
+    }
+
+    // Check if there are any actual filter criteria beyond just the project ID
+    const hasCriteria = !!(
+      this.modalData.filterCriteria.searchTerm ||
+      (this.modalData.filterCriteria.types &&
+        this.modalData.filterCriteria.types.length > 0) ||
+      (this.modalData.filterCriteria.statuses &&
+        this.modalData.filterCriteria.statuses.length > 0) ||
+      (this.modalData.filterCriteria.priorities &&
+        this.modalData.filterCriteria.priorities.length > 0) ||
+      (this.modalData.filterCriteria.assigneeIds &&
+        this.modalData.filterCriteria.assigneeIds.length > 0)
+    );
+
+    if (!hasCriteria) {
+      console.warn('Lưu bộ lọc không có tiêu chí nào ngoài project ID');
     }
 
     this.loading = true;
@@ -97,23 +132,41 @@ export class SaveFilterDialogComponent implements OnInit {
     const filter: SavedFilter = {
       id: this.modalData.existingFilter?.id,
       name: formValues.name,
-      description: formValues.description,
+      description: formValues.description || '',
       owner: userId,
       isShared: formValues.isShared,
       isStarred: formValues.isStarred,
       criteria: this.modalData.filterCriteria,
     };
 
+    console.log('Filter to save:', filter);
+
+    // Make sure criteria has projectId - this should be redundant after our earlier check
+    if (!filter.criteria.projectId) {
+      console.error('Thiếu projectId trong filter criteria');
+      this.loading = false;
+      this.modalRef.close({
+        error: true,
+        message: 'Thiếu project ID trong bộ lọc. Không thể lưu bộ lọc.',
+      });
+      return;
+    }
+
     if (this.modalData.existingFilter?.id) {
       // Update existing filter
       this.filterService.updateFilter(filter).subscribe({
         next: (result) => {
           this.loading = false;
+          console.log('Filter updated successfully:', result);
           this.modalRef.close(result);
         },
         error: (error) => {
-          console.error('Error updating filter:', error);
+          console.error('Lỗi khi cập nhật bộ lọc:', error);
           this.loading = false;
+          this.modalRef.close({
+            error: true,
+            message: 'Không thể cập nhật bộ lọc. Vui lòng thử lại sau.',
+          });
         },
       });
     } else {
@@ -121,11 +174,18 @@ export class SaveFilterDialogComponent implements OnInit {
       this.filterService.saveFilter(filter).subscribe({
         next: (result) => {
           this.loading = false;
+          console.log('Filter saved successfully:', result);
           this.modalRef.close(result);
         },
         error: (error) => {
-          console.error('Error saving filter:', error);
+          console.error('Lỗi khi lưu bộ lọc:', error);
           this.loading = false;
+          this.modalRef.close({
+            error: true,
+            message:
+              error?.error?.message ||
+              'Không thể lưu bộ lọc. Vui lòng thử lại sau.',
+          });
         },
       });
     }

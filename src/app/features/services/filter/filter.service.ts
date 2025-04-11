@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, BehaviorSubject } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { catchError, map, tap, finalize } from 'rxjs/operators';
 import {
   SavedFilter,
   FilterCriteria,
@@ -37,8 +37,14 @@ export class FilterService {
 
     // Get both user's own filters and shared filters
     this.http
-      .get<SavedFilter[]>(`${this.apiUrl}`)
+      .get<any[]>(`${this.apiUrl}`)
       .pipe(
+        map((filters) => {
+          // Transform backend response to match our frontend model
+          return filters.map((filter) =>
+            this.mapBackendFilterToFrontend(filter)
+          );
+        }),
         catchError((error) => {
           console.error('Error fetching filters:', error);
           return of([]);
@@ -61,13 +67,11 @@ export class FilterService {
       return of({} as SavedFilter);
     }
 
-    // Ensure the owner is set to the current user
-    const filterToSave: SavedFilter = {
-      ...filter,
-      owner: userId,
-    };
+    // Convert frontend model to backend model
+    const filterToSave = this.mapFrontendFilterToBackend(filter, userId);
 
-    return this.http.post<SavedFilter>(`${this.apiUrl}`, filterToSave).pipe(
+    return this.http.post<any>(`${this.apiUrl}`, filterToSave).pipe(
+      map((response) => this.mapBackendFilterToFrontend(response)),
       tap((newFilter) => {
         const currentFilters = this._savedFilters.value;
         this._savedFilters.next([...currentFilters, newFilter]);
@@ -99,9 +103,13 @@ export class FilterService {
       return of(filter);
     }
 
+    // Convert frontend model to backend model
+    const filterToUpdate = this.mapFrontendFilterToBackend(filter, userId);
+
     return this.http
-      .put<SavedFilter>(`${this.apiUrl}/${filter.id}`, filter)
+      .put<any>(`${this.apiUrl}/${filter.id}`, filterToUpdate)
       .pipe(
+        map((response) => this.mapBackendFilterToFrontend(response)),
         tap((updatedFilter) => {
           const currentFilters = this._savedFilters.value;
           const index = currentFilters.findIndex(
@@ -167,8 +175,9 @@ export class FilterService {
     }
 
     return this.http
-      .patch<SavedFilter>(`${this.apiUrl}/${filterId}/star`, { isStarred })
+      .patch<any>(`${this.apiUrl}/${filterId}/star`, { isStarred })
       .pipe(
+        map((response) => this.mapBackendFilterToFrontend(response)),
         tap((updatedFilter) => {
           const currentFilters = this._savedFilters.value;
           const index = currentFilters.findIndex(
@@ -191,12 +200,235 @@ export class FilterService {
 
   // Get filter by ID
   getFilter(filterId: string): Observable<SavedFilter> {
-    return this.http.get<SavedFilter>(`${this.apiUrl}/${filterId}`).pipe(
+    return this.http.get<any>(`${this.apiUrl}/${filterId}`).pipe(
+      map((response) => this.mapBackendFilterToFrontend(response)),
       catchError((error) => {
         console.error(`Error fetching filter ${filterId}:`, error);
         this.message.error('Failed to load filter');
         throw error;
       })
     );
+  }
+
+  // Get filters for a specific project
+  loadProjectFilters(projectId: string): void {
+    if (!projectId) {
+      console.error(
+        'No project ID provided when trying to load project filters'
+      );
+      return;
+    }
+
+    const userId = this.userService.getCurrentUserId();
+    if (!userId) {
+      console.error('No user is logged in when trying to load project filters');
+      return;
+    }
+
+    // Show loading indicator
+    const loadingMessage = this.message.loading('Loading saved filters...', {
+      nzDuration: 0,
+    }).messageId;
+
+    this.http
+      .get<any[]>(`${this.apiUrl}/project/${projectId}`)
+      .pipe(
+        map((filters) => {
+          return filters.map((filter) =>
+            this.mapBackendFilterToFrontend(filter)
+          );
+        }),
+        catchError((error) => {
+          console.error(
+            `Error fetching filters for project ${projectId}:`,
+            error
+          );
+
+          // Close loading message and show error
+          this.message.remove(loadingMessage);
+          this.message.error(
+            'Failed to load saved filters. Using cached filters if available.'
+          );
+
+          // Return current filters if we have them, empty array otherwise
+          return of(
+            this._savedFilters.value.length > 0 ? this._savedFilters.value : []
+          );
+        }),
+        finalize(() => {
+          // Remove loading message
+          this.message.remove(loadingMessage);
+        })
+      )
+      .subscribe((filters) => {
+        // Filter to only include the user's filters and shared filters
+        const userFilters = filters.filter(
+          (filter) => filter.owner === userId || filter.isShared
+        );
+
+        if (userFilters.length > 0) {
+          this._savedFilters.next(userFilters);
+          console.log(
+            `Loaded ${userFilters.length} filters for project ${projectId}`
+          );
+        } else {
+          console.log(`No filters found for project ${projectId}`);
+        }
+      });
+  }
+
+  // Helper method to convert backend filter model to frontend model
+  private mapBackendFilterToFrontend(backendFilter: any): SavedFilter {
+    console.log('Received filter from backend:', backendFilter);
+
+    const criteria: FilterCriteria = {
+      projectId: backendFilter.projectId,
+    };
+
+    // Extract criteria from backend format
+    if (backendFilter.criteria && backendFilter.criteria.length > 0) {
+      backendFilter.criteria.forEach((criterion: any) => {
+        // Bỏ qua tiêu chí projectId vì đã được gán ở trên
+        if (criterion.field === 'projectId') {
+          return;
+        }
+
+        if (criterion.field === 'searchTerm' && criterion.value) {
+          criteria.searchTerm = criterion.value;
+        } else if (criterion.field === 'types' && criterion.value) {
+          criteria.types = Array.isArray(criterion.value)
+            ? criterion.value
+            : [criterion.value];
+        } else if (criterion.field === 'statuses' && criterion.value) {
+          criteria.statuses = Array.isArray(criterion.value)
+            ? criterion.value
+            : [criterion.value];
+        } else if (criterion.field === 'priorities' && criterion.value) {
+          criteria.priorities = Array.isArray(criterion.value)
+            ? criterion.value
+            : [criterion.value];
+        } else if (criterion.field === 'assigneeIds' && criterion.value) {
+          criteria.assigneeIds = Array.isArray(criterion.value)
+            ? criterion.value
+            : [criterion.value];
+        } else if (criterion.field === 'createdWithin' && criterion.value) {
+          criteria.createdWithin = criterion.value;
+        } else if (criterion.field === 'updatedWithin' && criterion.value) {
+          criteria.updatedWithin = criterion.value;
+        }
+      });
+    }
+
+    return {
+      id: backendFilter.id,
+      name: backendFilter.name,
+      description: backendFilter.description || '',
+      owner: backendFilter.createdBy,
+      isShared: backendFilter.isPublic,
+      isStarred: backendFilter.isStarred || false,
+      createdAt: new Date(backendFilter.createdAt),
+      updatedAt: new Date(backendFilter.updatedAt),
+      criteria: criteria,
+    };
+  }
+
+  // Helper method to convert frontend filter model to backend model
+  private mapFrontendFilterToBackend(filter: SavedFilter, userId: string): any {
+    // Định nghĩa các hằng số enum giống với backend
+    const FILTER_OPERATOR = {
+      EQUALS: 'equals',
+      NOT_EQUALS: 'not_equals',
+      CONTAINS: 'contains',
+      GREATER_THAN: 'greater_than',
+      LESS_THAN: 'less_than',
+      IN: 'in',
+    };
+
+    const criteria: any[] = [];
+
+    // Extract criteria into backend format
+    if (filter.criteria) {
+      if (filter.criteria.searchTerm) {
+        criteria.push({
+          field: 'searchTerm',
+          operator: FILTER_OPERATOR.CONTAINS,
+          value: filter.criteria.searchTerm,
+        });
+      }
+
+      if (filter.criteria.types && filter.criteria.types.length > 0) {
+        criteria.push({
+          field: 'types',
+          operator: FILTER_OPERATOR.IN,
+          value: filter.criteria.types,
+        });
+      }
+
+      if (filter.criteria.statuses && filter.criteria.statuses.length > 0) {
+        criteria.push({
+          field: 'statuses',
+          operator: FILTER_OPERATOR.IN,
+          value: filter.criteria.statuses,
+        });
+      }
+
+      if (filter.criteria.priorities && filter.criteria.priorities.length > 0) {
+        criteria.push({
+          field: 'priorities',
+          operator: FILTER_OPERATOR.IN,
+          value: filter.criteria.priorities,
+        });
+      }
+
+      if (
+        filter.criteria.assigneeIds &&
+        filter.criteria.assigneeIds.length > 0
+      ) {
+        criteria.push({
+          field: 'assigneeIds',
+          operator: FILTER_OPERATOR.IN,
+          value: filter.criteria.assigneeIds,
+        });
+      }
+
+      if (filter.criteria.createdWithin) {
+        criteria.push({
+          field: 'createdWithin',
+          operator: FILTER_OPERATOR.LESS_THAN,
+          value: filter.criteria.createdWithin,
+        });
+      }
+
+      if (filter.criteria.updatedWithin) {
+        criteria.push({
+          field: 'updatedWithin',
+          operator: FILTER_OPERATOR.LESS_THAN,
+          value: filter.criteria.updatedWithin,
+        });
+      }
+    }
+
+    // Đảm bảo có ít nhất một tiêu chí nếu không có tiêu chí nào được chọn
+    if (criteria.length === 0 && filter.criteria.projectId) {
+      // Thêm một tiêu chí mặc định - tất cả các issue trong project
+      criteria.push({
+        field: 'projectId',
+        operator: FILTER_OPERATOR.EQUALS,
+        value: filter.criteria.projectId,
+      });
+    }
+
+    console.log('Sending filter criteria to backend:', criteria);
+
+    return {
+      id: filter.id,
+      name: filter.name,
+      description: filter.description || '',
+      isPublic: filter.isShared,
+      isStarred: filter.isStarred || false,
+      createdBy: userId,
+      projectId: filter.criteria.projectId,
+      criteria: criteria,
+    };
   }
 }

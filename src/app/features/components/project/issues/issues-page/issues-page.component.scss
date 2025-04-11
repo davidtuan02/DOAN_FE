@@ -285,3 +285,115 @@
   width: 18px;
   text-align: center;
 }
+
+// Detail view styles
+.grid {
+  &.grid-cols-12 {
+    min-height: calc(100vh - 280px);
+  }
+}
+
+// Issue card styling in detail view
+.col-span-4 {
+  .border {
+    transition: all 0.2s ease;
+
+    &:hover {
+      border-color: #4c9aff;
+    }
+
+    &.bg-blue-50 {
+      box-shadow: 0 1px 4px rgba(9, 30, 66, 0.13);
+    }
+  }
+}
+
+// Detail panel styling for card-details component
+.col-span-8 {
+  app-card-details {
+    display: block;
+    height: 100%;
+
+    ::ng-deep {
+      .card-details-modal {
+        height: 100%;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .card-details-modal-content {
+        max-height: calc(100vh - 280px);
+        overflow: auto;
+      }
+    }
+  }
+}
+
+// Avatar styling
+.rounded-full {
+  &.overflow-hidden {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #dfe1e6;
+
+    img {
+      object-fit: cover;
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
+
+// View toggle buttons
+.bg-gray-100.rounded-md {
+  padding: 2px;
+
+  button {
+    font-weight: 500;
+    transition: all 0.2s ease;
+
+    &.bg-white {
+      box-shadow: 0 1px 2px rgba(9, 30, 66, 0.25);
+    }
+  }
+}
+
+// Responsive adjustments for detail view
+@media (max-width: 1024px) {
+  .grid-cols-12 {
+    display: flex;
+    flex-direction: column;
+
+    .col-span-4,
+    .col-span-8 {
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .col-span-4 {
+      margin-bottom: 16px;
+      max-height: 300px;
+    }
+
+    .col-span-8 {
+      app-card-details {
+        ::ng-deep {
+          // Make card details modal responsive
+          .card-details-modal {
+            height: auto;
+            min-height: 60vh;
+          }
+
+          .card-details-modal-content {
+            flex-direction: column;
+
+            > div {
+              width: 100% !important;
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -6,7 +6,37 @@
         View and manage all issues in the current project
       </p>
     </div>
-    <div>
+    <div class="flex items-center space-x-2">
+      <!-- View toggle buttons -->
+      <div class="bg-gray-100 rounded-md p-1 flex">
+        <button
+          class="px-3 py-1.5 text-sm rounded-md flex items-center"
+          [class.bg-white]="viewType === ViewType.LIST"
+          [class.shadow-sm]="viewType === ViewType.LIST"
+          (click)="viewType = ViewType.LIST"
+        >
+          <i class="fa fa-list mr-1"></i> LIST VIEW
+        </button>
+        <button
+          class="px-3 py-1.5 text-sm rounded-md flex items-center"
+          [class.bg-white]="viewType === ViewType.DETAIL"
+          [class.shadow-sm]="viewType === ViewType.DETAIL"
+          (click)="viewType = ViewType.DETAIL"
+        >
+          <i class="fa fa-th-large mr-1"></i> DETAIL VIEW
+        </button>
+      </div>
+
+      <button nz-button nzType="default" class="flex items-center">
+        <span class="mr-1">Share</span>
+        <span nz-icon nzType="down" nzTheme="outline"></span>
+      </button>
+
+      <button nz-button nzType="default" class="flex items-center">
+        <span class="mr-1">Export</span>
+        <span nz-icon nzType="down" nzTheme="outline"></span>
+      </button>
+
       <button nz-button nzType="primary" [routerLink]="['/board']">
         <span nz-icon nzType="plus"></span>
         Create Issue
@@ -41,6 +71,85 @@
       </span>
       <span class="ml-1">AI</span>
     </button>
+
+    <!-- Saved filters dropdown -->
+    <div class="filter-item">
+      <button
+        nz-button
+        nzType="default"
+        class="flex items-center dropdown-trigger"
+        nz-dropdown
+        [nzDropdownMenu]="savedFiltersMenu"
+        nzTrigger="click"
+      >
+        <span class="mr-1">Saved Filters</span>
+        <span nz-icon nzType="down" nzTheme="outline"></span>
+      </button>
+      <nz-dropdown-menu #savedFiltersMenu="nzDropdownMenu">
+        <ul nz-menu nzSelectable>
+          <!-- Loading state -->
+          <li nz-menu-item *ngIf="isLoadingFilters" [nzDisabled]="true">
+            <div class="flex items-center justify-between min-w-[200px]">
+              <span>Loading filters...</span>
+              <span nz-icon nzType="loading" class="ml-2"></span>
+            </div>
+          </li>
+
+          <!-- Empty state -->
+          <li
+            nz-menu-item
+            *ngIf="!isLoadingFilters && (savedFilters$ | async)?.length === 0"
+            [nzDisabled]="true"
+          >
+            <span class="text-gray-500">No saved filters</span>
+          </li>
+
+          <!-- Filters list -->
+          <li
+            nz-menu-item
+            *ngFor="let filter of savedFilters$ | async"
+            (click)="applyFilterFromSaved(filter)"
+          >
+            <div class="flex items-center justify-between">
+              <div>
+                <span [class.font-medium]="filter.isStarred">{{
+                  filter.name
+                }}</span>
+                <small
+                  *ngIf="filter.description"
+                  class="block text-gray-500 text-xs truncate max-w-[180px]"
+                >
+                  {{ filter.description }}
+                </small>
+              </div>
+              <span
+                *ngIf="filter.isStarred"
+                nz-icon
+                nzType="star"
+                nzTheme="fill"
+                class="text-yellow-400 ml-2 flex-shrink-0"
+              ></span>
+            </div>
+          </li>
+
+          <li nz-menu-divider></li>
+
+          <!-- Actions -->
+          <li nz-menu-item (click)="saveFilter()">
+            <div class="flex items-center">
+              <span nz-icon nzType="plus" class="mr-1"></span>
+              <span>Save Current Filter</span>
+            </div>
+          </li>
+          <li nz-menu-item routerLink="/filters">
+            <div class="flex items-center">
+              <span nz-icon nzType="setting" class="mr-1"></span>
+              <span>Manage Filters</span>
+            </div>
+          </li>
+        </ul>
+      </nz-dropdown-menu>
+    </div>
 
     <!-- Search input -->
     <div class="relative search-box">
@@ -268,96 +377,174 @@
     </button>
   </div>
 
-  <!-- Issues Table -->
-  <div class="bg-white rounded-lg shadow-sm issues-table">
-    <nz-table
-      #issuesTable
-      [nzData]="filteredIssues"
-      [nzLoading]="loading"
-      [nzPageSize]="10"
-      [nzShowSizeChanger]="true"
-      nzShowPagination
-      class="w-full"
-    >
-      <thead>
-        <tr>
-          <th>Key</th>
-          <th>Type</th>
-          <th>Summary</th>
-          <th>Status</th>
-          <th>Priority</th>
-          <th>Assignee</th>
-          <th>Created</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          *ngFor="let issue of issuesTable.data"
-          class="cursor-pointer hover:bg-gray-50"
-          (click)="viewIssueDetail(issue.id)"
-        >
-          <td>{{ issue.key }}</td>
-          <td>
-            <i
-              class="fa {{ getTypeIcon(issue.type) }}"
-              aria-hidden="true"
-              nz-tooltip
-              [nzTooltipTitle]="issue.type"
-            ></i>
-          </td>
-          <td class="max-w-xs truncate">{{ issue.title }}</td>
-          <td>
-            <nz-tag
-              [nzColor]="getStatusColor(mapStatusForDisplay(issue.status))"
-              >{{ mapStatusForDisplay(issue.status) }}</nz-tag
-            >
-          </td>
-          <td>
-            <nz-tag [nzColor]="getPriorityColor(issue.priority)">{{
-              issue.priority
-            }}</nz-tag>
-          </td>
-          <td>
-            <div *ngIf="issue.assignee" class="flex items-center">
-              <div
-                class="flex items-center justify-center w-8 h-8 mr-2 overflow-hidden bg-gray-200 rounded-full"
+  <!-- Conditional view containers -->
+  <ng-container *ngIf="viewType === ViewType.LIST">
+    <!-- Issues Table -->
+    <div class="bg-white rounded-lg shadow-sm issues-table">
+      <nz-table
+        #issuesTable
+        [nzData]="filteredIssues"
+        [nzLoading]="loading"
+        [nzPageSize]="10"
+        [nzShowSizeChanger]="true"
+        nzShowPagination
+        class="w-full"
+      >
+        <thead>
+          <tr>
+            <th>Key</th>
+            <th>Type</th>
+            <th>Summary</th>
+            <th>Status</th>
+            <th>Priority</th>
+            <th>Assignee</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let issue of issuesTable.data"
+            class="cursor-pointer hover:bg-gray-50"
+            (click)="viewIssueDetail(issue.id)"
+          >
+            <td>{{ issue.key }}</td>
+            <td>
+              <i
+                class="fa {{ getTypeIcon(issue.type) }}"
+                aria-hidden="true"
+                nz-tooltip
+                [nzTooltipTitle]="issue.type"
+              ></i>
+            </td>
+            <td class="max-w-xs truncate">{{ issue.title }}</td>
+            <td>
+              <nz-tag
+                [nzColor]="getStatusColor(mapStatusForDisplay(issue.status))"
+                >{{ mapStatusForDisplay(issue.status) }}</nz-tag
               >
-                <img
-                  *ngIf="issue.assignee.avatar"
-                  [src]="issue.assignee.avatar"
-                  alt="Avatar"
-                  class="object-cover w-full h-full"
-                />
-                <span *ngIf="!issue.assignee.avatar">{{
-                  issue.assignee.name.charAt(0)
+            </td>
+            <td>
+              <nz-tag [nzColor]="getPriorityColor(issue.priority)">{{
+                issue.priority
+              }}</nz-tag>
+            </td>
+            <td>
+              <div *ngIf="issue.assignee" class="flex items-center">
+                <div
+                  class="flex items-center justify-center w-8 h-8 mr-2 overflow-hidden bg-gray-200 rounded-full"
+                >
+                  <img
+                    *ngIf="issue.assignee.avatar"
+                    [src]="issue.assignee.avatar"
+                    alt="Avatar"
+                    class="object-cover w-full h-full"
+                  />
+                  <span *ngIf="!issue.assignee.avatar">{{
+                    issue.assignee.name.charAt(0)
+                  }}</span>
+                </div>
+                <span class="truncate max-w-[100px]">{{
+                  issue.assignee.name
                 }}</span>
               </div>
-              <span class="truncate max-w-[100px]">{{
-                issue.assignee.name
-              }}</span>
+              <span *ngIf="!issue.assignee" class="text-gray-400"
+                >Unassigned</span
+              >
+            </td>
+            <td>{{ issue.created | date : "MMM d, y" }}</td>
+            <td>
+              <button
+                nz-button
+                nzType="text"
+                nzShape="circle"
+                (click)="$event.stopPropagation()"
+                [routerLink]="['/board']"
+                [queryParams]="{ issueId: issue.id }"
+                nz-tooltip
+                nzTooltipTitle="Edit issue"
+              >
+                <span nz-icon nzType="edit" nzTheme="outline"></span>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="viewType === ViewType.DETAIL">
+    <!-- Detail View - similar to JIRA's detail view -->
+    <div class="grid grid-cols-12 gap-4">
+      <!-- Issue cards column -->
+      <div
+        class="col-span-4 bg-white rounded-lg p-4 shadow-sm max-h-[calc(100vh-280px)] overflow-y-auto"
+      >
+        <div
+          *ngFor="let issue of filteredIssues"
+          class="p-3 mb-2 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer"
+          [class.bg-blue-50]="selectedIssue?.id === issue.id"
+          [class.border-blue-300]="selectedIssue?.id === issue.id"
+          (click)="viewIssueDetail(issue.id)"
+        >
+          <div class="flex items-start">
+            <div class="mr-2 mt-1">
+              <i
+                class="fa {{ getTypeIcon(issue.type) }}"
+                aria-hidden="true"
+              ></i>
             </div>
-            <span *ngIf="!issue.assignee" class="text-gray-400"
-              >Unassigned</span
-            >
-          </td>
-          <td>{{ issue.created | date : "MMM d, y" }}</td>
-          <td>
-            <button
-              nz-button
-              nzType="text"
-              nzShape="circle"
-              (click)="$event.stopPropagation()"
-              [routerLink]="['/board']"
-              [queryParams]="{ issueId: issue.id }"
-              nz-tooltip
-              nzTooltipTitle="Edit issue"
-            >
-              <span nz-icon nzType="edit" nzTheme="outline"></span>
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </nz-table>
-  </div>
+            <div class="flex-1">
+              <div class="flex justify-between items-center mb-1">
+                <span class="text-xs text-blue-600 font-medium">{{
+                  issue.key
+                }}</span>
+                <nz-tag
+                  [nzColor]="getStatusColor(mapStatusForDisplay(issue.status))"
+                >
+                  {{ mapStatusForDisplay(issue.status) }}
+                </nz-tag>
+              </div>
+              <h3 class="text-sm text-gray-900 font-medium mb-2">
+                {{ issue.title }}
+              </h3>
+              <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                  <nz-tag
+                    [nzColor]="getPriorityColor(issue.priority)"
+                    class="mr-1"
+                  >
+                    {{ issue.priority }}
+                  </nz-tag>
+                  <span class="text-xs text-gray-500">{{
+                    issue.created | date : "MMM d"
+                  }}</span>
+                </div>
+                <div *ngIf="issue.assignee" class="flex items-center">
+                  <div
+                    class="w-6 h-6 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center"
+                  >
+                    <img
+                      *ngIf="issue.assignee.avatar"
+                      [src]="issue.assignee.avatar"
+                      alt="Avatar"
+                      class="w-full h-full object-cover"
+                    />
+                    <span *ngIf="!issue.assignee.avatar" class="text-xs">{{
+                      issue.assignee.name.charAt(0)
+                    }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Issue detail column - using card-details component -->
+      <div class="col-span-8">
+        <app-card-details></app-card-details>
+      </div>
+    </div>
+  </ng-container>
 </div>
