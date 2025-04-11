@@ -174,10 +174,68 @@
           nz-button
           nzType="default"
           class="flex items-center dropdown-trigger"
+          nz-dropdown
+          [nzDropdownMenu]="projectMenu"
+          nzTrigger="click"
         >
-          <span class="mr-1">My Scrum Project</span>
+          <span class="mr-1">{{
+            selectedProjectName || "My Scrum Project"
+          }}</span>
           <span nz-icon nzType="down" nzTheme="outline"></span>
         </button>
+        <nz-dropdown-menu #projectMenu="nzDropdownMenu">
+          <div class="p-2 project-selection-container">
+            <div class="py-2 px-3 text-gray-700 border-b border-gray-200 mb-2">
+              <span>Project = (equals)</span>
+            </div>
+            <div class="relative mb-2">
+              <input
+                type="text"
+                placeholder="Search"
+                [(ngModel)]="projectSearchTerm"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+              <span class="absolute right-3 top-2.5 text-gray-400">
+                <span nz-icon nzType="search" nzTheme="outline"></span>
+              </span>
+            </div>
+            <div class="max-h-60 overflow-y-auto">
+              <div
+                *ngFor="let project of filteredProjects"
+                class="px-1 py-1 hover:bg-gray-100 flex items-center"
+              >
+                <label
+                  nz-checkbox
+                  [ngModel]="isProjectSelected(project.id)"
+                  (ngModelChange)="toggleProjectSelection(project.id)"
+                  class="flex items-center w-full"
+                >
+                  <div class="flex items-center">
+                    <div class="w-5 h-5 mr-2 text-center">
+                      <span
+                        nz-icon
+                        nzType="project"
+                        nzTheme="outline"
+                        class="text-blue-500"
+                      ></span>
+                    </div>
+                    <span>{{ project.name }}</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+            <div class="mt-2 pt-2 border-t border-gray-200">
+              <button
+                nz-button
+                nzType="link"
+                class="px-0 text-blue-600 hover:text-blue-800"
+                (click)="clearProjectSelection()"
+              >
+                Clear selection
+              </button>
+            </div>
+          </div>
+        </nz-dropdown-menu>
       </div>
     </div>
 

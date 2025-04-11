@@ -136,6 +136,12 @@ export class IssuesPageComponent implements OnInit {
   // Observable for saved filters
   savedFilters$: Observable<SavedFilter[]>;
 
+  // Project filter properties
+  projects: any[] = [];
+  selectedProjectIds: string[] = [];
+  projectSearchTerm: string = '';
+  selectedProjectName: string = '';
+
   constructor(
     private issueService: IssueService,
     private projectService: ProjectService,
@@ -151,6 +157,9 @@ export class IssuesPageComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Load all available projects
+    this.loadProjects();
+
     // Load issues first
     this.loadIssues();
 
@@ -943,5 +952,109 @@ export class IssuesPageComponent implements OnInit {
           console.warn('Card ID mismatch. Expected:', issueId, 'Got:', card.id);
         }
       });
+  }
+
+  // Filter projects based on search term
+  get filteredProjects(): any[] {
+    if (!this.projectSearchTerm.trim()) {
+      return this.projects;
+    }
+
+    const search = this.projectSearchTerm.toLowerCase().trim();
+    return this.projects.filter((project) =>
+      project.name.toLowerCase().includes(search)
+    );
+  }
+
+  // Check if a project is selected
+  isProjectSelected(projectId: string): boolean {
+    return this.selectedProjectIds.includes(projectId);
+  }
+
+  // Toggle project selection
+  toggleProjectSelection(projectId: string): void {
+    const index = this.selectedProjectIds.indexOf(projectId);
+    if (index === -1) {
+      // If only allowing one project at a time:
+      this.selectedProjectIds = [projectId];
+      const project = this.projects.find((p) => p.id === projectId);
+      if (project) {
+        this.selectedProjectName = project.name;
+      }
+    } else {
+      this.selectedProjectIds.splice(index, 1);
+      this.selectedProjectName = '';
+    }
+
+    // Reload issues for the selected project
+    this.loadIssuesForSelectedProjects();
+  }
+
+  // Clear project selection
+  clearProjectSelection(): void {
+    this.selectedProjectIds = [];
+    this.selectedProjectName = '';
+
+    // Reset to default project
+    const defaultProject = this.projectService.getSelectedProject();
+    if (defaultProject) {
+      this.loadIssues();
+    }
+  }
+
+  // Load issues for selected projects
+  loadIssuesForSelectedProjects(): void {
+    if (this.selectedProjectIds.length === 0) {
+      // If no project is selected, use the default project
+      this.loadIssues();
+      return;
+    }
+
+    this.loading = true;
+    // For now, just load the first selected project
+    const projectId = this.selectedProjectIds[0];
+
+    this.issueService
+      .getIssuesByProjectId(projectId)
+      .pipe(takeUntilDestroyed(this))
+      .subscribe({
+        next: (issues) => {
+          this.issues = issues;
+          this.filteredIssues = [...issues];
+          this.extractAssignees();
+          this.loading = false;
+
+          // If we have active filters, apply them again
+          if (this.hasActiveFilters()) {
+            this.applyFilters();
+          }
+        },
+        error: (error) => {
+          console.error('Failed to load issues for selected project', error);
+          this.message.error('Failed to load issues for selected project');
+          this.loading = false;
+        },
+      });
+  }
+
+  // Add method to load projects
+  loadProjects(): void {
+    // Get projects from ProjectService
+    this.projectService.getAllProjects().subscribe({
+      next: (projects: any[]) => {
+        this.projects = projects;
+
+        // Set current project as selected by default
+        const currentProject = this.projectService.getSelectedProject();
+        if (currentProject && currentProject.id) {
+          this.selectedProjectIds = [currentProject.id];
+          this.selectedProjectName = currentProject.name || '';
+        }
+      },
+      error: (error: any) => {
+        console.error('Failed to load projects', error);
+        this.message.error('Failed to load projects');
+      },
+    });
   }
 }

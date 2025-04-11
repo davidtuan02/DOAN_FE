@@ -397,3 +397,50 @@
     }
   }
 }
+
+// Project filter dropdown styles
+.project-selection-container {
+  width: 280px;
+  max-width: 100%;
+
+  input {
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+    }
+  }
+
+  .max-h-60 {
+    max-height: 240px;
+
+    label {
+      margin: 0;
+      padding: 4px 8px;
+      border-radius: 3px;
+      width: 100%;
+      cursor: pointer;
+
+      &:hover {
+        background-color: #f0f0f0;
+      }
+    }
+  }
+
+  button.px-0 {
+    padding-left: 0;
+    padding-right: 0;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+// Style for project filter dropdown trigger
+.filter-item:has(.project-selection-container) {
+  button.dropdown-trigger {
+    min-width: 180px;
+    justify-content: space-between;
+    text-align: left;
+  }
+}
