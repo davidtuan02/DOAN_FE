@@ -14,8 +14,22 @@ export interface CreateIssueDto {
   storyPoints?: number;
   epicId?: string;
   assigneeId?: string;
+  parentTaskId?: string;
   labels?: string[];
   components?: string[];
+  dueDate?: Date;
+}
+
+export interface CreateChildIssueDto {
+  title: string;
+  description?: string;
+  priority: 'HIGHEST' | 'HIGH' | 'MEDIUM' | 'LOW' | 'LOWEST';
+  status: 'TODO' | 'IN_PROGRESS' | 'REVIEW' | 'DONE';
+  parentTaskId: string;
+  type: 'Sub-task';
+  storyPoints?: number;
+  assigneeId?: string;
+  labels?: string[];
   dueDate?: Date;
 }
 
@@ -27,6 +41,7 @@ export interface UpdateIssueDto {
   type?: 'Epic' | 'Story' | 'Task' | 'Bug' | 'Sub-task';
   storyPoints?: number;
   epicId?: string;
+  parentTaskId?: string;
   assigneeId?: string;
   labels?: string[];
   components?: string[];
@@ -69,6 +84,8 @@ export interface IssueDto {
   };
   storyPoints: number;
   epicId?: string;
+  parentTask?: IssueDto;
+  childTasks?: IssueDto[];
   order?: number;
   labels?: string[];
   components?: string[];
@@ -99,6 +116,8 @@ export interface Issue {
   startDate?: Date;
   storyPoints?: number;
   epicId?: string;
+  parentTask?: Issue;
+  childTasks?: Issue[];
   order: number;
   labels: string[];
   components: string[];
@@ -435,7 +454,7 @@ export class IssueService {
   private mapTaskToIssue(task: IssueDto): Issue {
     const assigneeObj = task.assignee || task.assignedTo;
 
-    return {
+    const mappedIssue: Issue = {
       id: task.id,
       key: task.id.slice(0, 8).toUpperCase(),
       title: task.title || task.taskName || '',
@@ -475,6 +494,20 @@ export class IssueService {
       created: new Date(task.createdAt),
       updated: new Date(task.updatedAt),
     };
+
+    // Map parent task if exists
+    if (task.parentTask) {
+      mappedIssue.parentTask = this.mapTaskToIssue(task.parentTask);
+    }
+
+    // Map child tasks if exist
+    if (task.childTasks && task.childTasks.length > 0) {
+      mappedIssue.childTasks = task.childTasks.map((childTask) =>
+        this.mapTaskToIssue(childTask)
+      );
+    }
+
+    return mappedIssue;
   }
 
   private mapTaskPriority(
@@ -501,7 +534,7 @@ export class IssueService {
       CREATED: 'To Do',
       IN_PROGRESS: 'In Progress',
       REVIEW: 'Review',
-      FINISH: 'Done',
+      DONE: 'Done',
     };
     return statusMap[status] || 'To Do';
   }
@@ -537,14 +570,14 @@ export class IssueService {
 
   private mapStatusToBackend(
     status: string
-  ): 'CREATED' | 'IN_PROGRESS' | 'REVIEW' | 'FINISH' {
+  ): 'CREATED' | 'IN_PROGRESS' | 'REVIEW' | 'DONE' {
     const statusMap: {
-      [key: string]: 'CREATED' | 'IN_PROGRESS' | 'REVIEW' | 'FINISH';
+      [key: string]: 'CREATED' | 'IN_PROGRESS' | 'REVIEW' | 'DONE';
     } = {
       'To Do': 'CREATED',
       'In Progress': 'IN_PROGRESS',
       Review: 'REVIEW',
-      Done: 'FINISH',
+      Done: 'DONE',
     };
     return statusMap[status] || 'CREATED';
   }
@@ -563,5 +596,119 @@ export class IssueService {
     }
 
     return errorMessage;
+  }
+
+  /**
+   * Create a child task
+   */
+  createChildTask(
+    childTask: Partial<Issue>,
+    parentTaskId: string
+  ): Observable<Issue> {
+    const jwtToken = this.userService['jwtService'].getToken();
+    const userId = this.userService.getCurrentUserId();
+
+    // Convert from UI model to API model
+    const createChildTaskDto: any = {
+      taskName: childTask.title || '',
+      taskDescription: childTask.description || ' ',
+      status: this.mapStatusToBackend(childTask.status || 'To Do'),
+      reporterId: userId || null,
+      parentTaskId: parentTaskId,
+      type: 'Sub-task',
+      priority: childTask.priority || 'Medium',
+      storyPoints: childTask.storyPoints || 0,
+      labels: childTask.labels || [],
+    };
+
+    console.log(
+      `Creating child task for parent ${parentTaskId}:`,
+      createChildTaskDto
+    );
+
+    return this.http
+      .post<IssueDto>(`${this.apiUrl}/child`, createChildTaskDto, {
+        headers: new HttpHeaders({
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${jwtToken}`,
+        }),
+      })
+      .pipe(
+        map((task) => this.mapTaskToIssue(task)),
+        tap((createdIssue) =>
+          console.log('Created new child issue:', createdIssue)
+        ),
+        catchError((error) => {
+          console.error('Error creating child issue:', error);
+          return throwError(() => new Error(this.getErrorMessage(error)));
+        })
+      );
+  }
+
+  /**
+   * Get child tasks for a parent task
+   */
+  getChildTasks(parentTaskId: string): Observable<Issue[]> {
+    return this.http
+      .get<IssueDto[]>(`${this.apiUrl}/${parentTaskId}/children`)
+      .pipe(
+        map((tasks) => this.mapTasksToIssues(tasks)),
+        tap((issues) =>
+          console.log(
+            `Fetched ${issues.length} child issues for task ${parentTaskId}`
+          )
+        ),
+        catchError((error) => {
+          console.error('Error fetching child issues:', error);
+          return throwError(
+            () => new Error('Failed to load child issues. Please try again.')
+          );
+        })
+      );
+  }
+
+  /**
+   * Get parent task for a child task
+   */
+  getParentTask(childTaskId: string): Observable<Issue> {
+    return this.http.get<IssueDto>(`${this.apiUrl}/${childTaskId}/parent`).pipe(
+      map((task) => this.mapTaskToIssue(task)),
+      tap((issue) => console.log(`Fetched parent issue for ${childTaskId}`)),
+      catchError((error) => {
+        console.error(`Error fetching parent for ${childTaskId}:`, error);
+        return throwError(
+          () => new Error('Failed to load parent issue. Please try again.')
+        );
+      })
+    );
+  }
+
+  /**
+   * Remove parent-child relationship
+   */
+  removeParentChildRelationship(childTaskId: string): Observable<Issue> {
+    const jwtToken = this.userService['jwtService'].getToken();
+
+    return this.http
+      .delete<IssueDto>(`${this.apiUrl}/${childTaskId}/parent`, {
+        headers: new HttpHeaders({
+          Authorization: `Bearer ${jwtToken}`,
+        }),
+      })
+      .pipe(
+        map((task) => this.mapTaskToIssue(task)),
+        tap(() =>
+          console.log(`Removed parent relationship for ${childTaskId}`)
+        ),
+        catchError((error) => {
+          console.error(`Error removing parent for ${childTaskId}:`, error);
+          return throwError(
+            () =>
+              new Error(
+                'Failed to remove parent relationship. Please try again.'
+              )
+          );
+        })
+      );
   }
 }

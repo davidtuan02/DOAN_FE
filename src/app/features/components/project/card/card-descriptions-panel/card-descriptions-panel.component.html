@@ -11,7 +11,7 @@
       <div class="font-medium">Attach</div>
     </button>
 
-    <button class="raise-button">
+    <button class="raise-button" (click)="createChildIssue()">
       <app-svg-icon name="hierarchy" [width]="24" [height]="24"></app-svg-icon>
       <div class="font-medium">Add a child issue</div>
     </button>
@@ -40,6 +40,210 @@
     <app-card-attachment [cardId]="card.id"></app-card-attachment>
   </div>
 
+  <!-- Child Issues Section -->
+  <div class="my-4 ml-1.5">
+    <div class="flex justify-between items-center mb-2">
+      <div class="font-medium text-textDark">Child issues</div>
+      <div class="flex items-center">
+        <button
+          class="p-1 text-gray-500 hover:bg-gray-100 rounded"
+          title="Refresh"
+        >
+          <app-svg-icon
+            name="refresh"
+            [width]="16"
+            [height]="16"
+          ></app-svg-icon>
+        </button>
+        <button
+          class="p-1 text-gray-500 hover:bg-gray-100 rounded ml-1"
+          title="More options"
+        >
+          <app-svg-icon
+            name="threedot"
+            [width]="16"
+            [height]="16"
+          ></app-svg-icon>
+        </button>
+        <button
+          class="p-1 text-gray-500 hover:bg-gray-100 rounded ml-1"
+          title="Add child issue"
+          (click)="createChildIssue()"
+        >
+          <app-svg-icon name="add" [width]="16" [height]="16"></app-svg-icon>
+        </button>
+      </div>
+    </div>
+
+    <div class="border rounded bg-white">
+      <!-- Child Issues Progress Bar -->
+      <div class="h-1 bg-gray-200 w-full">
+        <div
+          class="h-1 bg-green-500"
+          [style.width]="getChildTasksProgressPercentage() + '%'"
+        ></div>
+      </div>
+
+      <!-- Child Issues Table -->
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 text-gray-500">
+          <tr>
+            <th class="py-2 px-3 text-left w-16">Type</th>
+            <th class="py-2 px-3 text-left w-24">Key</th>
+            <th class="py-2 px-3 text-left">Summary</th>
+            <th class="py-2 px-3 text-left w-24">Priority</th>
+            <th class="py-2 px-3 text-left w-32">Assignee</th>
+            <th class="py-2 px-3 text-left w-24">Status</th>
+            <th class="py-2 px-3 text-left w-10"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngIf="childTasks?.length; else noChildTasks">
+            <tr
+              *ngFor="let childTask of childTasks"
+              class="border-t hover:bg-blue-50 cursor-pointer"
+              (click)="openChildTask(childTask.id)"
+            >
+              <td class="py-2 px-3">
+                <ng-container [ngSwitch]="childTask.type">
+                  <app-svg-icon
+                    *ngSwitchCase="'Task'"
+                    name="blueCheck"
+                    [width]="16"
+                    [height]="16"
+                  ></app-svg-icon>
+                  <app-svg-icon
+                    *ngSwitchCase="'Bug'"
+                    name="bug"
+                    [width]="16"
+                    [height]="16"
+                  ></app-svg-icon>
+                  <app-svg-icon
+                    *ngSwitchCase="'Story'"
+                    name="story"
+                    [width]="16"
+                    [height]="16"
+                  ></app-svg-icon>
+                  <app-svg-icon
+                    *ngSwitchDefault
+                    name="subtask"
+                    [width]="16"
+                    [height]="16"
+                  ></app-svg-icon>
+                </ng-container>
+              </td>
+              <td class="py-2 px-3 text-blue-600">{{ childTask.key }}</td>
+              <td class="py-2 px-3">{{ childTask.title }}</td>
+              <td class="py-2 px-3">
+                <div class="flex items-center">
+                  <span
+                    class="w-2 h-2 rounded-full mr-1"
+                    [ngClass]="{
+                      'bg-red-500': childTask.priority === 'Highest',
+                      'bg-orange-500': childTask.priority === 'High',
+                      'bg-yellow-500': childTask.priority === 'Medium',
+                      'bg-green-500': childTask.priority === 'Low',
+                      'bg-blue-500': childTask.priority === 'Lowest'
+                    }"
+                  ></span>
+                  {{ childTask.priority }}
+                </div>
+              </td>
+              <td class="py-2 px-3">
+                <div
+                  *ngIf="childTask.assignee; else unassigned"
+                  class="flex items-center"
+                >
+                  <img
+                    [src]="
+                      childTask.assignee.avatar ||
+                      'assets/images/default-avatar.png'
+                    "
+                    class="w-6 h-6 rounded-full mr-2"
+                    [alt]="childTask.assignee.name"
+                  />
+                  <span class="truncate">{{ childTask.assignee.name }}</span>
+                </div>
+                <ng-template #unassigned>
+                  <span class="text-gray-500">Unassigned</span>
+                </ng-template>
+              </td>
+              <td class="py-2 px-3">
+                <span
+                  class="px-2 py-0.5 text-xs rounded"
+                  [ngClass]="{
+                    'bg-blue-100 text-blue-800': childTask.status === 'To Do',
+                    'bg-yellow-100 text-yellow-800':
+                      childTask.status === 'In Progress',
+                    'bg-purple-100 text-purple-800':
+                      childTask.status === 'Review',
+                    'bg-green-100 text-green-800': childTask.status === 'Done'
+                  }"
+                >
+                  {{ childTask.status }}
+                </span>
+              </td>
+              <td class="py-2 px-3">
+                <button
+                  class="text-gray-400 hover:text-gray-600 focus:outline-none"
+                  (click)="$event.stopPropagation()"
+                >
+                  <app-svg-icon
+                    name="threedot"
+                    [width]="16"
+                    [height]="16"
+                  ></app-svg-icon>
+                </button>
+              </td>
+            </tr>
+          </ng-container>
+          <ng-template #noChildTasks>
+            <tr>
+              <td colspan="7" class="py-4 text-center text-gray-500">
+                No child issues found. Click "Add a child issue" to create one.
+              </td>
+            </tr>
+          </ng-template>
+        </tbody>
+      </table>
+
+      <!-- Add Child Issue Form -->
+      <div *ngIf="showAddChildForm" class="border-t p-3">
+        <div class="flex mb-2">
+          <select
+            class="border rounded px-2 py-1 text-sm w-24 mr-2"
+            [(ngModel)]="newChildIssue.type"
+          >
+            <option value="Sub-task">Sub-task</option>
+            <option value="Task">Task</option>
+            <option value="Bug">Bug</option>
+          </select>
+          <input
+            type="text"
+            class="border rounded px-2 py-1 text-sm flex-grow"
+            placeholder="What needs to be done?"
+            [(ngModel)]="newChildIssue.title"
+          />
+        </div>
+        <div class="flex justify-end">
+          <button
+            class="text-sm border rounded px-3 py-1 mr-2 hover:bg-gray-50"
+            (click)="cancelAddChild()"
+          >
+            Cancel
+          </button>
+          <button
+            class="text-sm bg-blue-600 text-white rounded px-3 py-1 hover:bg-blue-700"
+            [disabled]="!newChildIssue.title"
+            (click)="confirmAddChild()"
+          >
+            Create
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="flex flex-col my-4 gap-2 ml-1.5">
     <app-card-activity></app-card-activity>
   </div>
@@ -53,3 +257,54 @@
   #fileInput
   (change)="handleFileSelected($event)"
 />
+
+<!-- Child Task Detail Modal -->
+<ng-template #childTaskDetailModal>
+  <div class="p-4">
+    <h2 class="mb-4 text-lg font-semibold">Create child issue</h2>
+    <div class="mb-4">
+      <label class="block mb-1 font-medium">Issue type</label>
+      <select
+        class="w-full px-3 py-2 border border-gray-300 rounded"
+        [(ngModel)]="newChildTask.type"
+      >
+        <option value="Sub-task">Sub-task</option>
+        <option value="Task">Task</option>
+        <option value="Bug">Bug</option>
+      </select>
+    </div>
+    <div class="mb-4">
+      <label class="block mb-1 font-medium">Summary</label>
+      <input
+        type="text"
+        class="w-full px-3 py-2 border border-gray-300 rounded"
+        [(ngModel)]="newChildTask.title"
+        placeholder="Issue summary"
+      />
+    </div>
+    <div class="mb-4">
+      <label class="block mb-1 font-medium">Description</label>
+      <textarea
+        class="w-full px-3 py-2 border border-gray-300 rounded"
+        [(ngModel)]="newChildTask.description"
+        placeholder="Issue description"
+        rows="3"
+      ></textarea>
+    </div>
+    <div class="flex justify-end gap-2">
+      <button
+        class="px-3 py-1 border rounded"
+        (click)="cancelCreateChildModal()"
+      >
+        Cancel
+      </button>
+      <button
+        class="px-3 py-1 text-white bg-blue-600 rounded"
+        [disabled]="!newChildTask.title"
+        (click)="confirmCreateChildModal()"
+      >
+        Create
+      </button>
+    </div>
+  </div>
+</ng-template>

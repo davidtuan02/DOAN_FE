@@ -93,7 +93,7 @@ export class CardDetailsPanelComponent implements OnInit {
 
   onStartDateChange(event: Event): void {
     const target = event.target as HTMLInputElement;
-    const startDate = target.value;
+    const startDate = target.value || '';
 
     const partial: PartialCard = {
       id: this.card?.id || '',
@@ -105,7 +105,7 @@ export class CardDetailsPanelComponent implements OnInit {
 
   onDueDateChange(event: Event): void {
     const target = event.target as HTMLInputElement;
-    const dueDate = target.value;
+    const dueDate = target.value || '';
 
     const partial: PartialCard = {
       id: this.card?.id || '',

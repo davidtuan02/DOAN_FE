@@ -14,6 +14,8 @@ export interface Card {
   startDate: string;
   dueDate: string;
   storyPoints?: number;
+  parentTaskId?: string;
+  childTaskIds?: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -32,4 +34,6 @@ export interface PartialCard {
   startDate?: string;
   dueDate?: string;
   storyPoints?: number;
+  parentTaskId?: string;
+  childTaskIds?: string[];
 }
