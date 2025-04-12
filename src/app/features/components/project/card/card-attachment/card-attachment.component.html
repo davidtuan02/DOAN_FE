@@ -1,0 +1,82 @@
+<div class="card-attachments">
+  <div class="flex items-center justify-between mb-4">
+    <div class="text-lg font-medium">Attachments</div>
+    <div class="flex items-center">
+      <input
+        type="file"
+        id="attachment-upload"
+        style="display: none"
+        (change)="onFileSelected($event)"
+      />
+      <label
+        for="attachment-upload"
+        class="flex items-center px-3 py-1 text-sm font-medium text-blue-600 bg-blue-100 rounded cursor-pointer hover:bg-blue-200"
+      >
+        <app-svg-icon name="attach" [width]="16" [height]="16"></app-svg-icon>
+        <span class="ml-1">Add</span>
+      </label>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="py-4 text-center">
+    <div class="text-gray-500">Loading attachments...</div>
+  </div>
+
+  <div *ngIf="!isLoading && attachments.length === 0" class="py-4 text-center">
+    <div class="text-gray-500">No attachments yet</div>
+  </div>
+
+  <div *ngIf="!isLoading && attachments.length > 0" class="attachments-list">
+    <div
+      *ngFor="let attachment of attachments"
+      class="flex items-center justify-between p-3 mb-2 border rounded hover:bg-gray-50"
+    >
+      <div class="flex items-center flex-1 overflow-hidden">
+        <div class="flex-shrink-0 mr-3">
+          <app-svg-icon
+            [name]="getFileIcon(attachment.mimetype)"
+            [width]="24"
+            [height]="24"
+          ></app-svg-icon>
+        </div>
+        <div class="flex-1 overflow-hidden">
+          <div
+            class="font-medium truncate"
+            title="{{ attachment.originalname }}"
+          >
+            {{ attachment.originalname }}
+          </div>
+          <div class="text-xs text-gray-500">
+            {{ formatFileSize(attachment.size) }} •
+            {{ attachment.createdAt | date : "medium" }}
+          </div>
+        </div>
+      </div>
+      <div class="flex ml-2">
+        <button
+          class="p-1 mx-1 text-gray-600 rounded hover:bg-gray-200"
+          (click)="downloadAttachment(attachment)"
+          title="Download"
+        >
+          <app-svg-icon
+            name="download"
+            [width]="16"
+            [height]="16"
+          ></app-svg-icon>
+        </button>
+
+        <button
+          class="p-1 mx-1 text-gray-600 rounded hover:bg-gray-200"
+          nz-popconfirm
+          nzPopconfirmTitle="Are you sure you want to delete this attachment?"
+          nzOkText="Yes"
+          nzCancelText="No"
+          (nzOnConfirm)="deleteAttachment(attachment)"
+          title="Delete"
+        >
+          <app-svg-icon name="trash" [width]="16" [height]="16"></app-svg-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,9 @@
+.card-attachments {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+
+  .attachments-list {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+}

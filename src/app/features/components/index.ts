@@ -28,6 +28,7 @@ import { CardDetailsComponent } from './project/card/card-details/card-details.c
 import { CardDetailsPanelComponent } from './project/card/card-details-panel/card-details-panel.component';
 import { CardDescriptionsPanelComponent } from './project/card/card-descriptions-panel/card-descriptions-panel.component';
 import { CardActivityComponent } from './project/card/card-activity/card-activity.component';
+import { CardAttachmentComponent } from './project/card/card-attachment/card-attachment.component';
 import { TeamListComponent } from './team/team-list/team-list.component';
 import { TeamDetailComponent } from './team/team-detail/team-detail.component';
 import { TeamFormComponent } from './team/team-form/team-form.component';
@@ -65,6 +66,7 @@ export {
   CardDetailsPanelComponent,
   CardDescriptionsPanelComponent,
   CardActivityComponent,
+  CardAttachmentComponent,
   TeamListComponent,
   TeamDetailComponent,
   TeamFormComponent,
