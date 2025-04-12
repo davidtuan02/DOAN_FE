@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { Observable, Subscription } from 'rxjs';
+import { tap, map, shareReplay } from 'rxjs/operators';
 import { User } from '../../../core/models';
 import { Destroyable, takeUntilDestroyed } from '../../../shared/utils';
 import { CommonModule } from '@angular/common';
@@ -9,6 +9,7 @@ import { SvgIconComponent, AvatarComponent } from '../../../shared/components';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 import { Store } from '@ngrx/store';
 import * as fromStore from '../../../core/store';
 import {
@@ -25,6 +26,8 @@ import {
   Project,
 } from '../../../core/services/project.service';
 import { NzDropdownMenuComponent } from 'ng-zorro-antd/dropdown';
+import { NotificationService } from '../../../services/notification.service';
+import { NotificationListComponent } from '../../../shared/components/notification-list/notification-list.component';
 
 interface TopbarMenuItem {
   name: string;
@@ -65,11 +68,13 @@ interface BoardItem {
     NzInputModule,
     NzDropDownModule,
     NzIconModule,
+    NzToolTipModule,
+    NotificationListComponent,
   ],
   templateUrl: './topbar.component.html',
   styleUrls: ['./topbar.component.scss'],
 })
-export class TopbarComponent implements OnInit {
+export class TopbarComponent implements OnInit, OnDestroy {
   currentUser$!: Observable<User>;
   protected readonly icons = {
     user: UserOutline,
@@ -95,13 +100,18 @@ export class TopbarComponent implements OnInit {
 
   displayTopbarMenuItems: TopbarMenuItem[] = [];
 
+  unreadNotificationCount = 0;
+  isNotificationsOpen = false;
+  private subscriptions: Subscription = new Subscription();
+
   constructor(
     private store: Store<fromStore.AppState>,
     private breakpointObserver: BreakpointObserver,
     private router: Router,
     private userService: UserService,
     private issueService: IssueService,
-    private projectService: ProjectService
+    private projectService: ProjectService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -156,6 +166,41 @@ export class TopbarComponent implements OnInit {
 
     // Load recent projects for Projects dropdown
     this.loadRecentProjects();
+
+    this.initializeNotifications();
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+  }
+
+  // Initialize notifications system
+  private initializeNotifications(): void {
+    // Subscribe to unread notifications count
+    const countSub = this.notificationService.unreadCount$.subscribe(
+      (count) => {
+        this.unreadNotificationCount = count;
+      }
+    );
+    this.subscriptions.add(countSub);
+
+    // Initial load of unread count
+    this.notificationService.getUnreadCount().subscribe();
+  }
+
+  // Toggle notifications dropdown
+  toggleNotifications(): void {
+    this.isNotificationsOpen = !this.isNotificationsOpen;
+
+    if (this.isNotificationsOpen) {
+      // Load notifications when opening the dropdown
+      this.notificationService.getNotifications().subscribe({
+        error: (err) => {
+          console.error('Failed to load notifications', err);
+          // Still keep the panel open even if there's an error
+        },
+      });
+    }
   }
 
   // Method to set active tab in Your Work dropdown

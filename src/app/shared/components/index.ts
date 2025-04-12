@@ -6,6 +6,7 @@ import { RichTextEditorComponent } from './rich-text-editor/rich-text-editor.com
 import { SvgDefinitionsComponent } from './svg-icon/svg-definitions/svg-definitions.component';
 import { SvgIconComponent } from './svg-icon/svg-icon/svg-icon.component';
 import { InlineInputControlsModule } from './inline-input-controls/inline-input-controls.module';
+import { NotificationListComponent } from './notification-list/notification-list.component';
 
 export {
   ErrorComponent,
@@ -16,4 +17,5 @@ export {
   SvgDefinitionsComponent,
   SvgIconComponent,
   InlineInputControlsModule,
+  NotificationListComponent,
 };

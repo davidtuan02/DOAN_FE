@@ -2,5 +2,5 @@ import { Environment } from './environment.model';
 
 export const environment: Environment = {
   production: false,
-  apiBaseUrl: 'http://localhost:3001',
+  apiBaseUrl: 'http://localhost:8000',
 };

@@ -319,14 +319,35 @@
       <input type="text" nz-input placeholder="Search" />
     </nz-input-group>
 
-    <button
-      class="circle-icon-button text-textHeader"
-      nz-tooltip
-      nzTooltipTitle="Notifications"
-      nzTooltipPlacement="bottom"
-    >
-      <app-svg-icon name="bell" [width]="24" [height]="24"></app-svg-icon>
-    </button>
+    <div class="relative">
+      <button
+        class="circle-icon-button text-textHeader"
+        nz-tooltip
+        [nzTooltipTitle]="
+          unreadNotificationCount > 0
+            ? unreadNotificationCount + ' unread notifications'
+            : 'Notifications'
+        "
+        nzTooltipPlacement="bottom"
+        (click)="toggleNotifications(); $event.stopPropagation()"
+      >
+        <app-svg-icon name="bell" [width]="24" [height]="24"></app-svg-icon>
+        <!-- Notification Badge -->
+        <span
+          *ngIf="unreadNotificationCount > 0"
+          class="absolute -top-1 -right-1 px-1.5 py-0.5 text-xs rounded-full bg-red-500 text-white flex items-center justify-center min-w-[18px] min-h-[18px]"
+        >
+          {{ unreadNotificationCount > 99 ? "99+" : unreadNotificationCount }}
+        </span>
+      </button>
+
+      <!-- Dropdown List -->
+      <app-notification-list
+        *ngIf="isNotificationsOpen"
+        (close)="isNotificationsOpen = false"
+      >
+      </app-notification-list>
+    </div>
 
     <button
       class="circle-icon-button text-textHeader"
