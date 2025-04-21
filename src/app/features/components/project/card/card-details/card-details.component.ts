@@ -18,6 +18,7 @@ import { ProjectService } from '../../../../../core/services/project.service';
 import { filter, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { take } from 'rxjs/operators';
+import { NzNotificationService } from 'ng-zorro-antd/notification';
 
 interface ModalData {
   onClose?: () => void;
@@ -47,12 +48,14 @@ export class CardDetailsComponent implements OnInit {
   CardTypes = CardTypesEnum;
 
   contextMenuVisible: boolean = false;
+  copyLinkSuccess = false;
 
   constructor(
     private store: Store<fromStore.AppState>,
     private projectService: ProjectService,
     private router: Router,
-    @Optional() @Inject(NZ_MODAL_DATA) private modalData: ModalData
+    @Optional() @Inject(NZ_MODAL_DATA) private modalData: ModalData,
+    private notification: NzNotificationService
   ) {}
 
   ngOnInit(): void {
@@ -194,5 +197,41 @@ export class CardDetailsComponent implements OnInit {
 
   onContextMenuClick(): void {
     this.contextMenuVisible = false;
+  }
+
+  copyLinkToClipboard() {
+    this.selectedCard$.pipe(take(1)).subscribe((card) => {
+      if (!card) return;
+
+      const issueId = this.getIssueId(card);
+      const issueType = card.type.toLowerCase();
+      const issueIdentifier = `${issueType}-${issueId}`;
+
+      // Build the URL for the current issue
+      const url = window.location.origin + `/board?selectedIssue=${card.id}`;
+
+      // Copy to clipboard
+      navigator.clipboard
+        .writeText(url)
+        .then(() => {
+          this.copyLinkSuccess = true;
+          this.notification.success(
+            'Link Copied',
+            `Link to issue ${issueIdentifier} has been copied to clipboard`,
+            { nzDuration: 3000 }
+          );
+          setTimeout(() => {
+            this.copyLinkSuccess = false;
+          }, 3000);
+        })
+        .catch((err) => {
+          console.error('Failed to copy link: ', err);
+          this.notification.error(
+            'Failed to Copy',
+            'Could not copy link to clipboard',
+            { nzDuration: 3000 }
+          );
+        });
+    });
   }
 }

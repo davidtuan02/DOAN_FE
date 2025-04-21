@@ -110,12 +110,17 @@
         ></app-svg-icon>
       </button>
 
-      <button class="square-button">
+      <button
+        class="square-button"
+        (click)="copyLinkToClipboard()"
+        nz-tooltip
+        nzTooltipTitle="Copy link to issue"
+      >
         <app-svg-icon
-          name="share"
+          [name]="copyLinkSuccess ? 'check' : 'share'"
           [width]="32"
           [height]="24"
-          fill="#fff"
+          [fill]="copyLinkSuccess ? '#00875A' : '#fff'"
         ></app-svg-icon>
       </button>
 
