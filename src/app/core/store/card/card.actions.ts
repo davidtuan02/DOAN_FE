@@ -1,11 +1,15 @@
 import { createAction, props } from '@ngrx/store';
-import { AddCommentModel, Card, CardFilter, Comment, PartialCard } from '../../models';
+import {
+  AddCommentModel,
+  Card,
+  CardFilter,
+  Comment,
+  PartialCard,
+} from '../../models';
 
 const ACTION_PREFIX = '[Cards]';
 
-export const getCards = createAction(
-  `${ACTION_PREFIX} Get cards`,
-);
+export const getCards = createAction(`${ACTION_PREFIX} Get cards`);
 
 export const getCardsSuccess = createAction(
   `${ACTION_PREFIX} Get cards success`,
@@ -52,9 +56,22 @@ export const setSelectedCardId = createAction(
   props<{ id: string | null }>()
 );
 
-export const getLabels = createAction(
-  `${ACTION_PREFIX} Get labels`,
+export const deleteCard = createAction(
+  `${ACTION_PREFIX} Delete card`,
+  props<{ id: string }>()
 );
+
+export const deleteCardSuccess = createAction(
+  `${ACTION_PREFIX} Delete card success`,
+  props<{ id: string }>()
+);
+
+export const deleteCardError = createAction(
+  `${ACTION_PREFIX} Delete card error`,
+  props<{ error: string }>()
+);
+
+export const getLabels = createAction(`${ACTION_PREFIX} Get labels`);
 
 export const getLabelsSuccess = createAction(
   `${ACTION_PREFIX} Get labels success`,
@@ -66,9 +83,7 @@ export const getLabelsError = createAction(
   props<{ error: string }>()
 );
 
-export const getComments = createAction(
-  `${ACTION_PREFIX} Get comments`,
-);
+export const getComments = createAction(`${ACTION_PREFIX} Get comments`);
 
 export const getCommentsSuccess = createAction(
   `${ACTION_PREFIX} Get comments success`,

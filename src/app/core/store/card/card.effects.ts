@@ -189,6 +189,25 @@ export class CardEffects {
     )
   );
 
+  deleteCard$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(actions.deleteCard),
+      mergeMap(({ id }) => {
+        return this.boardService.deleteCard(id).pipe(
+          map(() => actions.deleteCardSuccess({ id })),
+          catchError((error) => {
+            console.error('Error deleting card:', error);
+            return of(
+              actions.deleteCardError({
+                error: error.message || 'Failed to delete card',
+              })
+            );
+          })
+        );
+      })
+    )
+  );
+
   constructor(
     private actions$: Actions,
     private boardService: BoardService,

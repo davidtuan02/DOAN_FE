@@ -378,6 +378,22 @@ export class BoardService {
     return this.issueService.updateIssue(card.id, issueUpdate);
   }
 
+  deleteCard(cardId: string): Observable<unknown> {
+    if (!cardId) {
+      console.error('Cannot delete card without id');
+      return of({});
+    }
+
+    console.log('Deleting card with ID:', cardId);
+    return this.issueService.deleteIssue(cardId).pipe(
+      tap(() => console.log(`Card ${cardId} deleted successfully`)),
+      catchError((error) => {
+        console.error('Error deleting card:', error);
+        return throwError(() => new Error('Failed to delete card'));
+      })
+    );
+  }
+
   getLabels(): Observable<Array<string>> {
     // You could fetch these from the API if they're stored there
     // For now, return common labels

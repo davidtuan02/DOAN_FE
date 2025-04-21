@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, TemplateRef } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Card, Column } from '../../../../../core/models';
 import { Destroyable, takeUntilDestroyed } from '../../../../../shared/utils';
@@ -19,6 +19,10 @@ import { filter, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { take } from 'rxjs/operators';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
+import { NzModalService } from 'ng-zorro-antd/modal';
+import { IssueService } from '../../../../../features/services/issue.service';
+import { FormsModule } from '@angular/forms';
+import { NzSelectModule, NzFilterOptionType } from 'ng-zorro-antd/select';
 
 interface ModalData {
   onClose?: () => void;
@@ -36,11 +40,15 @@ interface ModalData {
     CardDetailsPanelComponent,
     NzDividerComponent,
     CardDetailsLoaderComponent,
+    FormsModule,
+    NzSelectModule,
   ],
   templateUrl: './card-details.component.html',
   styleUrls: ['./card-details.component.scss'],
 })
 export class CardDetailsComponent implements OnInit {
+  @ViewChild('parentIssueModalTpl') parentIssueModalTpl!: TemplateRef<any>;
+
   columns$!: Observable<Array<Column>>;
   selectedCard$!: Observable<Card | undefined | null>;
 
@@ -50,12 +58,20 @@ export class CardDetailsComponent implements OnInit {
   contextMenuVisible: boolean = false;
   copyLinkSuccess = false;
 
+  // For parent selection
+  allCards: Card[] = [];
+  searchValue: string = '';
+  isAddingParent: boolean = false;
+  selectedParentId: string = '';
+
   constructor(
     private store: Store<fromStore.AppState>,
     private projectService: ProjectService,
     private router: Router,
     @Optional() @Inject(NZ_MODAL_DATA) private modalData: ModalData,
-    private notification: NzNotificationService
+    private notification: NzNotificationService,
+    private modalService: NzModalService,
+    private issueService: IssueService
   ) {}
 
   ngOnInit(): void {
@@ -232,6 +248,161 @@ export class CardDetailsComponent implements OnInit {
             { nzDuration: 3000 }
           );
         });
+    });
+  }
+
+  // Filter function for the select dropdown
+  filterOption: NzFilterOptionType = (input: string, option): boolean => {
+    if (!option.nzLabel) return false;
+    return (
+      option.nzLabel.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
+    );
+  };
+
+  // Add parent functionality
+  addParent(): void {
+    this.contextMenuVisible = false;
+
+    this.selectedCard$.pipe(take(1)).subscribe((card) => {
+      if (!card) return;
+
+      // Fetch all cards to use as potential parents
+      this.store
+        .pipe(select(fromStore.allCards), take(1))
+        .subscribe((cards) => {
+          // Filter out the current card and any cards that already have this card as parent
+          this.allCards = cards.filter(
+            (c) =>
+              c.id !== card.id &&
+              c.parentTaskId !== card.id &&
+              c.type !== CardTypesEnum.SUB_TASK
+          );
+
+          if (this.allCards.length === 0) {
+            this.notification.warning(
+              'No Available Parents',
+              'There are no suitable issues that can be set as parent.'
+            );
+            return;
+          }
+
+          this.showAddParentModal(card);
+        });
+    });
+  }
+
+  showAddParentModal(card: Card): void {
+    this.isAddingParent = true;
+    this.selectedParentId = '';
+
+    const modal = this.modalService.create({
+      nzTitle: `Add Parent Issue for "${card.title}"`,
+      nzContent: this.parentIssueModalTpl,
+      nzOkText: 'Add Parent',
+      nzCancelText: 'Cancel',
+      nzOnOk: () => {
+        if (!this.selectedParentId) {
+          this.notification.warning(
+            'No Selection',
+            'Please select a parent issue.'
+          );
+          return false;
+        }
+        this.updateParentTask(card.id, this.selectedParentId);
+        return true;
+      },
+    });
+  }
+
+  updateParentTask(cardId: string, parentId: string): void {
+    // Update the card in the store with the new parent
+    const partial = {
+      id: cardId,
+      parentTaskId: parentId,
+    };
+
+    this.store.dispatch(fromStore.updateCard({ partial }));
+    this.notification.success('Success', 'Parent issue has been added.');
+  }
+
+  // Clone functionality
+  cloneCard(): void {
+    this.contextMenuVisible = false;
+
+    this.selectedCard$.pipe(take(1)).subscribe((card) => {
+      if (!card) return;
+
+      this.modalService.confirm({
+        nzTitle: 'Clone Issue',
+        nzContent: `Are you sure you want to clone "${card.title}"?`,
+        nzOkText: 'Yes',
+        nzCancelText: 'No',
+        nzOnOk: () => {
+          // Create a new card based on the current one
+          const clonedCard: Partial<Card> = {
+            ...card,
+            title: `${card.title} (Clone)`,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+
+          // Remove properties that shouldn't be cloned
+          delete (clonedCard as any).id;
+          delete (clonedCard as any).ordinalId;
+
+          this.store.dispatch(
+            fromStore.createCard({ card: clonedCard as Card })
+          );
+          this.notification.success(
+            'Success',
+            'Issue has been cloned successfully.'
+          );
+        },
+      });
+    });
+  }
+
+  // Delete functionality
+  deleteCard(): void {
+    this.contextMenuVisible = false;
+
+    this.selectedCard$.pipe(take(1)).subscribe((card) => {
+      if (!card) return;
+
+      this.modalService.confirm({
+        nzTitle: 'Delete Issue',
+        nzContent: `Are you sure you want to delete "${card.title}"? This action cannot be undone.`,
+        nzOkText: 'Delete',
+        nzOkDanger: true,
+        nzCancelText: 'Cancel',
+        nzOnOk: () => {
+          this.issueService.deleteIssue(card.id).subscribe({
+            next: () => {
+              // Close the modal
+              this.onCloseModal();
+
+              // Remove the card from the store
+              this.store.dispatch(fromStore.deleteCard({ id: card.id }));
+
+              // Show success notification
+              this.notification.success(
+                'Success',
+                'Issue has been deleted successfully.'
+              );
+
+              // Navigate back to board
+              this.router.navigate(['/board']);
+            },
+            error: (err) => {
+              console.error('Error deleting issue:', err);
+              this.notification.error(
+                'Error',
+                'Failed to delete issue. Please try again.'
+              );
+            },
+          });
+        },
+      });
     });
   }
 }

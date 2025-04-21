@@ -22,7 +22,7 @@ const initialCardState: CardState = cardAdapter.getInitialState({
   filters: {
     types: [],
     labels: [],
-    assignees: []
+    assignees: [],
   },
   selectedCardId: null,
   loadingCardIds: [],
@@ -39,10 +39,12 @@ const reducer = createReducer(
   immerOn(actions.getCards, (state) => {
     state.loading = true;
   }),
-  on(actions.getCardsSuccess, (state, { cards }) => cardAdapter.setAll(cards, {
-    ...state,
-    loading: false
-  })),
+  on(actions.getCardsSuccess, (state, { cards }) =>
+    cardAdapter.setAll(cards, {
+      ...state,
+      loading: false,
+    })
+  ),
   immerOn(actions.getCardsError, (state, { error }) => {
     state.loading = false;
     state.error = error;
@@ -50,13 +52,16 @@ const reducer = createReducer(
 
   on(actions.updateCard, (state, { partial }) => {
     const card = { ...state.entities[partial.id] };
-    return cardAdapter.updateOne({
-      id: partial.id,
-      changes: {
-        ...card,
-        ...partial,
-      }
-    }, { ...state, loading: true });
+    return cardAdapter.updateOne(
+      {
+        id: partial.id,
+        changes: {
+          ...card,
+          ...partial,
+        },
+      },
+      { ...state, loading: true }
+    );
   }),
   immerOn(actions.updateCardSuccess, (state, { partial }) => {
     state.loading = false;
@@ -67,10 +72,16 @@ const reducer = createReducer(
   }),
 
   on(actions.createCard, (state, { card }) => {
-    return cardAdapter.addOne(card, { ...state, loadingCardIds: [...state.loadingCardIds, card.id] });
+    return cardAdapter.addOne(card, {
+      ...state,
+      loadingCardIds: [...state.loadingCardIds, card.id],
+    });
   }),
   on(actions.createCardSuccess, (state, { card }) => {
-    return cardAdapter.upsertOne(card, { ...state, loadingCardIds: state.loadingCardIds.filter(id => id !== card.id) });
+    return cardAdapter.upsertOne(card, {
+      ...state,
+      loadingCardIds: state.loadingCardIds.filter((id) => id !== card.id),
+    });
   }),
   immerOn(actions.createCardError, (state, { error }) => {
     state.loading = false;
@@ -81,7 +92,23 @@ const reducer = createReducer(
     state.selectedCardId = id;
   }),
 
-  immerOn(actions.getLabels, state => {
+  immerOn(actions.deleteCard, (state, { id }) => {
+    state.loading = true;
+  }),
+
+  on(actions.deleteCardSuccess, (state, { id }) => {
+    return cardAdapter.removeOne(id, {
+      ...state,
+      loading: false,
+    });
+  }),
+
+  immerOn(actions.deleteCardError, (state, { error }) => {
+    state.loading = false;
+    state.error = error;
+  }),
+
+  immerOn(actions.getLabels, (state) => {
     state.labelLoading = true;
   }),
   immerOn(actions.getLabelsSuccess, (state, { labels }) => {
@@ -93,7 +120,7 @@ const reducer = createReducer(
     state.error = error;
   }),
 
-  immerOn(actions.getComments, state => {
+  immerOn(actions.getComments, (state) => {
     state.commentLoading = true;
   }),
   immerOn(actions.getCommentsSuccess, (state, { comments }) => {
@@ -105,7 +132,7 @@ const reducer = createReducer(
     state.error = error;
   }),
 
-  immerOn(actions.addComment, state => {
+  immerOn(actions.addComment, (state) => {
     state.commentLoading = true;
   }),
   immerOn(actions.addCommentSuccess, (state, { comment }) => {
@@ -119,9 +146,10 @@ const reducer = createReducer(
 
   immerOn(actions.updateCardFilters, (state, { filters }) => {
     state.filters = filters;
-  }),
+  })
 );
 
-export const cardReducer = (state: CardState | undefined, action: Action) => reducer(state, action);
+export const cardReducer = (state: CardState | undefined, action: Action) =>
+  reducer(state, action);
 
 export const selectCardState = createFeatureSelector<CardState>('cards');
