@@ -1,235 +1,562 @@
-<div class="flex flex-col h-full p-10">
-  <!-- Tabs -->
-  <div class="border-b border-gray-200">
-    <div class="flex gap-2 px-6">
-      <button
-        *ngFor="let tab of settingsTabs"
-        (click)="onTabClick(tab.id)"
-        class="flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors border-b-2"
-        [class.text-blue-600]="tab.active"
-        [class.border-blue-600]="tab.active"
-        [class.text-gray-500]="!tab.active"
-        [class.border-transparent]="!tab.active"
-        [class.hover:text-gray-700]="!tab.active"
-      >
-        <app-svg-icon [name]="tab.icon" class="w-4 h-4"></app-svg-icon>
-        <span>{{ tab.label }}</span>
-      </button>
-    </div>
+<div class="project-settings">
+  <h1 class="mb-6 text-2xl font-bold">Project Settings</h1>
+
+  <!-- Loading & Error Message -->
+  <div *ngIf="loading" class="p-3 my-4 text-blue-700 rounded bg-blue-50">
+    Loading project details...
+  </div>
+  <div *ngIf="error" class="p-3 my-4 text-red-700 rounded bg-red-50">
+    {{ error }}
   </div>
 
-  <!-- Content -->
-  <div class="flex-1 p-6 overflow-auto">
-    <div *ngIf="settingsTabs[0].active" class="space-y-8">
-      <!-- Project details -->
-      <div class="space-y-4">
-        <h2 class="text-base font-medium text-gray-900">Project details</h2>
-        <div class="space-y-4">
-          <div>
-            <label
-              for="projectName"
-              class="block text-sm font-medium text-gray-700"
-              >Project name</label
-            >
-            <input
-              type="text"
-              id="projectName"
-              [(ngModel)]="project.name"
-              class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-            />
-          </div>
-          <div>
-            <label
-              for="projectKey"
-              class="block text-sm font-medium text-gray-700"
-              >Project key</label
-            >
-            <input
-              type="text"
-              id="projectKey"
-              [(ngModel)]="project.key"
-              class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-            />
-          </div>
-          <div>
-            <label
-              for="projectDescription"
-              class="block text-sm font-medium text-gray-700"
-              >Description</label
-            >
-            <textarea
-              id="projectDescription"
-              [(ngModel)]="project.description"
-              rows="4"
-              class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-            ></textarea>
-          </div>
-        </div>
+  <!-- Tabs Navigation -->
+  <div class="mb-6 border-b border-gray-200">
+    <ul class="flex flex-wrap -mb-px">
+      <li
+        *ngFor="let tab of settingsTabs"
+        class="mr-2"
+        (click)="onTabClick(tab.id)"
+      >
+        <a
+          [class.text-blue-600]="tab.active"
+          [class.border-blue-600]="tab.active"
+          [class.border-transparent]="!tab.active"
+          class="inline-flex items-center px-3 py-4 text-sm font-medium border-b-2 cursor-pointer hover:text-gray-700 hover:border-gray-300"
+        >
+          <app-svg-icon [name]="tab.icon" class="w-5 h-5 mr-2"></app-svg-icon>
+          {{ tab.label }}
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Tab Content: Project Details -->
+  <div *ngIf="settingsTabs[0].active" class="tab-content">
+    <form (submit)="onSave()" class="space-y-6">
+      <!-- Project Name -->
+      <div class="form-group">
+        <label
+          for="project-name"
+          class="block text-sm font-medium text-gray-700"
+          >Project Name</label
+        >
+        <input
+          type="text"
+          id="project-name"
+          [(ngModel)]="project.name"
+          name="projectName"
+          class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+        />
       </div>
 
-      <!-- Project lead -->
-      <div class="space-y-4">
-        <h2 class="text-base font-medium text-gray-900">Project lead</h2>
-        <div>
-          <label
-            for="projectLead"
-            class="block text-sm font-medium text-gray-700"
-            >Project lead</label
-          >
-          <input
-            type="text"
-            id="projectLead"
-            [(ngModel)]="project.lead"
-            class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-          />
-        </div>
+      <!-- Project Key -->
+      <div class="form-group">
+        <label for="project-key" class="block text-sm font-medium text-gray-700"
+          >Project Key</label
+        >
+        <input
+          type="text"
+          id="project-key"
+          [(ngModel)]="project.key"
+          name="projectKey"
+          class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+        />
+        <p class="mt-1 text-xs text-gray-500">
+          This key will be used as a prefix for all issue IDs (e.g., PRJ-123)
+        </p>
       </div>
 
-      <!-- Project category -->
-      <div class="space-y-4">
-        <h2 class="text-base font-medium text-gray-900">Project category</h2>
-        <div>
+      <!-- Project Type & Category -->
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div class="form-group">
           <label
-            for="projectCategory"
+            for="project-type"
             class="block text-sm font-medium text-gray-700"
-            >Category</label
+            >Project Type</label
           >
           <select
-            id="projectCategory"
-            [(ngModel)]="project.category"
+            id="project-type"
+            [(ngModel)]="project.type"
+            name="projectType"
             class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
           >
-            <option value="Software">Software</option>
-            <option value="Business">Business</option>
-            <option value="Service Desk">Service Desk</option>
+            <option>Software</option>
+            <option>Business</option>
+            <option>Marketing</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label
+            for="project-category"
+            class="block text-sm font-medium text-gray-700"
+            >Project Category</label
+          >
+          <select
+            id="project-category"
+            [(ngModel)]="project.category"
+            name="projectCategory"
+            class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+          >
+            <option>Software</option>
+            <option>Marketing</option>
+            <option>Business</option>
           </select>
         </div>
       </div>
-    </div>
 
-    <div *ngIf="settingsTabs[1].active" class="space-y-4">
-      <h2 class="text-base font-medium text-gray-900">Access settings</h2>
-      <p class="text-sm text-gray-500">
-        Manage who can access this project and their permissions.
-      </p>
-    </div>
-
-    <div *ngIf="settingsTabs[2].active" class="space-y-4">
-      <h2 class="text-base font-medium text-gray-900">Notification settings</h2>
-      <p class="text-sm text-gray-500">
-        Configure how notifications are sent for this project.
-      </p>
-    </div>
-
-    <!-- Columns and statuses tab -->
-    <div *ngIf="settingsTabs[3].active" class="space-y-6">
-      <div class="flex items-center justify-between">
-        <h2 class="text-base font-medium text-gray-900">
-          Columns and statuses
-        </h2>
-        <button
-          (click)="addColumn()"
-          class="px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+      <!-- Project Description -->
+      <div class="form-group">
+        <label
+          for="project-description"
+          class="block text-sm font-medium text-gray-700"
+          >Description</label
         >
-          Add column
-        </button>
+        <textarea
+          id="project-description"
+          [(ngModel)]="project.description"
+          name="projectDescription"
+          rows="4"
+          class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+        ></textarea>
       </div>
 
-      <div class="space-y-4">
-        <div
-          *ngFor="let column of columns"
-          class="p-4 bg-white border rounded-lg shadow-sm"
+      <!-- Project Lead -->
+      <div class="form-group">
+        <label
+          for="project-lead"
+          class="block text-sm font-medium text-gray-700"
+          >Project Lead</label
         >
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-sm font-medium text-gray-900">{{ column.name }}</h3>
-            <button
-              (click)="removeColumn(column.id)"
-              class="text-gray-400 hover:text-gray-500"
-            >
-              <app-svg-icon name="trash" class="w-4 h-4"></app-svg-icon>
-            </button>
+        <select
+          id="project-lead"
+          [(ngModel)]="project.lead"
+          name="projectLead"
+          class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+        >
+          <option value="">Select a lead...</option>
+          <option value="user1">John Doe</option>
+          <option value="user2">Jane Smith</option>
+        </select>
+      </div>
+
+      <!-- Avatar -->
+      <div class="form-group">
+        <label
+          for="project-avatar"
+          class="block text-sm font-medium text-gray-700"
+          >Project Avatar</label
+        >
+        <div class="flex items-center mt-1 space-x-3">
+          <div
+            class="flex items-center justify-center w-12 h-12 text-gray-500 bg-gray-200 rounded-md"
+          >
+            <app-svg-icon
+              *ngIf="!project.avatar"
+              name="project"
+              class="w-6 h-6"
+            ></app-svg-icon>
+            <img
+              *ngIf="project.avatar"
+              [src]="project.avatar"
+              alt="Project avatar"
+              class="object-cover w-full h-full rounded-md"
+            />
           </div>
+          <button
+            type="button"
+            class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Change
+          </button>
+        </div>
+      </div>
+
+      <!-- Save Button -->
+      <div class="form-actions">
+        <button
+          type="submit"
+          [disabled]="loading"
+          class="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <app-svg-icon
+            name="save"
+            class="w-4 h-4 mr-2"
+            *ngIf="!loading"
+          ></app-svg-icon>
+          <app-svg-icon
+            name="spinner"
+            class="w-4 h-4 mr-2 animate-spin"
+            *ngIf="loading"
+          ></app-svg-icon>
+          Save Changes
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Tab Content: Access -->
+  <div *ngIf="settingsTabs[1].active" class="tab-content">
+    <div class="p-4 mb-6 rounded bg-blue-50">
+      <h3 class="text-lg font-medium text-blue-800">Access Management</h3>
+      <p class="mt-1 text-blue-700">
+        Control who has access to this project and what they can do.
+      </p>
+    </div>
+
+    <!-- Access settings content here -->
+    <p class="italic text-gray-500">Access settings under development</p>
+  </div>
+
+  <!-- Tab Content: Notifications -->
+  <div *ngIf="settingsTabs[2].active" class="tab-content">
+    <div class="p-4 mb-6 rounded bg-blue-50">
+      <h3 class="text-lg font-medium text-blue-800">Notification Settings</h3>
+      <p class="mt-1 text-blue-700">
+        Configure how your team receives updates about this project.
+      </p>
+    </div>
+
+    <!-- Notification settings content here -->
+    <p class="italic text-gray-500">Notification settings under development</p>
+  </div>
+
+  <!-- Tab Content: Columns and Statuses -->
+  <div *ngIf="settingsTabs[3].active" class="tab-content">
+    <div class="p-4 mb-6 rounded bg-blue-50">
+      <h3 class="text-lg font-medium text-blue-800">
+        Board Columns and Statuses
+      </h3>
+      <p class="mt-1 text-blue-700">
+        Customize your board columns and issue statuses to match your team's
+        workflow.
+      </p>
+    </div>
+
+    <!-- Loading & Error Message -->
+    <div
+      *ngIf="columnsLoading"
+      class="p-3 my-4 text-blue-700 rounded bg-blue-50"
+    >
+      Loading columns and statuses...
+    </div>
+    <div *ngIf="columnsError" class="p-3 my-4 text-red-700 rounded bg-red-50">
+      {{ columnsError }}
+    </div>
+
+    <!-- Actions -->
+    <div class="flex justify-between mb-6">
+      <button
+        (click)="createDefaultColumnsAndStatuses()"
+        class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50"
+      >
+        Create Default Setup
+      </button>
+
+      <div class="flex">
+        <button
+          (click)="addColumn()"
+          class="inline-flex items-center px-3 py-2 ml-3 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700"
+        >
+          <app-svg-icon name="plus" class="w-4 h-4 mr-2"></app-svg-icon>
+          Add Column
+        </button>
+      </div>
+    </div>
+
+    <!-- New Column Form -->
+    <div class="p-4 mb-8 border border-gray-300 border-dashed rounded-md">
+      <h4 class="mb-2 text-lg font-medium">Add New Column</h4>
+      <div class="flex gap-4">
+        <div class="flex-1">
+          <input
+            type="text"
+            [(ngModel)]="newColumn.name"
+            placeholder="Column name"
+            class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          />
+        </div>
+        <button
+          (click)="addColumn()"
+          class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700"
+        >
+          Add Column
+        </button>
+      </div>
+    </div>
+
+    <!-- Columns and Statuses List -->
+    <div class="space-y-8">
+      <div
+        *ngFor="let column of columns"
+        class="overflow-hidden border border-gray-200 rounded-md"
+      >
+        <!-- Column Header -->
+        <div class="flex items-center justify-between p-4 bg-gray-50">
+          <div *ngIf="editingColumn !== column.id" class="flex items-center">
+            <div
+              class="w-3 h-3 mr-3 rounded-full"
+              [style.background-color]="column.color"
+            ></div>
+            <h4 class="text-lg font-medium">{{ column.name }}</h4>
+          </div>
+
+          <!-- Edit Mode -->
+          <div
+            *ngIf="editingColumn === column.id"
+            class="flex items-center flex-1 gap-3"
+          >
+            <div
+              class="w-3 h-3 rounded-full"
+              [style.background-color]="column.color"
+            ></div>
+            <input
+              type="text"
+              [(ngModel)]="column.name"
+              class="flex-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            />
+            <input type="color" [(ngModel)]="column.color" class="w-8 h-8" />
+          </div>
+
+          <!-- Column Actions -->
+          <div>
+            <div
+              *ngIf="editingColumn !== column.id"
+              class="flex items-center space-x-2"
+            >
+              <button
+                (click)="startEditingColumn(column)"
+                class="p-1 text-gray-500 hover:text-blue-500"
+              >
+                <app-svg-icon name="edit" class="w-5 h-5"></app-svg-icon>
+              </button>
+              <button
+                (click)="removeColumn(column.id)"
+                class="p-1 text-gray-500 hover:text-red-500"
+              >
+                <app-svg-icon name="trash" class="w-5 h-5"></app-svg-icon>
+              </button>
+            </div>
+
+            <div
+              *ngIf="editingColumn === column.id"
+              class="flex items-center space-x-2"
+            >
+              <button
+                (click)="updateColumn(column)"
+                class="p-1 text-gray-500 hover:text-green-500"
+              >
+                <app-svg-icon name="check" class="w-5 h-5"></app-svg-icon>
+              </button>
+              <button
+                (click)="cancelEditingColumn()"
+                class="p-1 text-gray-500 hover:text-red-500"
+              >
+                <app-svg-icon name="close" class="w-5 h-5"></app-svg-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Statuses List -->
+        <div class="p-4">
+          <h5 class="mb-3 text-sm font-medium text-gray-500">STATUSES</h5>
 
           <div class="space-y-3">
             <div
               *ngFor="let status of column.statuses"
-              class="flex items-center justify-between p-2 bg-gray-50 rounded"
+              class="flex items-center justify-between p-2 rounded-md bg-gray-50"
             >
-              <div class="flex items-center gap-2">
+              <!-- Status Display -->
+              <div
+                *ngIf="
+                  !(
+                    editingStatus &&
+                    editingStatus.columnId === column.id &&
+                    editingStatus.statusId === status.id
+                  )
+                "
+                class="flex items-center"
+              >
                 <div
-                  class="w-3 h-3 rounded-full"
+                  class="w-3 h-3 mr-3 rounded-full"
                   [style.background-color]="status.color"
                 ></div>
-                <span class="text-sm text-gray-700">{{ status.name }}</span>
+                <span>{{ status.name }}</span>
               </div>
-              <button
-                (click)="removeStatus(column.id, status.id)"
-                class="text-gray-400 hover:text-gray-500"
+
+              <!-- Status Edit Mode -->
+              <div
+                *ngIf="
+                  editingStatus &&
+                  editingStatus.columnId === column.id &&
+                  editingStatus.statusId === status.id
+                "
+                class="flex items-center flex-1 gap-3"
               >
-                <app-svg-icon name="trash" class="w-4 h-4"></app-svg-icon>
+                <input
+                  type="text"
+                  [(ngModel)]="status.name"
+                  class="flex-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                />
+                <input
+                  type="color"
+                  [(ngModel)]="status.color"
+                  class="w-8 h-8"
+                />
+              </div>
+
+              <!-- Status Actions -->
+              <div>
+                <div
+                  *ngIf="
+                    !(
+                      editingStatus &&
+                      editingStatus.columnId === column.id &&
+                      editingStatus.statusId === status.id
+                    )
+                  "
+                  class="flex items-center space-x-2"
+                >
+                  <button
+                    (click)="startEditingStatus(column.id, status.id)"
+                    class="p-1 text-gray-500 hover:text-blue-500"
+                  >
+                    <app-svg-icon name="edit" class="w-4 h-4"></app-svg-icon>
+                  </button>
+                  <button
+                    (click)="removeStatus(column.id, status.id)"
+                    class="p-1 text-gray-500 hover:text-red-500"
+                  >
+                    <app-svg-icon name="trash" class="w-4 h-4"></app-svg-icon>
+                  </button>
+                </div>
+
+                <div
+                  *ngIf="
+                    editingStatus &&
+                    editingStatus.columnId === column.id &&
+                    editingStatus.statusId === status.id
+                  "
+                  class="flex items-center space-x-2"
+                >
+                  <button
+                    (click)="updateStatus(column.id, status)"
+                    class="p-1 text-gray-500 hover:text-green-500"
+                  >
+                    <app-svg-icon name="check" class="w-4 h-4"></app-svg-icon>
+                  </button>
+                  <button
+                    (click)="cancelEditingStatus()"
+                    class="p-1 text-gray-500 hover:text-red-500"
+                  >
+                    <app-svg-icon name="close" class="w-4 h-4"></app-svg-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add New Status Form -->
+          <div *ngIf="!newStatus[column.id]" class="mt-4">
+            <button
+              (click)="initNewStatus(column.id)"
+              class="inline-flex items-center px-2 py-1 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+            >
+              <app-svg-icon name="plus" class="w-3 h-3 mr-1"></app-svg-icon>
+              Add Status
+            </button>
+          </div>
+
+          <div
+            *ngIf="newStatus[column.id]"
+            class="p-3 mt-4 border border-gray-200 border-dashed rounded-md"
+          >
+            <div class="flex items-center gap-3">
+              <input
+                type="text"
+                [(ngModel)]="newStatus[column.id].name"
+                placeholder="Status name"
+                class="flex-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+              <input
+                type="color"
+                [(ngModel)]="newStatus[column.id].color"
+                class="w-8 h-8"
+              />
+              <button
+                (click)="addStatus(column.id)"
+                class="p-1 text-gray-500 hover:text-green-500"
+              >
+                <app-svg-icon name="check" class="w-5 h-5"></app-svg-icon>
+              </button>
+              <button
+                (click)="cancelNewStatus(column.id)"
+                class="p-1 text-gray-500 hover:text-red-500"
+              >
+                <app-svg-icon name="close" class="w-5 h-5"></app-svg-icon>
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
+  <!-- Tab Content: Custom Filters -->
+  <div *ngIf="settingsTabs[4].active" class="tab-content">
+    <div class="p-4 mb-6 rounded bg-blue-50">
+      <h3 class="text-lg font-medium text-blue-800">Custom Filters</h3>
+      <p class="mt-1 text-blue-700">
+        Create and manage custom filters for your project.
+      </p>
+    </div>
+
+    <!-- Filter List -->
+    <div class="mb-6 space-y-4">
+      <div
+        *ngFor="let filter of filters"
+        class="p-4 border border-gray-200 rounded-md"
+      >
+        <div class="flex items-start justify-between">
+          <div>
+            <h4 class="font-medium">{{ filter.name }}</h4>
+            <p class="text-sm text-gray-500">{{ filter.description }}</p>
+            <p class="mt-1 text-xs text-gray-400">{{ filter.query }}</p>
+          </div>
+          <div class="flex space-x-2">
             <button
-              (click)="addStatus(column.id)"
-              class="w-full px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              (click)="toggleFilterShare(filter.id)"
+              [class.text-blue-600]="filter.isShared"
+              [class.text-gray-400]="!filter.isShared"
+              class="p-1 hover:text-blue-600"
             >
-              Add status
+              <app-svg-icon
+                [name]="filter.isShared ? 'share-fill' : 'share'"
+                class="w-5 h-5"
+              ></app-svg-icon>
+            </button>
+            <button class="p-1 text-gray-400 hover:text-blue-600">
+              <app-svg-icon name="edit" class="w-5 h-5"></app-svg-icon>
+            </button>
+            <button
+              (click)="removeFilter(filter.id)"
+              class="p-1 text-gray-400 hover:text-red-500"
+            >
+              <app-svg-icon name="trash" class="w-5 h-5"></app-svg-icon>
             </button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Custom filters tab -->
-    <div *ngIf="settingsTabs[4].active" class="space-y-6">
-      <div class="flex items-center justify-between">
-        <h2 class="text-base font-medium text-gray-900">Custom filters</h2>
-        <button
-          (click)="addFilter()"
-          class="px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Add filter
-        </button>
-      </div>
-
-      <div class="space-y-4">
-        <div
-          *ngFor="let filter of filters"
-          class="p-4 bg-white border rounded-lg shadow-sm"
-        >
-          <div class="flex items-center justify-between mb-4">
-            <div>
-              <h3 class="text-sm font-medium text-gray-900">
-                {{ filter.name }}
-              </h3>
-              <p class="text-sm text-gray-500">{{ filter.description }}</p>
-            </div>
-            <div class="flex items-center gap-2">
-              <button
-                (click)="toggleFilterShare(filter.id)"
-                class="text-gray-400 hover:text-gray-500"
-                [class.text-blue-600]="filter.isShared"
-              >
-                <app-svg-icon
-                  [name]="filter.isShared ? 'share' : 'share-off'"
-                  class="w-4 h-4"
-                ></app-svg-icon>
-              </button>
-              <button
-                (click)="removeFilter(filter.id)"
-                class="text-gray-400 hover:text-gray-500"
-              >
-                <app-svg-icon name="trash" class="w-4 h-4"></app-svg-icon>
-              </button>
-            </div>
-          </div>
-
-          <div class="p-3 bg-gray-50 rounded">
-            <code class="text-sm text-gray-700">{{ filter.query }}</code>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- Add New Filter -->
+    <button
+      (click)="addFilter()"
+      class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700"
+    >
+      <app-svg-icon name="plus" class="w-4 h-4 mr-2"></app-svg-icon>
+      Add Filter
+    </button>
   </div>
 </div>

@@ -142,6 +142,9 @@ export class IssuesPageComponent implements OnInit {
   projectSearchTerm: string = '';
   selectedProjectName: string = '';
 
+  // Add this code near the other filter properties
+  projectOperator: string = '=';
+
   constructor(
     private issueService: IssueService,
     private projectService: ProjectService,
@@ -365,10 +368,11 @@ export class IssuesPageComponent implements OnInit {
 
   hasActiveFilters(): boolean {
     return (
-      this.searchTerm.trim() !== '' ||
+      !!this.searchTerm ||
       this.typeFilter.length > 0 ||
       this.statusFilter.length > 0 ||
-      this.assigneeFilter.length > 0
+      this.assigneeFilter.length > 0 ||
+      this.selectedProjectIds.length > 0
     );
   }
 
@@ -434,126 +438,85 @@ export class IssuesPageComponent implements OnInit {
     }
   }
 
-  applyFilters(): void {
-    console.log('Applying filters with:', {
-      searchTerm: this.searchTerm,
-      statusFilter: this.statusFilter,
-      typeFilter: this.typeFilter,
-      priorityFilter: this.priorityFilter,
-      assigneeFilter: this.assigneeFilter,
-    });
+  // Add this method with the other filter methods
+  setProjectOperator(operator: string): void {
+    this.projectOperator = operator;
+    this.applyFilters();
+  }
 
+  // Update the applyFilters method to respect the project operator
+  applyFilters(): void {
     let filtered = [...this.issues];
 
-    // Apply search term filter
-    if (this.searchTerm.trim()) {
-      const search = this.searchTerm.toLowerCase().trim();
+    // Apply text search if any
+    if (this.searchTerm) {
+      const term = this.searchTerm.toLowerCase();
       filtered = filtered.filter(
         (issue) =>
-          issue.title.toLowerCase().includes(search) ||
-          (issue.description &&
-            issue.description.toLowerCase().includes(search))
+          issue.title.toLowerCase().includes(term) ||
+          issue.description?.toLowerCase().includes(term) ||
+          issue.key.toLowerCase().includes(term)
       );
-      console.log('After search filter:', filtered.length);
     }
 
-    // Apply status filter
-    if (this.statusFilter.length > 0) {
-      filtered = filtered.filter((issue) => {
-        // Đầu tiên ánh xạ trạng thái issue sang dạng hiển thị
-        const displayStatus = this.mapStatusForDisplay(issue.status);
-
-        // Kiểm tra xem displayStatus có nằm trong các statusFilter không
-        let result = this.statusFilter.includes(displayStatus);
-
-        // Nếu không khớp trực tiếp, thử kiểm tra bằng cách ánh xạ ngược
-        if (!result) {
-          // Chuyển đổi tất cả các statusFilter thành các giá trị enum tương ứng
-          const possibleStatusValues = this.statusFilter.flatMap((s) =>
-            this.mapStatusToEnum(s)
-          );
-          // Kiểm tra xem issue.status có nằm trong danh sách giá trị enum không
-          result = possibleStatusValues.includes(issue.status);
-        }
-
-        if (!result) {
-          console.log(
-            `Status mismatch: Issue status "${
-              issue.status
-            }" -> "${displayStatus}" not in ${JSON.stringify(
-              this.statusFilter
-            )}`
-          );
-          console.log(
-            `Attempted matching with: ${JSON.stringify(
-              this.statusFilter.flatMap((s) => this.mapStatusToEnum(s))
-            )}`
-          );
-        }
-        return result;
-      });
-      console.log('After status filter:', filtered.length);
-    }
-
-    // Apply priority filter
-    if (this.priorityFilter.length > 0) {
-      filtered = filtered.filter((issue) => {
-        const result = this.priorityFilter.includes(issue.priority);
-        if (!result) {
-          console.log(
-            `Priority mismatch: "${issue.priority}" not in ${JSON.stringify(
-              this.priorityFilter
-            )}`
-          );
-        }
-        return result;
-      });
-      console.log('After priority filter:', filtered.length);
-    }
-
-    // Apply type filter
+    // Apply type filter if any
     if (this.typeFilter.length > 0) {
-      filtered = filtered.filter((issue) => {
-        const result = this.typeFilter.includes(issue.type);
-        if (!result) {
-          console.log(
-            `Type mismatch: "${issue.type}" not in ${JSON.stringify(
-              this.typeFilter
-            )}`
-          );
-        }
-        return result;
-      });
-      console.log('After type filter:', filtered.length);
+      filtered = filtered.filter((issue) =>
+        this.typeFilter.includes(issue.type)
+      );
     }
 
-    // Apply assignee filter
+    // Apply status filter if any
+    if (this.statusFilter.length > 0) {
+      filtered = filtered.filter((issue) =>
+        this.statusFilter.includes(issue.status)
+      );
+    }
+
+    // Apply assignee filter if any
     if (this.assigneeFilter.length > 0) {
-      filtered = filtered.filter((issue) => {
-        const result =
-          issue.assignee && this.assigneeFilter.includes(issue.assignee.id);
-        if (!result) {
-          console.log(
-            `Assignee mismatch: "${
-              issue.assignee?.id || 'none'
-            }" not in ${JSON.stringify(this.assigneeFilter)}`
-          );
+      filtered = filtered.filter(
+        (issue) =>
+          issue.assignee && this.assigneeFilter.includes(issue.assignee.id)
+      );
+    }
+
+    // Apply project filter if any
+    if (this.selectedProjectIds.length > 0) {
+      const currentProject = this.projectService.getSelectedProject();
+      const currentProjectId = currentProject?.id || '';
+
+      if (this.projectOperator === '=') {
+        // Include issues from selected projects
+        // All issues in the current view are from the selected project
+        // This is a placeholder implementation since we don't have direct project IDs on issues
+        if (
+          currentProjectId &&
+          !this.selectedProjectIds.includes(currentProjectId)
+        ) {
+          filtered = [];
         }
-        return result;
-      });
-      console.log('After assignee filter:', filtered.length);
+      } else if (this.projectOperator === '!=') {
+        // Exclude issues from selected projects
+        // If the current project is in the exclusion list, show no issues
+        if (
+          currentProjectId &&
+          this.selectedProjectIds.includes(currentProjectId)
+        ) {
+          filtered = [];
+        }
+      }
     }
 
     this.filteredIssues = filtered;
-    console.log('Final filtered issues:', this.filteredIssues.length);
   }
 
   clearFilters(): void {
     this.searchTerm = '';
-    this.statusFilter = [];
-    this.priorityFilter = [];
     this.typeFilter = [];
+    this.statusFilter = [];
     this.assigneeFilter = [];
+    this.selectedProjectIds = [];
     this.filteredIssues = [...this.issues];
   }
 
@@ -716,32 +679,29 @@ export class IssuesPageComponent implements OnInit {
       .subscribe((entities) => {
         if (!entities || !entities[issue.id]) {
           console.log(
-            'Card not found in store, creating a full card with ID:',
+            'Card not found in store, creating a card reference with ID:',
             issue.id
           );
 
           // Tạo một card đầy đủ từ issue
           const fullCard = this.convertIssueToCard(issue);
 
-          // Tạo một card mới thay vì chỉ update
-          // Sử dụng createCard action thay vì updateCard
-          try {
-            this.store.dispatch(
-              fromStore.createCard({ card: fullCard as any })
-            );
-            console.log('Dispatched createCard for new card:', fullCard);
-          } catch (error) {
-            console.error('Error creating card:', error);
-
-            // Fallback to updateCard if createCard fails
-            this.store.dispatch(fromStore.updateCard({ partial: fullCard }));
-            console.log('Fallback: Used updateCard instead');
-          }
+          // Instead of creating a new card, just update the store with the card data
+          // This prevents duplicate creation on the backend
+          this.store.dispatch(
+            fromStore.createCardSuccess({ card: fullCard as any })
+          );
+          console.log(
+            'Dispatched createCardSuccess for card display:',
+            fullCard
+          );
         } else {
-          console.log('Card already exists in store:', entities[issue.id]);
-          // Update existing card with latest data
-          const card = this.convertIssueToCard(issue);
-          this.store.dispatch(fromStore.updateCard({ partial: card }));
+          console.log(
+            'Card already exists in store, using existing data:',
+            entities[issue.id]
+          );
+          // Không cần update task, chỉ cần sử dụng dữ liệu hiện có trong store
+          // Bỏ đoạn code gọi updateCard không cần thiết
         }
 
         // Sau khi đảm bảo card đã trong store, set nó làm selected
@@ -1056,5 +1016,24 @@ export class IssuesPageComponent implements OnInit {
         this.message.error('Failed to load projects');
       },
     });
+  }
+
+  // Add this method for displaying the project filter tag
+  getSelectedProjectsLabel(): string {
+    if (!this.selectedProjectIds || this.selectedProjectIds.length === 0) {
+      return '';
+    }
+
+    const selectedProjects = this.projects.filter((p) =>
+      this.selectedProjectIds.includes(p.id)
+    );
+
+    if (selectedProjects.length === 1) {
+      return selectedProjects[0].name;
+    } else if (selectedProjects.length <= 3) {
+      return selectedProjects.map((p) => p.name).join(', ');
+    } else {
+      return `${selectedProjects.length} projects`;
+    }
   }
 }

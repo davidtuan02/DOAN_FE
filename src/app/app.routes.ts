@@ -126,6 +126,11 @@ export const routes: Routes = [
         component: ProjectSettingsComponent,
         title: 'Project Settings',
       },
+      {
+        path: ':id',
+        component: ProjectSettingsComponent,
+        title: 'Project Settings',
+      },
     ],
   },
   {

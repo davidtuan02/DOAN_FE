@@ -135,58 +135,187 @@
               <td class="py-2 px-3 text-blue-600">{{ childTask.key }}</td>
               <td class="py-2 px-3">{{ childTask.title }}</td>
               <td class="py-2 px-3">
-                <div class="flex items-center">
-                  <span
-                    class="w-2 h-2 rounded-full mr-1"
-                    [ngClass]="{
-                      'bg-red-500': childTask.priority === 'Highest',
-                      'bg-orange-500': childTask.priority === 'High',
-                      'bg-yellow-500': childTask.priority === 'Medium',
-                      'bg-green-500': childTask.priority === 'Low',
-                      'bg-blue-500': childTask.priority === 'Lowest'
-                    }"
-                  ></span>
-                  {{ childTask.priority }}
+                <div class="relative">
+                  <div
+                    class="flex items-center cursor-pointer"
+                    (click)="stopPropagation($event)"
+                    nz-dropdown
+                    [nzDropdownMenu]="priorityMenu"
+                    nzTrigger="click"
+                    nzPlacement="bottomRight"
+                  >
+                    <span
+                      class="w-2 h-2 rounded-full mr-1"
+                      [ngClass]="{
+                        'bg-red-500': childTask.priority === 'Highest',
+                        'bg-orange-500': childTask.priority === 'High',
+                        'bg-yellow-500': childTask.priority === 'Medium',
+                        'bg-green-500': childTask.priority === 'Low',
+                        'bg-blue-500': childTask.priority === 'Lowest'
+                      }"
+                    ></span>
+                    {{ childTask.priority }}
+                    <app-svg-icon
+                      name="arrowDown"
+                      [width]="12"
+                      [height]="12"
+                      class="ml-1"
+                    ></app-svg-icon>
+                  </div>
+                  <nz-dropdown-menu #priorityMenu="nzDropdownMenu">
+                    <ul nz-menu>
+                      <li
+                        nz-menu-item
+                        *ngFor="let priority of taskPriorities"
+                        (click)="updateChildTaskPriority(childTask, priority)"
+                      >
+                        <div class="flex items-center">
+                          <span
+                            class="w-2 h-2 rounded-full mr-1"
+                            [ngClass]="{
+                              'bg-red-500': priority === 'Highest',
+                              'bg-orange-500': priority === 'High',
+                              'bg-yellow-500': priority === 'Medium',
+                              'bg-green-500': priority === 'Low',
+                              'bg-blue-500': priority === 'Lowest'
+                            }"
+                          ></span>
+                          {{ priority }}
+                        </div>
+                      </li>
+                    </ul>
+                  </nz-dropdown-menu>
                 </div>
               </td>
               <td class="py-2 px-3">
                 <div
-                  *ngIf="childTask.assignee; else unassigned"
-                  class="flex items-center"
+                  class="relative cursor-pointer"
+                  (click)="stopPropagation($event)"
+                  nz-dropdown
+                  [nzDropdownMenu]="assigneeMenu"
+                  nzTrigger="click"
+                  nzPlacement="bottomRight"
                 >
-                  <img
-                    [src]="
-                      childTask.assignee.avatar ||
-                      'assets/images/default-avatar.png'
-                    "
-                    class="w-6 h-6 rounded-full mr-2"
-                    [alt]="childTask.assignee.name"
-                  />
-                  <span class="truncate">{{ childTask.assignee.name }}</span>
+                  <div
+                    *ngIf="childTask.assignee; else unassigned"
+                    class="flex items-center"
+                  >
+                    <img
+                      [src]="
+                        childTask.assignee.avatar ||
+                        'assets/images/default-avatar.png'
+                      "
+                      class="w-6 h-6 rounded-full mr-2"
+                      [alt]="childTask.assignee.name"
+                    />
+                    <span class="truncate">{{ childTask.assignee.name }}</span>
+                    <app-svg-icon
+                      name="arrowDown"
+                      [width]="12"
+                      [height]="12"
+                      class="ml-1"
+                    ></app-svg-icon>
+                  </div>
+                  <ng-template #unassigned>
+                    <div class="flex items-center text-gray-500">
+                      <span>Unassigned</span>
+                      <app-svg-icon
+                        name="arrowDown"
+                        [width]="12"
+                        [height]="12"
+                        class="ml-1"
+                      ></app-svg-icon>
+                    </div>
+                  </ng-template>
+                  <nz-dropdown-menu #assigneeMenu="nzDropdownMenu">
+                    <ul nz-menu>
+                      <li
+                        nz-menu-item
+                        *ngFor="let user of projectUsers"
+                        (click)="updateChildTaskAssignee(childTask, user.id)"
+                      >
+                        <div class="flex items-center">
+                          <img
+                            [src]="
+                              user.avatar || 'assets/images/default-avatar.png'
+                            "
+                            class="w-6 h-6 rounded-full mr-2"
+                            [alt]="user.name"
+                          />
+                          <span>{{ user.name }}</span>
+                        </div>
+                      </li>
+                      <li nz-menu-divider *ngIf="projectUsers.length > 0"></li>
+                      <li
+                        nz-menu-item
+                        *ngIf="childTask.assignee"
+                        (click)="updateChildTaskAssignee(childTask, '')"
+                      >
+                        <div class="flex items-center text-gray-500">
+                          <span>Unassign</span>
+                        </div>
+                      </li>
+                    </ul>
+                  </nz-dropdown-menu>
                 </div>
-                <ng-template #unassigned>
-                  <span class="text-gray-500">Unassigned</span>
-                </ng-template>
               </td>
               <td class="py-2 px-3">
-                <span
-                  class="px-2 py-0.5 text-xs rounded"
-                  [ngClass]="{
-                    'bg-blue-100 text-blue-800': childTask.status === 'To Do',
-                    'bg-yellow-100 text-yellow-800':
-                      childTask.status === 'In Progress',
-                    'bg-purple-100 text-purple-800':
-                      childTask.status === 'Review',
-                    'bg-green-100 text-green-800': childTask.status === 'Done'
-                  }"
+                <div
+                  class="relative cursor-pointer"
+                  (click)="stopPropagation($event)"
+                  nz-dropdown
+                  [nzDropdownMenu]="statusMenu"
+                  nzTrigger="click"
+                  nzPlacement="bottomRight"
                 >
-                  {{ childTask.status }}
-                </span>
+                  <span
+                    class="px-2 py-0.5 text-xs rounded flex items-center"
+                    [ngClass]="{
+                      'bg-blue-100 text-blue-800': childTask.status === 'To Do',
+                      'bg-yellow-100 text-yellow-800':
+                        childTask.status === 'In Progress',
+                      'bg-purple-100 text-purple-800':
+                        childTask.status === 'Review',
+                      'bg-green-100 text-green-800': childTask.status === 'Done'
+                    }"
+                  >
+                    {{ childTask.status }}
+                    <app-svg-icon
+                      name="arrowDown"
+                      [width]="12"
+                      [height]="12"
+                      class="ml-1"
+                    ></app-svg-icon>
+                  </span>
+                  <nz-dropdown-menu #statusMenu="nzDropdownMenu">
+                    <ul nz-menu>
+                      <li
+                        nz-menu-item
+                        *ngFor="let status of taskStatuses"
+                        (click)="updateChildTaskStatus(childTask, status)"
+                      >
+                        <span
+                          class="px-2 py-0.5 text-xs rounded"
+                          [ngClass]="{
+                            'bg-blue-100 text-blue-800': status === 'To Do',
+                            'bg-yellow-100 text-yellow-800':
+                              status === 'In Progress',
+                            'bg-purple-100 text-purple-800':
+                              status === 'Review',
+                            'bg-green-100 text-green-800': status === 'Done'
+                          }"
+                        >
+                          {{ status }}
+                        </span>
+                      </li>
+                    </ul>
+                  </nz-dropdown-menu>
+                </div>
               </td>
               <td class="py-2 px-3">
                 <button
                   class="text-gray-400 hover:text-gray-600 focus:outline-none"
-                  (click)="$event.stopPropagation()"
+                  (click)="stopPropagation($event)"
                 >
                   <app-svg-icon
                     name="threedot"

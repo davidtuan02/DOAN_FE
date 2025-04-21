@@ -615,7 +615,7 @@ export class IssueService {
       status: this.mapStatusToBackend(childTask.status || 'To Do'),
       reporterId: userId || null,
       parentTaskId: parentTaskId,
-      type: 'Sub-task',
+      type: childTask.type || 'Sub-task',
       priority: childTask.priority || 'Medium',
       storyPoints: childTask.storyPoints || 0,
       labels: childTask.labels || [],

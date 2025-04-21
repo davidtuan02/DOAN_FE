@@ -29,6 +29,8 @@ import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { Router } from '@angular/router';
 import { ProjectService } from '../../../../../core/services/project.service';
+import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
+import { NzMenuModule } from 'ng-zorro-antd/menu';
 
 @Component({
   selector: 'app-card-descriptions-panel',
@@ -42,6 +44,8 @@ import { ProjectService } from '../../../../../core/services/project.service';
     CardAttachmentComponent,
     CardEnvironmentComponent,
     CardActivityComponent,
+    NzDropDownModule,
+    NzMenuModule,
   ],
   templateUrl: './card-descriptions-panel.component.html',
   styleUrls: ['./card-descriptions-panel.component.scss'],
@@ -68,6 +72,12 @@ export class CardDescriptionsPanelComponent implements OnInit, OnDestroy {
     type: 'Sub-task',
   };
 
+  // Danh sách các priority và status cho dropdowns
+  taskPriorities = ['Highest', 'High', 'Medium', 'Low', 'Lowest'];
+  taskStatuses = ['To Do', 'In Progress', 'Review', 'Done'];
+  // Người dùng trong dự án cho assignee dropdown
+  projectUsers: any[] = [];
+
   constructor(
     private store: Store<fromStore.AppState>,
     private message: NzMessageService,
@@ -86,6 +96,8 @@ export class CardDescriptionsPanelComponent implements OnInit, OnDestroy {
     const selectedProject = this.projectService.getSelectedProject();
     if (selectedProject) {
       this.projectId = selectedProject.id || '';
+      // Lấy danh sách người dùng trong dự án
+      this.loadProjectUsers();
     }
 
     this.selectedCard$.pipe(takeUntil(this.unsubscribe$)).subscribe((card) => {
@@ -272,5 +284,98 @@ export class CardDescriptionsPanelComponent implements OnInit, OnDestroy {
         this.message.error(`Failed to upload ${file.name}`);
       },
     });
+  }
+
+  // Thêm phương thức để lấy danh sách người dùng trong dự án
+  loadProjectUsers(): void {
+    if (!this.projectId) return;
+
+    // Lấy users từ store giống như các components khác
+    this.store
+      .select(fromStore.allUsers)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((users) => {
+        if (users && users.length > 0) {
+          this.projectUsers = users.map((user: any) => ({
+            id: user.id,
+            name: `${user.name}`,
+            avatar: user.avatarUrl || 'assets/images/default-avatar.png',
+          }));
+        } else {
+          // Nếu chưa có dữ liệu users trong store, dispatch action để lấy
+          this.store.dispatch(fromStore.getUsers());
+        }
+      });
+  }
+
+  // Cập nhật priority cho child task
+  updateChildTaskPriority(childTask: Issue, priority: string): void {
+    if (!childTask.id) return;
+
+    const updatedTask: Partial<Issue> = {
+      id: childTask.id,
+      priority: priority as any,
+    };
+
+    this.issueService
+      .updateIssue(childTask.id, updatedTask)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe({
+        next: () => {
+          // Cập nhật lại danh sách child tasks
+          this.loadChildTasks();
+          this.message.success(`Priority updated to ${priority}`);
+        },
+        error: (error) => {
+          console.error('Error updating child task priority:', error);
+          this.message.error('Failed to update priority');
+        },
+      });
+  }
+
+  // Cập nhật status cho child task
+  updateChildTaskStatus(childTask: Issue, status: string): void {
+    if (!childTask.id) return;
+
+    this.issueService
+      .updateIssueStatus(childTask.id, status as any)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe({
+        next: () => {
+          // Cập nhật lại danh sách child tasks
+          this.loadChildTasks();
+          this.message.success(`Status updated to ${status}`);
+        },
+        error: (error) => {
+          console.error('Error updating child task status:', error);
+          this.message.error('Failed to update status');
+        },
+      });
+  }
+
+  // Cập nhật assignee cho child task
+  updateChildTaskAssignee(childTask: Issue, userId: string): void {
+    if (!childTask.id) return;
+
+    this.issueService
+      .assignUser(childTask.id, userId)
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe({
+        next: () => {
+          // Cập nhật lại danh sách child tasks
+          this.loadChildTasks();
+          const user = this.projectUsers.find((user) => user.id === userId);
+          this.message.success(`Task assigned to ${user ? user.name : 'user'}`);
+        },
+        error: (error) => {
+          console.error('Error assigning user to child task:', error);
+          this.message.error('Failed to assign user');
+        },
+      });
+  }
+
+  // Ngừng lan truyền sự kiện click
+  stopPropagation(event: Event): void {
+    event.stopPropagation();
   }
 }

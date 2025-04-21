@@ -6,6 +6,45 @@
         <a class="text-xs uppercase text-textGray">{{ projectName }}</a>
       </div>
       <div>/</div>
+      <ng-container *ngIf="card.parentTaskId">
+        <div class="flex items-center gap-1">
+          <ng-container [ngSwitch]="getParentTaskType(card)">
+            <app-svg-icon
+              *ngSwitchCase="CardTypes.TASK"
+              name="blueCheck"
+              [width]="20"
+              [height]="20"
+            ></app-svg-icon>
+            <app-svg-icon
+              *ngSwitchCase="CardTypes.BUG"
+              name="bug"
+              [width]="20"
+              [height]="20"
+            ></app-svg-icon>
+            <app-svg-icon
+              *ngSwitchCase="CardTypes.STORY"
+              name="story"
+              [width]="20"
+              [height]="20"
+            ></app-svg-icon>
+            <app-svg-icon
+              *ngSwitchDefault
+              name="blueCheck"
+              [width]="20"
+              [height]="20"
+            ></app-svg-icon>
+          </ng-container>
+          <a
+            class="text-xs uppercase text-textGray cursor-pointer hover:underline"
+            (click)="openParentIssue(card)"
+          >
+            {{ getParentTaskType(card).toLowerCase() }}-{{
+              getParentTaskId(card)
+            }}
+          </a>
+        </div>
+        <div>/</div>
+      </ng-container>
       <div class="flex items-center gap-1">
         <ng-container [ngSwitch]="card.type">
           <app-svg-icon
@@ -26,9 +65,15 @@
             [width]="20"
             [height]="20"
           ></app-svg-icon>
+          <app-svg-icon
+            *ngSwitchDefault
+            name="subtask"
+            [width]="20"
+            [height]="20"
+          ></app-svg-icon>
         </ng-container>
         <a class="text-xs uppercase text-textGray"
-          >{{ card.type.toLowerCase() }}-{{ card.ordinalId }}</a
+          >{{ card.type.toLowerCase() }}-{{ getIssueId(card) }}</a
         >
       </div>
     </div>

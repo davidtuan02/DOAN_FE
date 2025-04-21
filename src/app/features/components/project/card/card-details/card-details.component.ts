@@ -16,6 +16,7 @@ import { NZ_MODAL_DATA } from 'ng-zorro-antd/modal';
 import { Inject, Optional } from '@angular/core';
 import { ProjectService } from '../../../../../core/services/project.service';
 import { filter, tap } from 'rxjs/operators';
+import { Router } from '@angular/router';
 
 interface ModalData {
   onClose?: () => void;
@@ -49,6 +50,7 @@ export class CardDetailsComponent implements OnInit {
   constructor(
     private store: Store<fromStore.AppState>,
     private projectService: ProjectService,
+    private router: Router,
     @Optional() @Inject(NZ_MODAL_DATA) private modalData: ModalData
   ) {}
 
@@ -76,6 +78,55 @@ export class CardDetailsComponent implements OnInit {
         })
       )
       .subscribe();
+  }
+
+  // Get the type of the parent task
+  getParentTaskType(card: Card): CardTypesEnum {
+    if (!card.parentTaskId) return CardTypesEnum.TASK;
+
+    // If there's a parent task ID but no type info, return default type
+    return CardTypesEnum.TASK;
+  }
+
+  // Get the ID of the parent task for display
+  getParentTaskId(card: Card): string {
+    if (!card.parentTaskId) return '';
+
+    // Return the first 8 chars of parent task ID
+    return card.parentTaskId.slice(0, 8).toUpperCase();
+  }
+
+  // Open the parent issue when clicked in the breadcrumb
+  openParentIssue(card: Card): void {
+    if (!card.parentTaskId) return;
+
+    // Close the current card
+    this.onCloseModal();
+
+    // Navigate to the parent task - use the board URL with query params
+    const currentProject = this.projectService.getSelectedProject();
+    if (currentProject) {
+      this.router.navigate(['/board'], {
+        queryParams: { issueId: card.parentTaskId },
+      });
+    }
+  }
+
+  // Get a formatted issue ID for display
+  getIssueId(card: Card): string {
+    // Check if ordinalId is valid
+    if (card.ordinalId && !isNaN(card.ordinalId)) {
+      return card.ordinalId.toString();
+    }
+
+    // Fallback to using part of the card ID if ordinalId is not valid
+    if (card.id) {
+      // Use the last 4 characters of the ID to keep it short
+      return card.id.slice(-4).toUpperCase();
+    }
+
+    // Ultimate fallback
+    return 'ID';
   }
 
   onCloseModal(): void {
