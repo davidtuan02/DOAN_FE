@@ -17,6 +17,7 @@ import { Inject, Optional } from '@angular/core';
 import { ProjectService } from '../../../../../core/services/project.service';
 import { filter, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
+import { take } from 'rxjs/operators';
 
 interface ModalData {
   onClose?: () => void;
@@ -84,8 +85,43 @@ export class CardDetailsComponent implements OnInit {
   getParentTaskType(card: Card): CardTypesEnum {
     if (!card.parentTaskId) return CardTypesEnum.TASK;
 
-    // If there's a parent task ID but no type info, return default type
+    // Try to get parent task type from store if available
+    const parentTask = this.getParentTaskFromStore(card.parentTaskId);
+    if (parentTask) {
+      // Convert parent task type to CardTypesEnum
+      switch (parentTask.type) {
+        case 'TASK':
+          return CardTypesEnum.TASK;
+        case 'BUG':
+          return CardTypesEnum.BUG;
+        case 'STORY':
+          return CardTypesEnum.STORY;
+        case 'SUB_TASK':
+          return CardTypesEnum.SUB_TASK;
+        default:
+          // Try to parse from string
+          try {
+            return parentTask.type as CardTypesEnum;
+          } catch (e) {
+            return CardTypesEnum.TASK;
+          }
+      }
+    }
+
+    // Default to TASK if no information is available
     return CardTypesEnum.TASK;
+  }
+
+  // Helper method to find parent task in store
+  private getParentTaskFromStore(parentTaskId: string): Card | null {
+    let parentTask: Card | null = null;
+
+    // Get all cards from store
+    this.store.pipe(select(fromStore.allCards), take(1)).subscribe((cards) => {
+      parentTask = cards.find((c) => c.id === parentTaskId) || null;
+    });
+
+    return parentTask;
   }
 
   // Get the ID of the parent task for display
@@ -103,12 +139,22 @@ export class CardDetailsComponent implements OnInit {
     // Close the current card
     this.onCloseModal();
 
-    // Navigate to the parent task - use the board URL with query params
+    // Check current route to determine where to navigate
+    const url = this.router.url;
     const currentProject = this.projectService.getSelectedProject();
+
     if (currentProject) {
-      this.router.navigate(['/board'], {
-        queryParams: { issueId: card.parentTaskId },
-      });
+      if (url.includes('/issues')) {
+        // If we're on the issues page, stay there
+        this.router.navigate(['/issues'], {
+          queryParams: { selectedIssue: card.parentTaskId },
+        });
+      } else {
+        // Otherwise go to the board with the parent issue
+        this.router.navigate(['/board'], {
+          queryParams: { issueId: card.parentTaskId },
+        });
+      }
     }
   }
 
@@ -117,6 +163,17 @@ export class CardDetailsComponent implements OnInit {
     // Check if ordinalId is valid
     if (card.ordinalId && !isNaN(card.ordinalId)) {
       return card.ordinalId.toString();
+    }
+
+    // For subtasks, try to extract a meaningful ID
+    if (card.type === CardTypesEnum.SUB_TASK && card.id) {
+      const idParts = card.id.split('-');
+      if (idParts.length > 1) {
+        return idParts[idParts.length - 1];
+      }
+
+      // If no dash format, use the last 4-5 characters
+      return card.id.slice(-5).toUpperCase();
     }
 
     // Fallback to using part of the card ID if ordinalId is not valid

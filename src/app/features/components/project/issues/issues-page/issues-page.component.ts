@@ -42,6 +42,7 @@ import { CardDetailsComponent } from '../../card/card-details/card-details.compo
 import { CardDetailsPanelComponent } from '../../card/card-details-panel/card-details-panel.component';
 import { CardDescriptionsPanelComponent } from '../../card/card-descriptions-panel/card-descriptions-panel.component';
 import { CardDetailsLoaderComponent } from '../../card/card-details-loader/card-details-loader.component';
+import { CardTypesEnum } from '../../../../../core/enums/card-types.enum';
 
 // Import ngrx store
 import * as fromStore from '../../../../../core/store';
@@ -642,6 +643,18 @@ export class IssuesPageComponent implements OnInit {
       }
     }
 
+    // Map issue type to CardTypesEnum
+    let cardType;
+    if (issue.type === 'Sub-task') {
+      cardType = CardTypesEnum.SUB_TASK;
+    } else if (issue.type === 'Bug') {
+      cardType = CardTypesEnum.BUG;
+    } else if (issue.type === 'Story') {
+      cardType = CardTypesEnum.STORY;
+    } else {
+      cardType = CardTypesEnum.TASK;
+    }
+
     // Tạo key cho card nếu không có
     const key =
       issue.key || `${issue.type.substring(0, 1)}-${issue.id.substring(0, 6)}`;
@@ -651,7 +664,7 @@ export class IssuesPageComponent implements OnInit {
       id: issue.id,
       title: issue.title,
       description: issue.description || '',
-      type: issue.type,
+      type: cardType,
       priority: issue.priority,
       status: status,
       key: key,
@@ -660,14 +673,37 @@ export class IssuesPageComponent implements OnInit {
       created: issue.created,
       updated: issue.updated,
       // Thêm các trường cần thiết khác cho card-details
-      columnId: (issue as any).columnId || 'default',
+      columnId: this.getColumnIdFromStatus(status),
       estimate: (issue as any).estimate || 0,
       ordinalId: parseInt(issue.key?.replace(/[^\d]/g, '') || '0', 10) || 0,
       labels: issue.labels || [],
+      createdAt: issue.created,
+      updatedAt: issue.updated,
+      // Add parent task ID if available
+      parentTaskId: issue.parentTask?.id || null,
+      storyPoints: issue.storyPoints || 0,
+      startDate: issue.startDate || null,
+      dueDate: issue.dueDate || null,
     };
 
     console.log('Converted card:', card);
     return card;
+  }
+
+  // Helper method to get columnId from status
+  private getColumnIdFromStatus(status: string): string {
+    switch (status) {
+      case 'To Do':
+        return 'todo';
+      case 'In Progress':
+        return 'inprogress';
+      case 'Review':
+        return 'review';
+      case 'Done':
+        return 'done';
+      default:
+        return 'todo';
+    }
   }
 
   // Thêm phương thức để đảm bảo card được lưu trong store
