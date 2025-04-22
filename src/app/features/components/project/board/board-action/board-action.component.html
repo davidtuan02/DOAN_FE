@@ -1,33 +1,43 @@
 <div class="action-container">
   <form [formGroup]="filterFormGroup" class="flex flex-row items-center gap-4">
     <div class="search-container">
-      <input type="text"
-             class="search-input">
-      <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+      <input type="text" placeholder="Search issues..." class="search-input" />
+      <div
+        class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
+      >
         <app-svg-icon name="search"></app-svg-icon>
       </div>
     </div>
 
-    <app-assignee-filter-control formControlName="assignees"></app-assignee-filter-control>
+    <app-assignee-filter-control
+      formControlName="assignees"
+    ></app-assignee-filter-control>
 
-    <app-label-filter-control formControlName="labels"></app-label-filter-control>
+    <app-label-filter-control
+      formControlName="labels"
+    ></app-label-filter-control>
 
     <app-type-filter-control formControlName="types"></app-type-filter-control>
 
-    <button type="button" class="px-2 py-1.5 rounded text-textDark font-medium hover:bg-backgroundGray"
-            *ngIf="clearFiltersVisible"
-            (click)="clearFilters()">
+    <button
+      type="button"
+      class="px-2 py-1.5 rounded text-textDark font-medium hover:bg-backgroundGray"
+      *ngIf="clearFiltersVisible"
+      (click)="clearFilters()"
+    >
       Clear filters
     </button>
   </form>
 
   <div class="grouping-action">
     <label class="label">Group by</label>
-    <nz-select class="custom-select"
-               [formControl]="groupByControl"
-               [nzDropdownMatchSelectWidth]="false"
-               nzBorderless
-               [nzSuffixIcon]="selectSuffixIcon">
+    <nz-select
+      class="custom-select"
+      [formControl]="groupByControl"
+      [nzDropdownMatchSelectWidth]="false"
+      nzBorderless
+      [nzSuffixIcon]="selectSuffixIcon"
+    >
       <nz-option nzCustomContent nzLabel="None" nzValue="None">
         <span>None</span>
       </nz-option>
@@ -38,7 +48,6 @@
         <span>Subtask</span>
       </nz-option>
     </nz-select>
-
   </div>
 </div>
 

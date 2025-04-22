@@ -43,129 +43,21 @@
     </div>
   </div>
 
-  <!-- Jira style filters -->
-  <div class="flex items-center gap-2 mb-6 jira-filter-bar">
-    <button class="flex items-center justify-center ai-button">
-      <span class="flex items-center justify-center ai-icon">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path
-            d="M21 8v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"
-          ></path>
-          <path d="M7 3v4"></path>
-          <path d="M17 3v4"></path>
-          <path d="M7 15h.01"></path>
-          <path d="M11 15h.01"></path>
-          <path d="M15 15h.01"></path>
-        </svg>
-      </span>
-      <span class="ml-1">AI</span>
-    </button>
-
-    <!-- Saved filters dropdown -->
-    <div class="filter-item">
-      <button
-        nz-button
-        nzType="default"
-        class="filter-button"
-        nz-dropdown
-        [nzDropdownMenu]="savedFiltersMenu"
-        nzTrigger="click"
-        [nzOverlayClassName]="'dropdown-overlay'"
-      >
-        <span>Saved Filters</span>
-        <span nz-icon nzType="down" nzTheme="outline" class="ml-1"></span>
-      </button>
-      <nz-dropdown-menu #savedFiltersMenu="nzDropdownMenu">
-        <div class="dropdown-content-wrapper">
-          <ul nz-menu nzSelectable>
-            <!-- Loading state -->
-            <li nz-menu-item *ngIf="isLoadingFilters" [nzDisabled]="true">
-              <div class="flex items-center justify-between min-w-[200px]">
-                <span>Loading filters...</span>
-                <span nz-icon nzType="loading" class="ml-2"></span>
-              </div>
-            </li>
-
-            <!-- Empty state -->
-            <li
-              nz-menu-item
-              *ngIf="!isLoadingFilters && (savedFilters$ | async)?.length === 0"
-              [nzDisabled]="true"
-            >
-              <span class="text-gray-500">No saved filters</span>
-            </li>
-
-            <!-- Filters list -->
-            <li
-              nz-menu-item
-              *ngFor="let filter of savedFilters$ | async"
-              (click)="applyFilterFromSaved(filter)"
-            >
-              <div class="flex items-center justify-between">
-                <div>
-                  <span [class.font-medium]="filter.isStarred">{{
-                    filter.name
-                  }}</span>
-                  <small
-                    *ngIf="filter.description"
-                    class="block text-gray-500 text-xs truncate max-w-[180px]"
-                  >
-                    {{ filter.description }}
-                  </small>
-                </div>
-                <span
-                  *ngIf="filter.isStarred"
-                  nz-icon
-                  nzType="star"
-                  nzTheme="fill"
-                  class="flex-shrink-0 ml-2 text-yellow-400"
-                ></span>
-              </div>
-            </li>
-
-            <li nz-menu-divider></li>
-
-            <!-- Actions -->
-            <li nz-menu-item (click)="saveFilter()">
-              <div class="flex items-center">
-                <span nz-icon nzType="plus" class="mr-1"></span>
-                <span>Save Current Filter</span>
-              </div>
-            </li>
-            <li nz-menu-item routerLink="/filters">
-              <div class="flex items-center">
-                <span nz-icon nzType="setting" class="mr-1"></span>
-                <span>Manage Filters</span>
-              </div>
-            </li>
-          </ul>
-        </div>
-      </nz-dropdown-menu>
-    </div>
-
-    <!-- Search input -->
+  <!-- Jira Filter Bar -->
+  <div class="flex items-center gap-3 mb-4 jira-filter-bar">
+    <!-- Search Input -->
     <div class="search-container">
       <input
         type="text"
-        placeholder="Search issues..."
         [(ngModel)]="searchTerm"
         (ngModelChange)="applyFilters()"
+        placeholder="Search issues..."
         class="search-input"
       />
       <div
         class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
       >
-        <span nz-icon nzType="search" nzTheme="outline"></span>
+        <i class="text-gray-400 fas fa-search"></i>
       </div>
     </div>
 
@@ -177,14 +69,13 @@
         class="filter-button"
         nz-dropdown
         [nzDropdownMenu]="projectMenu"
+        [nzVisible]="projectMenuVisible"
+        (nzVisibleChange)="projectMenuVisible = $event"
         nzTrigger="click"
         [nzOverlayClassName]="'dropdown-overlay'"
       >
         <span>Project</span>
-        <span class="ml-1 operator-display">
-          <span class="operator-text">{{ projectOperator }}</span>
-          <span nz-icon nzType="down" nzTheme="outline" class="ml-1"></span>
-        </span>
+        <span nz-icon nzType="down" nzTheme="outline" class="ml-1"></span>
       </button>
       <nz-dropdown-menu #projectMenu="nzDropdownMenu">
         <div class="p-2 project-filter-container">
@@ -262,140 +153,73 @@
       </nz-dropdown-menu>
     </div>
 
-    <!-- Type filter -->
-    <div class="filter-dropdown">
-      <button
-        nz-button
-        nzType="default"
-        class="filter-button"
-        nz-dropdown
-        [nzDropdownMenu]="typeMenu"
-        [nzVisible]="typeMenuVisible"
-        (nzVisibleChange)="typeMenuVisible = $event"
-        nzTrigger="click"
-        [nzOverlayClassName]="'dropdown-overlay'"
-      >
-        <span>Type</span>
-        <span nz-icon nzType="down" nzTheme="outline" class="ml-1"></span>
-      </button>
-      <nz-dropdown-menu #typeMenu="nzDropdownMenu">
-        <div class="dropdown-content-wrapper">
-          <ul nz-menu nzSelectable class="filter-dropdown-menu">
-            <li
-              nz-menu-item
-              *ngFor="let type of issueTypes"
-              (click)="toggleTypeSelection(type); $event.stopPropagation()"
-            >
-              <label
-                nz-checkbox
-                [ngModel]="typeFilter.includes(type)"
-                (ngModelChange)="toggleTypeSelection(type)"
-              >
-                <div class="flex items-center">
-                  <i
-                    class="fa {{ getTypeIcon(type) }} mr-2"
-                    aria-hidden="true"
-                  ></i>
-                  <span>{{ type }}</span>
-                </div>
-              </label>
-            </li>
-          </ul>
-        </div>
-      </nz-dropdown-menu>
-    </div>
+    <!-- Filter components from board page -->
+    <form
+      [formGroup]="filterFormGroup"
+      class="flex flex-row items-center gap-4"
+    >
+      <app-type-filter-control
+        formControlName="types"
+      ></app-type-filter-control>
 
-    <!-- Status filter -->
-    <div class="filter-dropdown">
-      <button
-        nz-button
-        nzType="default"
-        class="filter-button"
-        nz-dropdown
-        [nzDropdownMenu]="statusMenu"
-        [nzVisible]="statusMenuVisible"
-        (nzVisibleChange)="statusMenuVisible = $event"
-        nzTrigger="click"
-        [nzOverlayClassName]="'dropdown-overlay'"
-      >
-        <span>Status</span>
-        <span nz-icon nzType="down" nzTheme="outline" class="ml-1"></span>
-      </button>
-      <nz-dropdown-menu #statusMenu="nzDropdownMenu">
-        <div class="dropdown-content-wrapper">
-          <ul nz-menu nzSelectable class="filter-dropdown-menu">
-            <li
-              nz-menu-item
-              *ngFor="let status of issueStatuses"
-              (click)="toggleStatusSelection(status); $event.stopPropagation()"
-            >
-              <label
-                nz-checkbox
-                [ngModel]="statusFilter.includes(status)"
-                (ngModelChange)="toggleStatusSelection(status)"
-              >
-                <div class="flex items-center">
-                  <nz-tag
-                    [nzColor]="getStatusColor(status)"
-                    class="mr-2"
-                  ></nz-tag>
-                  <span>{{ status }}</span>
-                </div>
-              </label>
-            </li>
-          </ul>
-        </div>
-      </nz-dropdown-menu>
-    </div>
+      <app-label-filter-control
+        formControlName="labels"
+      ></app-label-filter-control>
 
-    <!-- Assignee filter -->
+      <app-assignee-filter-control
+        formControlName="assignees"
+      ></app-assignee-filter-control>
+
+      <button
+        type="button"
+        class="px-2 py-1.5 rounded text-textDark font-medium hover:bg-backgroundGray"
+        *ngIf="clearFiltersVisible"
+        (click)="clearFilters()"
+      >
+        Clear filters
+      </button>
+    </form>
+
+    <!-- Saved Filters Dropdown -->
     <div class="filter-dropdown">
       <button
         nz-button
         nzType="default"
         class="filter-button"
         nz-dropdown
-        [nzDropdownMenu]="assigneeMenu"
-        [nzVisible]="assigneeMenuVisible"
-        (nzVisibleChange)="assigneeMenuVisible = $event"
+        [nzDropdownMenu]="savedFiltersMenu"
         nzTrigger="click"
         [nzOverlayClassName]="'dropdown-overlay'"
       >
-        <span>Assignee</span>
+        <span>Saved Filters</span>
         <span nz-icon nzType="down" nzTheme="outline" class="ml-1"></span>
       </button>
-      <nz-dropdown-menu #assigneeMenu="nzDropdownMenu">
-        <div class="dropdown-content-wrapper">
-          <ul nz-menu nzSelectable class="filter-dropdown-menu">
+      <nz-dropdown-menu #savedFiltersMenu="nzDropdownMenu">
+        <div
+          class="dropdown-content-wrapper"
+          style="min-width: 240px; max-height: 300px; overflow-y: auto"
+        >
+          <ul nz-menu nzSelectable>
+            <li nz-menu-item *ngIf="isLoadingFilters">
+              <span>Loading saved filters...</span>
+            </li>
             <li
               nz-menu-item
-              *ngFor="let assignee of assignees"
-              (click)="
-                toggleAssigneeSelection(assignee.id); $event.stopPropagation()
-              "
+              *ngIf="!(savedFilters$ | async)?.length && !isLoadingFilters"
             >
-              <label
-                nz-checkbox
-                [ngModel]="assigneeFilter.includes(assignee.id)"
-                (ngModelChange)="toggleAssigneeSelection(assignee.id)"
-              >
-                <div class="flex items-center">
-                  <div
-                    class="flex items-center justify-center w-6 h-6 mr-2 overflow-hidden bg-gray-200 rounded-full"
-                  >
-                    <img
-                      *ngIf="assignee.avatar"
-                      [src]="assignee.avatar"
-                      alt="Avatar"
-                      class="object-cover w-full h-full"
-                    />
-                    <span *ngIf="!assignee.avatar" class="text-xs">{{
-                      assignee.name.charAt(0)
-                    }}</span>
-                  </div>
-                  <span>{{ assignee.name }}</span>
-                </div>
-              </label>
+              <span>No saved filters found</span>
+            </li>
+            <li
+              nz-menu-item
+              *ngFor="let filter of savedFilters$ | async"
+              (click)="applyFilterFromSaved(filter)"
+            >
+              <div class="flex items-center justify-between w-full">
+                <span>{{ filter.name }}</span>
+                <span class="ml-3 text-xs text-gray-400">{{
+                  filter.createdAt | date : "short"
+                }}</span>
+              </div>
             </li>
           </ul>
         </div>
@@ -436,11 +260,28 @@
       </nz-dropdown-menu>
     </div>
 
-    <div class="ml-auto">
-      <button nz-button nzType="primary" (click)="saveFilter()">
-        Save filter
-      </button>
-    </div>
+    <!-- Save filter button -->
+    <button
+      nz-button
+      nzType="default"
+      class="filter-button"
+      (click)="showSaveFilterModal()"
+    >
+      <span>Save filter</span>
+      <span nz-icon nzType="save" nzTheme="outline" class="ml-1"></span>
+    </button>
+
+    <!-- AI button if needed -->
+    <button
+      nz-button
+      class="flex items-center gap-1 ai-button"
+      nz-tooltip
+      nzTooltipTitle="Generate issues using AI"
+      (click)="useAI()"
+    >
+      <span nz-icon nzType="robot" nzTheme="outline" class="ai-icon"></span>
+      <span>AI</span>
+    </button>
   </div>
 
   <!-- Applied filters -->

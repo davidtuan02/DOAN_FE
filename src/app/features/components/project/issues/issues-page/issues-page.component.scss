@@ -226,6 +226,38 @@
       }
     }
   }
+
+  /* Add the new styles for filter controls */
+  app-type-filter-control,
+  app-label-filter-control,
+  app-assignee-filter-control {
+    ::ng-deep {
+      .trigger-button {
+        @apply flex items-center gap-1 px-2 py-1.5 rounded text-textDark font-medium bg-backgroundLightest hover:bg-backgroundLight;
+        height: 32px;
+        font-size: 14px;
+      }
+
+      .type-filter-option {
+        @apply my-1 ml-1;
+      }
+
+      .filter-option {
+        @apply my-1 ml-1;
+      }
+
+      .focused {
+        @apply bg-blue-50;
+      }
+    }
+  }
+
+  /* Add this for the project filter to match the styling */
+  .filter-button {
+    @apply flex items-center gap-1 px-2 py-1.5 rounded text-textDark font-medium bg-backgroundLightest hover:bg-backgroundLight;
+    height: 32px;
+    font-size: 14px;
+  }
 }
 
 .applied-filters {

@@ -1,6 +1,11 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormsModule,
+  ReactiveFormsModule,
+  FormGroup,
+  FormControl,
+} from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute, Params } from '@angular/router';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import {
@@ -35,18 +40,20 @@ import {
 import { SaveFilterDialogComponent } from '../../../filters/save-filter-dialog/save-filter-dialog.component';
 import { UserService } from '../../../../../core/services/user.service';
 import { Observable } from 'rxjs';
-import { take, finalize, first } from 'rxjs/operators';
-
-// Import the card-details component and related components
+import { take, finalize, first, tap } from 'rxjs/operators';
 import { CardDetailsComponent } from '../../card/card-details/card-details.component';
 import { CardDetailsPanelComponent } from '../../card/card-details-panel/card-details-panel.component';
 import { CardDescriptionsPanelComponent } from '../../card/card-descriptions-panel/card-descriptions-panel.component';
 import { CardDetailsLoaderComponent } from '../../card/card-details-loader/card-details-loader.component';
 import { CardTypesEnum } from '../../../../../core/enums/card-types.enum';
-
-// Import ngrx store
 import * as fromStore from '../../../../../core/store';
 import { Store } from '@ngrx/store';
+import { AssigneeFilterControlComponent } from '../../filter/assignee-filter-control/assignee-filter-control.component';
+import { LabelFilterControlComponent } from '../../filter/label-filter-control/label-filter-control.component';
+import { TypeFilterControlComponent } from '../../filter/type-filter-control/type-filter-control.component';
+import { CardFilter } from '../../../../../core/models/card/card-filter';
+import { DomSanitizer } from '@angular/platform-browser';
+import { Destroyable } from '../../../../../shared/utils';
 
 // View type enum
 export enum ViewType {
@@ -78,6 +85,9 @@ export enum ViewType {
     CardDetailsPanelComponent,
     CardDescriptionsPanelComponent,
     CardDetailsLoaderComponent,
+    AssigneeFilterControlComponent,
+    LabelFilterControlComponent,
+    TypeFilterControlComponent,
   ],
   templateUrl: './issues-page.component.html',
   styleUrls: ['./issues-page.component.scss'],
@@ -105,6 +115,7 @@ export class IssuesPageComponent implements OnInit {
   typeMenuVisible = false;
   statusMenuVisible = false;
   assigneeMenuVisible = false;
+  projectMenuVisible = false;
 
   // View type and selected issue for detail view
   private _viewType: ViewType = ViewType.LIST;
@@ -146,18 +157,33 @@ export class IssuesPageComponent implements OnInit {
   // Add this code near the other filter properties
   projectOperator: string = '=';
 
+  // Add this to your class
+  filterFormGroup: FormGroup;
+  groupByControl: FormControl;
+  clearFiltersVisible = false;
+
   constructor(
-    private issueService: IssueService,
-    private projectService: ProjectService,
-    private filterService: FilterService,
-    private router: Router,
     private route: ActivatedRoute,
-    private message: NzMessageService,
+    private router: Router,
+    private projectService: ProjectService,
+    private issueService: IssueService,
+    private filterService: FilterService,
+    private messageService: NzMessageService,
     private modalService: NzModalService,
     private userService: UserService,
-    private store: Store<fromStore.AppState>
+    private store: Store<fromStore.AppState>,
+    private sanitizer: DomSanitizer
   ) {
     this.savedFilters$ = this.filterService.savedFilters$;
+
+    // Initialize form controls
+    this.groupByControl = new FormControl('None');
+
+    this.filterFormGroup = new FormGroup({
+      assignees: new FormControl([]),
+      labels: new FormControl([]),
+      types: new FormControl([]),
+    });
   }
 
   ngOnInit(): void {
@@ -172,6 +198,14 @@ export class IssuesPageComponent implements OnInit {
 
     // Load project-specific filters - with retry logic
     this.loadProjectFilters();
+
+    // Set up filter form change listener
+    this.filterFormGroup.valueChanges
+      .pipe(
+        takeUntilDestroyed(this),
+        tap((filters) => this.updateFilters(filters))
+      )
+      .subscribe();
   }
 
   // Load project-specific filters with retry logic
@@ -217,12 +251,12 @@ export class IssuesPageComponent implements OnInit {
   loadIssues(): void {
     const selectedProject = this.projectService.getSelectedProject();
     if (!selectedProject) {
-      this.message.error('No project selected');
+      this.messageService.error('No project selected');
       return;
     }
 
     if (!selectedProject.id) {
-      this.message.error('Invalid project ID');
+      this.messageService.error('Invalid project ID');
       return;
     }
 
@@ -268,7 +302,7 @@ export class IssuesPageComponent implements OnInit {
         },
         error: (error) => {
           console.error('Failed to load issues', error);
-          this.message.error('Failed to load issues');
+          this.messageService.error('Failed to load issues');
           this.loading = false;
         },
       });
@@ -519,19 +553,20 @@ export class IssuesPageComponent implements OnInit {
     this.assigneeFilter = [];
     this.selectedProjectIds = [];
     this.filteredIssues = [...this.issues];
+    this.filterFormGroup.reset({ assignees: [], labels: [], types: [] });
   }
 
   saveFilter(): void {
     const selectedProject = this.projectService.getSelectedProject();
 
     if (!selectedProject || !selectedProject.id) {
-      this.message.error('Không có dự án nào được chọn');
+      this.messageService.error('Không có dự án nào được chọn');
       return;
     }
 
     const userId = this.userService.getCurrentUserId();
     if (!userId) {
-      this.message.error('Bạn chưa đăng nhập');
+      this.messageService.error('Bạn chưa đăng nhập');
       return;
     }
 
@@ -592,10 +627,10 @@ export class IssuesPageComponent implements OnInit {
         if (result) {
           if (result.error) {
             // Handle error returned from dialog
-            this.message.error(result.message || 'Không thể lưu bộ lọc');
+            this.messageService.error(result.message || 'Không thể lưu bộ lọc');
           } else {
             // Successfully saved filter
-            this.message.success(
+            this.messageService.success(
               `Bộ lọc "${result.name}" đã được lưu thành công`
             );
             // Refresh saved filters list
@@ -857,7 +892,7 @@ export class IssuesPageComponent implements OnInit {
             this.applyFilterFromSaved(filter);
           },
           error: () => {
-            this.message.error(
+            this.messageService.error(
               'Failed to load filter. It may have been deleted or you do not have access to it.'
             );
           },
@@ -915,7 +950,9 @@ export class IssuesPageComponent implements OnInit {
     this.applyFilters();
 
     // Show confirmation message
-    this.message.success(`Đã áp dụng bộ lọc "${filter.name}" thành công`);
+    this.messageService.success(
+      `Đã áp dụng bộ lọc "${filter.name}" thành công`
+    );
   }
 
   // Thêm phương thức checkSelectedCardInStore
@@ -1027,7 +1064,9 @@ export class IssuesPageComponent implements OnInit {
         },
         error: (error) => {
           console.error('Failed to load issues for selected project', error);
-          this.message.error('Failed to load issues for selected project');
+          this.messageService.error(
+            'Failed to load issues for selected project'
+          );
           this.loading = false;
         },
       });
@@ -1049,7 +1088,7 @@ export class IssuesPageComponent implements OnInit {
       },
       error: (error: any) => {
         console.error('Failed to load projects', error);
-        this.message.error('Failed to load projects');
+        this.messageService.error('Failed to load projects');
       },
     });
   }
@@ -1071,5 +1110,29 @@ export class IssuesPageComponent implements OnInit {
     } else {
       return `${selectedProjects.length} projects`;
     }
+  }
+
+  // Add this method
+  updateFilters(filters: CardFilter): void {
+    this.clearFiltersVisible =
+      filters.assignees?.length > 0 ||
+      filters.labels?.length > 0 ||
+      filters.types?.length > 0;
+
+    // Update your existing filters
+    this.assigneeFilter = filters.assignees || [];
+    this.typeFilter = filters.types || [];
+    // Update label filter if you have one
+
+    this.applyFilters(); // Call your existing filter method
+  }
+
+  // Add these methods to the component class
+  useAI(): void {
+    this.messageService.info('AI feature is coming soon!');
+  }
+
+  showSaveFilterModal(): void {
+    this.saveFilter();
   }
 }
