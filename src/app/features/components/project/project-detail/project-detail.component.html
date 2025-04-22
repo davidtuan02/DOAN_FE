@@ -1,20 +1,20 @@
-<div class="container mx-auto px-4 py-8">
+<div class="container px-4 py-8 mx-auto">
   <!-- Loading indicator -->
   <div *ngIf="loading" class="flex justify-center my-8">
     <div
-      class="w-8 h-8 border-3 border-blue-200 border-t-blue-600 rounded-full animate-spin"
+      class="w-8 h-8 border-blue-200 rounded-full border-3 border-t-blue-600 animate-spin"
     ></div>
   </div>
 
   <!-- Error message -->
   <div
     *ngIf="error"
-    class="mb-4 p-4 bg-red-100 text-red-700 rounded-md border border-red-200"
+    class="p-4 mb-4 text-red-700 bg-red-100 border border-red-200 rounded-md"
   >
     <div class="flex items-center">
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        class="h-5 w-5 mr-2"
+        class="w-5 h-5 mr-2"
         viewBox="0 0 20 20"
         fill="currentColor"
       >
@@ -29,20 +29,20 @@
   </div>
 
   <!-- Project details -->
-  <div *ngIf="project && !loading" class="bg-white rounded-lg shadow-sm border">
+  <div *ngIf="project && !loading" class="bg-white border rounded-lg shadow-sm">
     <!-- Header -->
     <div class="p-6 border-b bg-blue-50">
       <div
-        class="flex flex-col md:flex-row justify-between items-start md:items-center"
+        class="flex flex-col items-start justify-between md:flex-row md:items-center"
       >
         <div>
           <div class="flex items-center gap-3">
             <div
-              class="w-10 h-10 rounded-md bg-blue-100 text-blue-700 flex items-center justify-center"
+              class="flex items-center justify-center w-10 h-10 text-blue-700 bg-blue-100 rounded-md"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                class="h-6 w-6"
+                class="w-6 h-6"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -58,19 +58,19 @@
             <h1 class="text-2xl font-bold">{{ project.name }}</h1>
           </div>
 
-          <div class="text-gray-500 mt-2" *ngIf="project.key">
+          <div class="mt-2 text-gray-500" *ngIf="project.key">
             Key: {{ project.key }}
           </div>
         </div>
 
-        <div class="mt-4 md:mt-0 flex gap-2">
+        <div class="flex gap-2 mt-4 md:mt-0">
           <button
-            class="px-4 py-2 border rounded-md hover:bg-gray-100 flex items-center"
+            class="flex items-center px-4 py-2 border rounded-md hover:bg-gray-100"
             (click)="goBack()"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="h-4 w-4 mr-1"
+              class="w-4 h-4 mr-1"
               viewBox="0 0 20 20"
               fill="currentColor"
             >
@@ -84,12 +84,12 @@
           </button>
 
           <button
-            class="px-4 py-2 border rounded-md hover:bg-gray-100 flex items-center"
+            class="flex items-center px-4 py-2 border rounded-md hover:bg-gray-100"
             (click)="editProject()"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="h-4 w-4 mr-1"
+              class="w-4 h-4 mr-1"
               viewBox="0 0 20 20"
               fill="currentColor"
             >
@@ -101,12 +101,12 @@
           </button>
 
           <button
-            class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center"
+            class="flex items-center px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700"
             (click)="confirmDelete()"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="h-4 w-4 mr-1"
+              class="w-4 h-4 mr-1"
               viewBox="0 0 20 20"
               fill="currentColor"
             >
@@ -124,11 +124,11 @@
 
     <!-- Content -->
     <div class="p-6">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
         <!-- Left column -->
         <div class="md:col-span-2">
           <div class="mb-6">
-            <h2 class="text-lg font-semibold mb-2">Description</h2>
+            <h2 class="mb-2 text-lg font-semibold">Description</h2>
             <p class="text-gray-700 whitespace-pre-line">
               {{ project.description }}
             </p>
@@ -138,19 +138,19 @@
           <div
             *ngIf="project.usersIncludes && project.usersIncludes.length > 0"
           >
-            <h2 class="text-lg font-semibold mb-2">Team Members</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <h2 class="mb-2 text-lg font-semibold">Team Members</h2>
+            <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
               <div
                 *ngFor="let member of project.usersIncludes"
                 class="flex items-center p-3 border rounded-md"
               >
                 <div
-                  class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center mr-3"
+                  class="flex items-center justify-center w-8 h-8 mr-3 bg-gray-200 rounded-full"
                 >
                   <svg
                     *ngIf="!member.user?.avatar"
                     xmlns="http://www.w3.org/2000/svg"
-                    class="h-4 w-4 text-gray-500"
+                    class="w-4 h-4 text-gray-500"
                     viewBox="0 0 20 20"
                     fill="currentColor"
                   >
@@ -182,8 +182,8 @@
 
         <!-- Right column -->
         <div>
-          <div class="bg-gray-50 p-4 rounded-md border">
-            <h2 class="text-lg font-semibold mb-3">Project Details</h2>
+          <div class="p-4 border rounded-md bg-gray-50">
+            <h2 class="mb-3 text-lg font-semibold">Project Details</h2>
 
             <div class="mb-3">
               <div class="text-sm text-gray-500">Created</div>
@@ -201,6 +201,21 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- Project tabs section -->
+      <div class="mt-6">
+        <nz-tabset>
+          <nz-tab nzTitle="Overview">
+            <!-- Overview content is already above, so leave this empty or 
+                 move some content here if you want a cleaner tab structure -->
+          </nz-tab>
+          <nz-tab nzTitle="Members">
+            <app-project-members
+              [projectId]="project.id!"
+            ></app-project-members>
+          </nz-tab>
+        </nz-tabset>
       </div>
     </div>
   </div>

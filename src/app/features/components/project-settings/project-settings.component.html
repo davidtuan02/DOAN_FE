@@ -1,4 +1,4 @@
-<div class="project-settings">
+<div class="p-6 project-settings">
   <h1 class="mb-6 text-2xl font-bold">Project Settings</h1>
 
   <!-- Loading & Error Message -->
@@ -66,45 +66,6 @@
         </p>
       </div>
 
-      <!-- Project Type & Category -->
-      <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div class="form-group">
-          <label
-            for="project-type"
-            class="block text-sm font-medium text-gray-700"
-            >Project Type</label
-          >
-          <select
-            id="project-type"
-            [(ngModel)]="project.type"
-            name="projectType"
-            class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-          >
-            <option>Software</option>
-            <option>Business</option>
-            <option>Marketing</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label
-            for="project-category"
-            class="block text-sm font-medium text-gray-700"
-            >Project Category</label
-          >
-          <select
-            id="project-category"
-            [(ngModel)]="project.category"
-            name="projectCategory"
-            class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-          >
-            <option>Software</option>
-            <option>Marketing</option>
-            <option>Business</option>
-          </select>
-        </div>
-      </div>
-
       <!-- Project Description -->
       <div class="form-group">
         <label
@@ -119,25 +80,6 @@
           rows="4"
           class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
         ></textarea>
-      </div>
-
-      <!-- Project Lead -->
-      <div class="form-group">
-        <label
-          for="project-lead"
-          class="block text-sm font-medium text-gray-700"
-          >Project Lead</label
-        >
-        <select
-          id="project-lead"
-          [(ngModel)]="project.lead"
-          name="projectLead"
-          class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-        >
-          <option value="">Select a lead...</option>
-          <option value="user1">John Doe</option>
-          <option value="user2">Jane Smith</option>
-        </select>
       </div>
 
       <!-- Avatar -->

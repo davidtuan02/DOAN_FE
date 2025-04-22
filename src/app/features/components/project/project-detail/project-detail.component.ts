@@ -4,19 +4,30 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzMessageModule } from 'ng-zorro-antd/message';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { finalize } from 'rxjs/operators';
 import { DatePipe, NgIf, NgFor, NgClass } from '@angular/common';
 import {
   ProjectService,
   Project,
 } from '../../../../core/services/project.service';
+import { ProjectMembersComponent } from '../project-members/project-members.component';
 
 @Component({
   selector: 'app-project-detail',
   templateUrl: './project-detail.component.html',
   styleUrls: ['./project-detail.component.scss'],
   standalone: true,
-  imports: [NgIf, NgFor, NgClass, DatePipe, NzMessageModule, NzModalModule],
+  imports: [
+    NgIf,
+    NgFor,
+    NgClass,
+    DatePipe,
+    NzMessageModule,
+    NzModalModule,
+    NzTabsModule,
+    ProjectMembersComponent,
+  ],
 })
 export class ProjectDetailComponent implements OnInit {
   projectId: string = '';

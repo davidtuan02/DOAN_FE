@@ -25,6 +25,13 @@ import { BoardService } from './core/services';
 import { CoreModule } from './core/core.module';
 import { TeamModule } from './features/components/team/team.module';
 import { catchError } from 'rxjs/operators';
+// NG-Zorro locale imports
+import { NZ_I18N, en_US } from 'ng-zorro-antd/i18n';
+import { registerLocaleData } from '@angular/common';
+import en from '@angular/common/locales/en';
+
+// Register Angular locale data
+registerLocaleData(en);
 
 // Chỉ load user data nếu có token
 export function initAuth(jwtService: JwtService, userService: UserService) {
@@ -65,6 +72,8 @@ export const appConfig: ApplicationConfig = {
         dateFormat: 'longDate',
       },
     },
+    // NG-Zorro locale provider
+    { provide: NZ_I18N, useValue: en_US },
     {
       provide: APP_INITIALIZER,
       useFactory: initAuth,
