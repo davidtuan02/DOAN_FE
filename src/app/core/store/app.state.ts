@@ -15,8 +15,4 @@ export const reducers: ActionReducerMap<AppState> = {
   users: userReducer,
 };
 
-export const effects = [
-  ColumnEffects,
-  CardEffects,
-  UserEffects,
-];
+export const effects = [ColumnEffects, CardEffects, UserEffects];

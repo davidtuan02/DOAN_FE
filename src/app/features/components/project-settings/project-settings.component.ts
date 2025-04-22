@@ -15,6 +15,7 @@ import {
   ProjectColumnUpdateDto,
   ReorderColumnsDto,
 } from '../../../core/models/project-column.model';
+import { BoardColumnsSettingsComponent } from './board-columns-settings/board-columns-settings.component';
 
 // Define extended project interface with the additional properties needed
 interface ExtendedProject extends Project {
@@ -43,7 +44,13 @@ interface BoardColumn {
 @Component({
   selector: 'app-project-settings',
   standalone: true,
-  imports: [CommonModule, RouterModule, SvgIconComponent, FormsModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    SvgIconComponent,
+    FormsModule,
+    BoardColumnsSettingsComponent,
+  ],
   templateUrl: './project-settings.component.html',
 })
 export class ProjectSettingsComponent implements OnInit {

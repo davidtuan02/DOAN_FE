@@ -100,7 +100,7 @@ export interface Issue {
   title: string;
   description: string;
   priority: 'Highest' | 'High' | 'Medium' | 'Low' | 'Lowest';
-  status: 'To Do' | 'In Progress' | 'Review' | 'Done';
+  status: string;
   type: 'Epic' | 'Story' | 'Task' | 'Bug' | 'Sub-task';
   assignee?: {
     id: string;

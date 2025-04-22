@@ -1,0 +1,140 @@
+.board-columns-container {
+  padding: 16px;
+  width: 100%;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+
+    h2 {
+      margin: 0;
+    }
+  }
+
+  .error-message {
+    color: #f5222d;
+    margin: 16px 0;
+    padding: 16px;
+    background-color: #fff1f0;
+    border: 1px solid #ffccc7;
+    border-radius: 4px;
+  }
+
+  .loading {
+    display: flex;
+    justify-content: center;
+    padding: 32px;
+    color: #1890ff;
+  }
+
+  .empty-message {
+    text-align: center;
+    color: #8c8c8c;
+    padding: 32px;
+  }
+
+  .columns-table {
+    width: 100%;
+    border: 1px solid #f0f0f0;
+    border-radius: 4px;
+    overflow: hidden;
+    background-color: #fff;
+
+    .columns-header {
+      display: flex;
+      background-color: #fafafa;
+      font-weight: 500;
+      padding: 12px 8px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .column-item {
+      display: flex;
+      padding: 12px 8px;
+      border-bottom: 1px solid #f0f0f0;
+      align-items: center;
+      cursor: move;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &:hover {
+        background-color: #f5f5f5;
+      }
+
+      &.cdk-drag-preview {
+        background-color: #fff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        border-radius: 4px;
+      }
+
+      &.cdk-drag-placeholder {
+        opacity: 0;
+      }
+
+      &.cdk-drag-animating {
+        transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+      }
+    }
+
+    .column-drag-handle {
+      width: 24px;
+      display: flex;
+      justify-content: center;
+      cursor: grab;
+      opacity: 0.5;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+
+    .column-name {
+      flex: 1;
+      padding: 0 8px;
+    }
+
+    .column-color {
+      width: 80px;
+      display: flex;
+      justify-content: center;
+
+      .color-box {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+        border: 1px solid #d9d9d9;
+      }
+    }
+
+    .column-default {
+      width: 80px;
+      text-align: center;
+    }
+
+    .column-actions {
+      width: 100px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+  }
+}
+
+.column-form {
+  padding: 8px;
+
+  .help-text {
+    color: #8c8c8c;
+    font-size: 12px;
+    margin-top: 4px;
+  }
+}
+
+// Make sure drag operations work smoothly
+.cdk-drop-list-dragging .column-item:not(.cdk-drag-placeholder) {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
