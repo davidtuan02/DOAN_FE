@@ -152,10 +152,31 @@ export const allCommentsWithUser = createSelector(
       return [];
     }
 
-    return comments.map((c) => ({
-      ...c,
-      user: users.find((u) => u.id === c.uid),
-    }));
+    return comments.map((c) => {
+      // Log for debugging
+      console.log('Finding user for comment:', c.id, 'with uid:', c.uid);
+      console.log('Available users:', users);
+
+      const user = users.find((u) => u.id === c.uid);
+
+      // Log whether user was found
+      if (user) {
+        console.log(
+          'Found user:',
+          user.firstName,
+          user.lastName,
+          'for comment:',
+          c.id
+        );
+      } else {
+        console.log('No user found for uid:', c.uid, 'in comment:', c.id);
+      }
+
+      return {
+        ...c,
+        user: user || null,
+      };
+    });
   }
 );
 

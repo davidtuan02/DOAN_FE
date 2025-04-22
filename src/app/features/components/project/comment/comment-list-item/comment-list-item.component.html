@@ -1,20 +1,22 @@
-<div class="flex flex-row justify-start gap-4 w-full mt-6 mb-3">
+<div class="flex flex-row justify-start w-full gap-4 mt-6 mb-3">
   <div class="py-1" *ngIf="comment.user">
     <app-avatar [user]="comment.user"></app-avatar>
   </div>
   <div class="flex flex-col">
-    <div class="flex flex-row gap-4 items-baseline">
-      <div class="text-textDark font-medium cursor-pointer">{{comment.user?.username}}</div>
-      <div class="text-textDark text-xs">{{comment.createdAt | date:'short'}}</div>
+    <div class="flex flex-row items-baseline gap-4">
+      <div class="font-medium cursor-pointer text-textDark">
+        {{ comment.user?.firstName }} {{ comment.user?.lastName }}
+      </div>
+      <div class="text-xs text-textDark">
+        {{ comment.createdAt | date : "short" }}
+      </div>
     </div>
 
-    <div [innerHTML]="comment.content"
-         class="mt-1">
-    </div>
+    <div [innerHTML]="comment.content" class="mt-1"></div>
 
     <div class="flex flex-row items-center gap-4 mt-1">
-      <button class="text-textGray font-medium hover:underline">Edit</button>
-      <button class="text-textGray font-medium hover:underline">Delete</button>
+      <button class="font-medium text-textGray hover:underline">Edit</button>
+      <button class="font-medium text-textGray hover:underline">Delete</button>
     </div>
   </div>
 </div>

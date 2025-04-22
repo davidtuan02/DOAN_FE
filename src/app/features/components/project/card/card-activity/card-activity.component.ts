@@ -11,6 +11,7 @@ import { SvgIconComponent } from '../../../../../shared/components';
 import { CommentListComponent } from '../../comment/comment-list/comment-list.component';
 import * as fromStore from '../../../../../core/store';
 import { Store, select } from '@ngrx/store';
+import { UserService } from '../../../../../core/services/user.service';
 
 @Destroyable()
 @Component({
@@ -34,11 +35,17 @@ export class CardActivityComponent implements OnInit {
 
   currentActivityTab: ActivityViewMode = 'comments';
 
-  constructor(private store: Store<fromStore.AppState>) {
+  constructor(
+    private store: Store<fromStore.AppState>,
+    private userService: UserService
+  ) {
     this.activityLabelControl = new FormControl(this.currentActivityTab);
   }
 
   ngOnInit(): void {
+    // First load users to ensure they're available for comment mapping
+    this.store.dispatch(fromStore.getUsers());
+
     this.comments$ = this.store.pipe(
       select(fromStore.allCommentsWithUser),
       catchError((err) => {
@@ -48,13 +55,8 @@ export class CardActivityComponent implements OnInit {
       })
     );
 
-    this.currentUser$ = this.store.pipe(
-      select(fromStore.selectCurrentUser),
-      catchError((err) => {
-        console.error('Error loading current user:', err);
-        return of(null);
-      })
-    );
+    // Use the UserService directly to get the current user
+    this.currentUser$ = this.userService.getCurrentUser();
 
     this.activityLabelControl.valueChanges
       .pipe(
@@ -93,6 +95,20 @@ export class CardActivityComponent implements OnInit {
         this.error = null;
       }, 3000);
       return;
+    }
+
+    // Ensure we have a user ID for the comment
+    if (!comment.uid) {
+      const currentUserId = this.userService.getCurrentUserId();
+      if (currentUserId) {
+        comment.uid = currentUserId;
+      } else {
+        this.error = 'Cannot add comment: No user identified';
+        setTimeout(() => {
+          this.error = null;
+        }, 3000);
+        return;
+      }
     }
 
     this.store.dispatch(fromStore.addComment({ comment }));

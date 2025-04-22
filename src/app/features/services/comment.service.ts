@@ -12,6 +12,7 @@ export interface Comment {
   updatedAt: Date;
   taskId: string;
   userId: string;
+  uid?: string;
   user?: {
     id: string;
     firstName: string;
@@ -133,8 +134,17 @@ export class CommentService {
   private formatComment(comment: any): Comment {
     return {
       ...comment,
+      uid: comment.userId,
       createdAt: new Date(comment.createdAt),
       updatedAt: new Date(comment.updatedAt),
+      user: comment.user
+        ? {
+            id: comment.user.id,
+            firstName: comment.user.firstName,
+            lastName: comment.user.lastName,
+            email: comment.user.email,
+          }
+        : undefined,
     };
   }
 }

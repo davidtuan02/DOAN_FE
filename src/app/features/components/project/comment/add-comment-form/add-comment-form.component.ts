@@ -4,6 +4,7 @@ import { User } from '../../../../../core/models';
 import { CommonModule } from '@angular/common';
 import { AvatarComponent } from '../../../../../shared/components';
 import { RichTextEditorComponent } from '../../../../../shared/components/rich-text-editor/rich-text-editor.component';
+import { UserService } from '../../../../../core/services/user.service';
 
 @Component({
   selector: 'app-add-comment-form',
@@ -25,7 +26,7 @@ export class AddCommentFormComponent implements OnInit {
 
   commentForm: FormGroup;
 
-  constructor() {
+  constructor(private userService: UserService) {
     this.commentForm = new FormGroup({
       comment: new FormControl(''),
     });
@@ -47,9 +48,12 @@ export class AddCommentFormComponent implements OnInit {
 
     this.editMode = false;
 
+    // Prefer the current authenticated user if there is one
+    const currentUserId = this.userService.getCurrentUserId();
+
     this.addComment.emit({
       content: commentContent,
-      uid: this.user?.id,
+      uid: currentUserId || this.user?.id,
     });
 
     // Reset form sau khi gửi
