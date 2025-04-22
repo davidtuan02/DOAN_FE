@@ -192,6 +192,11 @@ export class UserService {
     return this.http.get<User[]>(`${BASE_URL}/users/all`);
   }
 
+  // Add the getUsers method that's called from goal-form component
+  getUsers(): Observable<User[]> {
+    return this.getAllUsers();
+  }
+
   /**
    * Returns the current authenticated user's ID if available
    */

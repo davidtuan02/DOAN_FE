@@ -16,12 +16,31 @@ import * as fromStore from '../../../../../core/store';
 import { ProjectService } from '../../../../../core/services/project.service';
 import { SprintService } from '../../../../../features/services/sprint.service';
 import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzSelectModule } from 'ng-zorro-antd/select';
+import { FormsModule } from '@angular/forms';
+import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
+import { NzBadgeModule } from 'ng-zorro-antd/badge';
 
 @Destroyable()
 @Component({
   selector: 'app-board',
   standalone: true,
-  imports: [CommonModule, DragDropModule, BoardColumnComponent, AsyncPipe],
+  imports: [
+    CommonModule,
+    DragDropModule,
+    BoardColumnComponent,
+    AsyncPipe,
+    NzDropDownModule,
+    NzButtonModule,
+    NzIconModule,
+    NzSelectModule,
+    FormsModule,
+    NzToolTipModule,
+    NzBadgeModule,
+  ],
   providers: [NzModalService, NzMessageService],
   templateUrl: './board.component.html',
   styleUrls: ['./board.component.scss'],
@@ -33,6 +52,7 @@ export class BoardComponent implements OnInit {
   error: string | null = null;
   currentProject: any;
   currentSprint: any;
+  activeSprints: any[] = [];
   private modalClosing = new Subject<void>();
 
   constructor(
@@ -99,22 +119,38 @@ export class BoardComponent implements OnInit {
           return;
         }
 
-        // Find active sprint for this project
+        // Find active sprints for this project
         this.sprintService
           .getSprintsByProjectId(project.id)
           .pipe(takeUntilDestroyed(this))
           .subscribe({
             next: (sprints) => {
-              const activeSprint = sprints.find(
+              const activeSprints = sprints.filter(
                 (sprint) => sprint.status === 'active'
               );
-              this.currentSprint = activeSprint;
+              this.activeSprints = activeSprints;
 
-              if (!activeSprint) {
+              if (activeSprints.length === 0) {
                 this.error =
                   'No active sprint found. Please start a sprint to see the board.';
                 this.isLoading = false;
                 return;
+              }
+
+              // Get the current selected sprint from SprintService or use the first active sprint
+              const currentSelectedSprint =
+                this.sprintService.getCurrentSprint();
+
+              if (
+                currentSelectedSprint &&
+                currentSelectedSprint.status === 'active' &&
+                activeSprints.some((s) => s.id === currentSelectedSprint.id)
+              ) {
+                this.currentSprint = currentSelectedSprint;
+              } else {
+                // Use the first active sprint if no valid sprint is selected
+                this.currentSprint = activeSprints[0];
+                this.sprintService.setCurrentSprint(this.currentSprint);
               }
 
               // Load columns and cards
@@ -269,12 +305,39 @@ export class BoardComponent implements OnInit {
     this.sprintService.completeSprint(this.currentSprint.id).subscribe({
       next: () => {
         this.message.success('Sprint completed successfully');
-        this.initializeBoard(); // Reload board data
+
+        // Remove the completed sprint from active sprints
+        this.activeSprints = this.activeSprints.filter(
+          (sprint) => sprint.id !== this.currentSprint.id
+        );
+
+        // If there are still active sprints, select the first one
+        if (this.activeSprints.length > 0) {
+          this.currentSprint = this.activeSprints[0];
+          this.sprintService.setCurrentSprint(this.currentSprint);
+          this.loadBoardData();
+        } else {
+          // No more active sprints
+          this.currentSprint = null;
+          this.sprintService.setCurrentSprint(null);
+          this.error =
+            'No active sprint found. Please start a sprint to see the board.';
+        }
       },
       error: (err) => {
         this.message.error('Failed to complete sprint');
         console.error('Error completing sprint:', err);
       },
     });
+  }
+
+  // Method to switch to a different active sprint
+  switchActiveSprint(sprint: any): void {
+    if (sprint && sprint.id && this.currentSprint?.id !== sprint.id) {
+      this.currentSprint = sprint;
+      this.sprintService.setCurrentSprint(sprint);
+      this.message.info(`Switched to sprint: ${sprint.name}`);
+      this.loadBoardData();
+    }
   }
 }

@@ -1,0 +1,255 @@
+<div class="p-5 goals-page-container">
+  <div class="flex justify-between mb-6">
+    <div>
+      <h1 class="mb-1 text-2xl font-bold">Goals</h1>
+      <p class="text-gray-500">Set and track project goals and objectives</p>
+    </div>
+    <div class="flex items-center space-x-2">
+      <button
+        nz-button
+        nzType="primary"
+        class="flex items-center"
+        (click)="createGoal()"
+      >
+        <span nz-icon nzType="plus" nzTheme="outline"></span>
+        Create Goal
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="p-4 mb-4 bg-white rounded-lg shadow-sm filter-bar">
+    <div class="flex flex-wrap items-center gap-3">
+      <!-- Search Input -->
+      <div class="search-container">
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="applyFilters()"
+          placeholder="Search goals..."
+          class="search-input"
+        />
+        <div
+          class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
+        >
+          <i class="text-gray-400 fas fa-search"></i>
+        </div>
+      </div>
+
+      <!-- Status Filter -->
+      <div class="filter-dropdown">
+        <button
+          nz-button
+          nzType="default"
+          class="filter-button"
+          nz-dropdown
+          [nzDropdownMenu]="statusFilterMenu"
+          nzTrigger="click"
+        >
+          <span>Status</span>
+          <span nz-icon nzType="down" nzTheme="outline" class="ml-1"></span>
+        </button>
+        <nz-dropdown-menu #statusFilterMenu="nzDropdownMenu">
+          <ul nz-menu>
+            <li
+              nz-menu-item
+              *ngFor="
+                let status of [
+                  'NOT_STARTED',
+                  'IN_PROGRESS',
+                  'COMPLETED',
+                  'AT_RISK'
+                ]
+              "
+            >
+              <label
+                nz-checkbox
+                [ngModel]="statusFilter.includes(status)"
+                (ngModelChange)="toggleStatusFilter(status)"
+              >
+                {{ getStatusDisplay(status) }}
+              </label>
+            </li>
+          </ul>
+        </nz-dropdown-menu>
+      </div>
+
+      <!-- Clear Filters button -->
+      <button
+        *ngIf="searchTerm || statusFilter.length"
+        nz-button
+        nzType="default"
+        class="filter-button"
+        (click)="clearFilters()"
+      >
+        <span>Clear Filters</span>
+        <span nz-icon nzType="close" nzTheme="outline" class="ml-1"></span>
+      </button>
+    </div>
+
+    <!-- Applied filters display -->
+    <div
+      class="flex flex-wrap gap-2 mt-2"
+      *ngIf="searchTerm || statusFilter.length"
+    >
+      <nz-tag
+        *ngIf="searchTerm"
+        nzMode="closeable"
+        (nzOnClose)="clearSearchTerm()"
+      >
+        Search: {{ searchTerm }}
+      </nz-tag>
+      <nz-tag
+        *ngFor="let status of statusFilter"
+        [nzColor]="getStatusColor(status)"
+        nzMode="closeable"
+        (nzOnClose)="removeStatusFilter(status)"
+      >
+        Status: {{ getStatusDisplay(status) }}
+      </nz-tag>
+    </div>
+  </div>
+
+  <!-- Goals Table -->
+  <div class="mt-4 bg-white rounded-lg shadow-sm">
+    <nz-table
+      #goalsTable
+      [nzData]="filteredGoals"
+      [nzLoading]="loading"
+      [nzShowSizeChanger]="true"
+      [nzPageSize]="10"
+      nzShowPagination
+    >
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Status</th>
+          <th>Progress</th>
+          <th>Start Date</th>
+          <th>Due Date</th>
+          <th>Owner</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let goal of goalsTable.data">
+          <td class="cursor-pointer" (click)="viewGoalDetails(goal)">
+            <span class="font-medium">{{ goal.title }}</span>
+          </td>
+          <td>
+            <nz-tag [nzColor]="getStatusColor(goal.status)">
+              {{ getStatusDisplay(goal.status) }}
+            </nz-tag>
+          </td>
+          <td style="width: 200px">
+            <nz-progress
+              [nzPercent]="goal.progress"
+              [nzStatus]="getProgressStatus(goal.progress)"
+              nzSize="small"
+            ></nz-progress>
+          </td>
+          <td>{{ goal.startDate | date }}</td>
+          <td>{{ goal.dueDate | date }}</td>
+          <td>{{ goal.ownerName || "Unassigned" }}</td>
+          <td>
+            <div class="flex items-center space-x-2">
+              <button
+                nz-button
+                nzType="default"
+                nzShape="circle"
+                nzSize="small"
+                nz-dropdown
+                [nzDropdownMenu]="statusMenu"
+                nz-tooltip
+                nzTooltipTitle="Change Status"
+              >
+                <span nz-icon nzType="sync" nzTheme="outline"></span>
+              </button>
+              <nz-dropdown-menu #statusMenu="nzDropdownMenu">
+                <ul nz-menu>
+                  <li
+                    nz-menu-item
+                    *ngFor="
+                      let status of [
+                        'NOT_STARTED',
+                        'IN_PROGRESS',
+                        'COMPLETED',
+                        'AT_RISK'
+                      ]
+                    "
+                    (click)="updateGoalStatus(goal, status)"
+                  >
+                    {{ getStatusDisplay(status) }}
+                  </li>
+                </ul>
+              </nz-dropdown-menu>
+
+              <button
+                nz-button
+                nzType="default"
+                nzShape="circle"
+                nzSize="small"
+                nz-tooltip
+                nzTooltipTitle="Edit Goal"
+                (click)="editGoal(goal)"
+              >
+                <span nz-icon nzType="edit" nzTheme="outline"></span>
+              </button>
+
+              <button
+                nz-button
+                nzType="default"
+                nzShape="circle"
+                nzSize="small"
+                nz-tooltip
+                nzTooltipTitle="Delete Goal"
+                (click)="deleteGoal(goal)"
+              >
+                <span nz-icon nzType="delete" nzTheme="outline"></span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </div>
+
+  <!-- Empty state -->
+  <div
+    *ngIf="!loading && filteredGoals.length === 0"
+    class="flex flex-col items-center justify-center p-8 mt-4 bg-white rounded-lg shadow-sm"
+  >
+    <span
+      nz-icon
+      nzType="aim"
+      nzTheme="outline"
+      style="font-size: 48px; color: #d9d9d9"
+    ></span>
+    <h3 class="mt-4 text-lg font-medium text-gray-500">No Goals Found</h3>
+    <p class="mt-2 text-center text-gray-400">
+      {{
+        goals.length === 0
+          ? "Start by creating your first goal to track project objectives."
+          : "No goals match your current filters."
+      }}
+    </p>
+    <div class="mt-4">
+      <button
+        *ngIf="goals.length === 0"
+        nz-button
+        nzType="primary"
+        (click)="createGoal()"
+      >
+        Create First Goal
+      </button>
+      <button
+        *ngIf="goals.length > 0"
+        nz-button
+        nzType="default"
+        (click)="clearFilters()"
+      >
+        Clear Filters
+      </button>
+    </div>
+  </div>
+</div>

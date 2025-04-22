@@ -1,0 +1,137 @@
+<div class="p-4">
+  <form nz-form [formGroup]="goalForm" (ngSubmit)="submitForm()">
+    <!-- Title -->
+    <nz-form-item>
+      <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="title"
+        >Title</nz-form-label
+      >
+      <nz-form-control
+        [nzSm]="18"
+        [nzXs]="24"
+        nzErrorTip="Please input a title"
+      >
+        <input
+          nz-input
+          formControlName="title"
+          id="title"
+          placeholder="Goal title"
+        />
+      </nz-form-control>
+    </nz-form-item>
+
+    <!-- Description -->
+    <nz-form-item>
+      <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="description"
+        >Description</nz-form-label
+      >
+      <nz-form-control [nzSm]="18" [nzXs]="24">
+        <textarea
+          nz-input
+          formControlName="description"
+          id="description"
+          placeholder="Detailed description"
+          [nzAutosize]="{ minRows: 3, maxRows: 6 }"
+        ></textarea>
+      </nz-form-control>
+    </nz-form-item>
+
+    <!-- Status -->
+    <nz-form-item>
+      <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="status"
+        >Status</nz-form-label
+      >
+      <nz-form-control [nzSm]="18" [nzXs]="24">
+        <nz-select formControlName="status" id="status">
+          <nz-option
+            *ngFor="let status of statusOptions"
+            [nzValue]="status"
+            [nzLabel]="getStatusDisplay(status)"
+          ></nz-option>
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
+
+    <!-- Progress Slider -->
+    <nz-form-item>
+      <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="progress"
+        >Progress (%)</nz-form-label
+      >
+      <nz-form-control [nzSm]="18" [nzXs]="24">
+        <nz-slider
+          formControlName="progress"
+          id="progress"
+          [nzMin]="0"
+          [nzMax]="100"
+          [nzStep]="5"
+          [nzTooltipVisible]="'always'"
+        ></nz-slider>
+      </nz-form-control>
+    </nz-form-item>
+
+    <!-- Start Date -->
+    <nz-form-item>
+      <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="startDate"
+        >Start Date</nz-form-label
+      >
+      <nz-form-control [nzSm]="18" [nzXs]="24">
+        <nz-date-picker
+          formControlName="startDate"
+          id="startDate"
+          nzFormat="yyyy-MM-dd"
+        ></nz-date-picker>
+      </nz-form-control>
+    </nz-form-item>
+
+    <!-- Due Date -->
+    <nz-form-item>
+      <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="dueDate"
+        >Due Date</nz-form-label
+      >
+      <nz-form-control [nzSm]="18" [nzXs]="24">
+        <nz-date-picker
+          formControlName="dueDate"
+          id="dueDate"
+          nzFormat="yyyy-MM-dd"
+        ></nz-date-picker>
+      </nz-form-control>
+    </nz-form-item>
+
+    <!-- Owner -->
+    <nz-form-item>
+      <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="ownerId"
+        >Owner</nz-form-label
+      >
+      <nz-form-control [nzSm]="18" [nzXs]="24">
+        <nz-select
+          formControlName="ownerId"
+          id="ownerId"
+          nzPlaceHolder="Select an owner"
+          nzAllowClear
+        >
+          <nz-option
+            *ngFor="let user of users"
+            [nzValue]="user.id"
+            [nzLabel]="getUserFullName(user)"
+          ></nz-option>
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
+
+    <!-- Submit Button -->
+    <nz-form-item>
+      <nz-form-control [nzOffset]="6" [nzSm]="18" [nzXs]="24">
+        <div class="flex gap-2">
+          <button
+            nz-button
+            nzType="primary"
+            type="submit"
+            [nzLoading]="submitting"
+          >
+            {{ isEdit ? "Update" : "Create" }}
+          </button>
+          <button nz-button type="button" (click)="cancel()">Cancel</button>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+  </form>
+</div>

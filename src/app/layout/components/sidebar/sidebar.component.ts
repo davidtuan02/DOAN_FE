@@ -44,6 +44,11 @@ export class SidebarComponent implements OnInit {
       link: '/board',
     },
     {
+      label: 'Goals',
+      icon: 'target',
+      link: '/goals',
+    },
+    {
       label: 'Issues',
       icon: 'bug',
       link: '/issues',

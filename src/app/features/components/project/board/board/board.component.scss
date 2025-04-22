@@ -1,8 +1,5 @@
 .board {
-  @apply px-10 flex flex-row gap-2 w-full h-full overflow-auto;
-  display: flex;
-  flex-direction: row;
-  overflow-x: auto;
+  @apply px-10 flex flex-col gap-2 w-full h-full overflow-auto;
   height: calc(100vh - 150px);
   position: relative;
 }
@@ -12,6 +9,23 @@
   flex-direction: row;
   overflow-x: auto;
   width: 100%;
+}
+
+.sprint-selector {
+  width: 100%;
+  z-index: 10;
+}
+
+.active-sprints-dropdown {
+  ::ng-deep {
+    .ant-select-selector {
+      @apply rounded-md px-4 py-1 border border-gray-300;
+    }
+
+    .ant-select-selection-item {
+      @apply flex items-center;
+    }
+  }
 }
 
 .loading-container,

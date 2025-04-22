@@ -20,6 +20,7 @@ import { UserRole } from './core/models/user/user';
 import { IssuesPageComponent } from './features/components/project/issues/issues-page/issues-page.component';
 import { FiltersComponent } from './features/components/filters/filters.component';
 import { FilterDetailComponent } from './features/components/filters/filter-detail/filter-detail.component';
+import { GoalsPageComponent } from './features/components/project/goals/goals-page/goals-page.component';
 
 export const routes: Routes = [
   {
@@ -73,6 +74,18 @@ export const routes: Routes = [
         path: ':id',
         component: BoardContainerComponent,
         title: 'Issue Details',
+      },
+    ],
+  },
+  {
+    path: 'goals',
+    component: LayoutComponent,
+    canActivate: [AuthGuard],
+    children: [
+      {
+        path: '',
+        component: GoalsPageComponent,
+        title: 'Goals',
       },
     ],
   },

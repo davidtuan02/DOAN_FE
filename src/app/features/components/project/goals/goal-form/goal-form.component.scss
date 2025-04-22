@@ -1,0 +1,84 @@
+:host {
+  display: block;
+}
+
+/* Form controls styling */
+::ng-deep {
+  .ant-form-item {
+    margin-bottom: 16px;
+  }
+
+  .ant-form-item-label {
+    text-align: left;
+
+    label {
+      color: #172b4d;
+      font-weight: 500;
+    }
+  }
+
+  nz-select,
+  nz-date-picker {
+    width: 100%;
+  }
+
+  /* Slider tooltip styling */
+  .ant-slider-handle {
+    border-color: #1890ff;
+
+    &:focus {
+      box-shadow: 0 0 0 5px rgba(24, 144, 255, 0.2);
+    }
+  }
+
+  .ant-slider-track {
+    background-color: #1890ff;
+  }
+
+  .ant-slider-tooltip {
+    .ant-tooltip-inner {
+      min-width: 32px;
+      height: 24px;
+      padding: 4px 8px;
+      font-size: 12px;
+      line-height: 1;
+      background-color: #1890ff;
+    }
+  }
+
+  /* Select dropdown styling */
+  .ant-select-dropdown {
+    .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
+      background-color: #e6f7ff;
+      color: #1890ff;
+    }
+  }
+
+  /* Date picker styling */
+  .ant-picker {
+    width: 100%;
+    border-radius: 2px;
+
+    &:hover,
+    &-focused {
+      border-color: #40a9ff;
+    }
+  }
+
+  /* Button styling */
+  .ant-btn-primary {
+    background-color: #1890ff;
+    border-color: #1890ff;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  ::ng-deep {
+    .ant-form-item-label {
+      text-align: left;
+      line-height: 1.5;
+      white-space: normal;
+    }
+  }
+}

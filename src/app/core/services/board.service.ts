@@ -25,6 +25,7 @@ export class BoardService {
   private columnsSubject = new BehaviorSubject<Column[]>([]);
   private cardsSubject = new BehaviorSubject<Card[]>([]);
   private currentSprint$ = new BehaviorSubject<Sprint | null>(null);
+  private activeSprintsSubject = new BehaviorSubject<Sprint[]>([]);
   private loadingSubject = new BehaviorSubject<boolean>(true);
   private errorSubject = new BehaviorSubject<string | null>(null);
   private apiUrl = `${BASE_URL}`;
@@ -32,6 +33,7 @@ export class BoardService {
   public loading$ = this.loadingSubject.asObservable();
   public error$ = this.errorSubject.asObservable();
   public currentSprint = this.currentSprint$.asObservable();
+  public activeSprints$ = this.activeSprintsSubject.asObservable();
 
   // Standard column definitions for JIRA-like workflow
   private readonly defaultColumns: Column[] = [
@@ -95,29 +97,47 @@ export class BoardService {
         // Get all sprints for the project
         return this.sprintService.getSprintsByProjectId(project.id).pipe(
           switchMap((sprints) => {
-            // Find active sprint
-            const activeSprint = sprints.find(
+            // Find all active sprints
+            const activeSprints = sprints.filter(
               (sprint) => sprint.status === 'active'
             );
 
-            if (!activeSprint) {
+            this.activeSprintsSubject.next(activeSprints);
+
+            if (activeSprints.length === 0) {
               this.currentSprint$.next(null);
-              this.errorSubject.next('No active sprint found');
+              this.errorSubject.next('No active sprints found');
               this.loadingSubject.next(false);
               // Return empty data
               return of({ columns: this.defaultColumns, cards: [] });
             }
 
+            // Use the currently selected sprint from SprintService or the first active sprint
+            const currentSelectedSprint = this.sprintService.getCurrentSprint();
+            let activeSprint: Sprint | null = null;
+
+            if (
+              currentSelectedSprint &&
+              currentSelectedSprint.status === 'active' &&
+              activeSprints.some((s) => s.id === currentSelectedSprint.id)
+            ) {
+              activeSprint = currentSelectedSprint;
+            } else if (activeSprints.length > 0) {
+              // Use the first active sprint if no current sprint is selected
+              activeSprint = activeSprints[0];
+              this.sprintService.setCurrentSprint(activeSprint);
+            }
+
             this.currentSprint$.next(activeSprint);
 
             // Check if the active sprint has an ID
-            if (!activeSprint.id) {
+            if (!activeSprint || !activeSprint.id) {
               this.errorSubject.next('Active sprint has no ID');
               this.loadingSubject.next(false);
               return of({ columns: this.defaultColumns, cards: [] });
             }
 
-            // Get issues for the project - ideally we would have an API to get issues by sprint directly
+            // Get issues for the current active sprint
             return this.sprintService.getSprintById(activeSprint.id).pipe(
               map((activeSprint) => {
                 // Use the issues directly from the sprint
@@ -215,23 +235,36 @@ export class BoardService {
             })
           );
         } else {
-          // Fallback to getting all sprints and finding an active one
+          // Fallback to getting all sprints and finding active ones
           return this.sprintService.getSprintsByProjectId(projectId).pipe(
             switchMap((sprints) => {
-              // Find active sprint
-              const activeSprint = sprints.find(
+              // Find active sprints
+              const activeSprints = sprints.filter(
                 (sprint) => sprint.status === 'active'
               );
 
-              if (!activeSprint || !activeSprint.id) {
+              this.activeSprintsSubject.next(activeSprints);
+
+              if (activeSprints.length === 0) {
                 console.warn(
-                  'No active sprint found, returning empty cards array'
+                  'No active sprints found, returning empty cards array'
                 );
                 return of([]);
               }
 
-              // Get issues specifically from the active sprint
-              return this.sprintService.getSprintById(activeSprint.id).pipe(
+              // Use the first active sprint if no current sprint is selected
+              const sprintToUse = activeSprints[0];
+
+              if (!sprintToUse.id) {
+                console.warn('Selected sprint has no ID');
+                return of([]);
+              }
+
+              // Set this as the current sprint
+              this.sprintService.setCurrentSprint(sprintToUse);
+
+              // Get issues specifically from the selected active sprint
+              return this.sprintService.getSprintById(sprintToUse.id).pipe(
                 map((sprint) => {
                   const sprintIssues = sprint.issues || [];
                   return this.mapIssuesToCards(sprintIssues);
@@ -312,23 +345,30 @@ export class BoardService {
         // Create the issue first
         return this.issueService.createIssue(currentProject.id!, issue).pipe(
           switchMap((createdIssue) => {
-            // Find active sprint
-            const activeSprint = sprints.find(
-              (sprint) => sprint.status === 'active'
-            );
+            // Get current selected sprint or find an active sprint
+            const currentSelectedSprint = this.sprintService.getCurrentSprint();
+            let targetSprint: Sprint | null = null;
+
+            if (currentSelectedSprint && currentSelectedSprint.id) {
+              targetSprint = currentSelectedSprint;
+            } else {
+              // Find first active sprint
+              targetSprint =
+                sprints.find((sprint) => sprint.status === 'active') || null;
+            }
 
             // If no active sprint, just return the created issue
-            if (!activeSprint || !activeSprint.id) {
+            if (!targetSprint || !targetSprint.id) {
               console.warn(
                 'No active sprint found, issue created without sprint association'
               );
               return of(createdIssue);
             }
 
-            // Move the issue to the active sprint
-            console.log(`Moving issue to active sprint: ${activeSprint.id}`);
+            // Move the issue to the selected active sprint
+            console.log(`Moving issue to active sprint: ${targetSprint.id}`);
             return this.issueService
-              .moveIssueToSprint(createdIssue.id, activeSprint.id!)
+              .moveIssueToSprint(createdIssue.id, targetSprint.id!)
               .pipe(
                 catchError((error) => {
                   console.error('Error moving issue to sprint:', error);

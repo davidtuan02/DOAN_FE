@@ -1,0 +1,156 @@
+.goals-page-container {
+  min-height: calc(100vh - 64px);
+  background-color: #f4f5f7;
+}
+
+.filter-bar {
+  .search-container {
+    @apply w-52 relative rounded-md shadow-sm;
+
+    .search-input {
+      @apply block w-full pr-10 sm:text-sm border border-gray-300 rounded py-2 bg-gray-50 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500;
+      height: 32px;
+      font-size: 14px;
+    }
+  }
+
+  .filter-dropdown {
+    position: relative;
+
+    .filter-button {
+      display: flex;
+      align-items: center;
+      height: 32px;
+      font-size: 14px;
+      color: #42526e;
+      border-color: #dfe1e6;
+      background-color: #f4f5f7;
+      padding: 0 12px;
+
+      &:hover {
+        background-color: #ebecf0;
+      }
+    }
+  }
+}
+
+// Status colors
+::ng-deep {
+  .ant-tag-gray {
+    background-color: #f0f0f0;
+    border-color: #d9d9d9;
+    color: #5e6c84;
+  }
+
+  .ant-tag-blue {
+    background-color: #e6f7ff;
+    border-color: #91d5ff;
+    color: #1890ff;
+  }
+
+  .ant-tag-green {
+    background-color: #f6ffed;
+    border-color: #b7eb8f;
+    color: #52c41a;
+  }
+
+  .ant-tag-red {
+    background-color: #fff1f0;
+    border-color: #ffa39e;
+    color: #f5222d;
+  }
+
+  // Style for checkboxes inside dropdown menus
+  .ant-dropdown-menu-item {
+    padding: 8px 12px;
+
+    label {
+      display: flex;
+      width: 100%;
+      cursor: pointer;
+    }
+  }
+
+  // Progress bar styles
+  .ant-progress {
+    &.ant-progress-status-active .ant-progress-bg {
+      background-color: #1890ff;
+    }
+
+    &.ant-progress-status-exception .ant-progress-bg {
+      background-color: #ff4d4f;
+    }
+
+    &.ant-progress-status-success .ant-progress-bg {
+      background-color: #52c41a;
+    }
+
+    .ant-progress-bg {
+      height: 8px !important;
+    }
+  }
+
+  // Goal detail modal styling
+  .goal-details {
+    p {
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+
+    strong {
+      color: #172b4d;
+    }
+
+    .status-not_started {
+      color: #5e6c84;
+    }
+
+    .status-in_progress {
+      color: #1890ff;
+    }
+
+    .status-completed {
+      color: #52c41a;
+    }
+
+    .status-at_risk {
+      color: #f5222d;
+    }
+  }
+}
+
+// Action buttons styling
+.ant-btn-sm {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  font-size: 12px;
+  line-height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Table hover effects
+tr {
+  &:hover {
+    cursor: pointer;
+
+    .ant-btn-sm {
+      opacity: 1;
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .filter-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+
+    .search-container {
+      width: 100%;
+    }
+  }
+}

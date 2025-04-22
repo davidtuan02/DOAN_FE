@@ -47,7 +47,7 @@ export class SprintService {
   constructor(private http: HttpClient, private userService: UserService) {}
 
   // Set the currently selected active sprint
-  setCurrentSprint(sprint: Sprint): void {
+  setCurrentSprint(sprint: Sprint | null): void {
     console.log('Setting current selected sprint:', sprint);
     this.currentSelectedSprintSubject.next(sprint);
   }
