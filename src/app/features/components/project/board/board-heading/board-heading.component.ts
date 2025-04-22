@@ -41,7 +41,8 @@ export class BoardHeadingComponent implements OnInit {
 
   contextMenuVisible: boolean = false;
   currentProject: any;
-  activeSprint: Sprint | null = null;
+  activeSprints: Sprint[] = [];
+  currentActiveSprint: Sprint | null = null;
   planningSprints: Sprint[] = [];
   completedSprints: Sprint[] = [];
   isLoading = true;
@@ -89,8 +90,17 @@ export class BoardHeadingComponent implements OnInit {
         })
       )
       .subscribe((sprints) => {
-        this.activeSprint =
-          sprints.find((sprint) => sprint.status === 'active') || null;
+        this.activeSprints = sprints.filter(
+          (sprint) => sprint.status === 'active'
+        );
+
+        this.currentActiveSprint =
+          this.activeSprints.length > 0 ? this.activeSprints[0] : null;
+
+        if (this.currentActiveSprint) {
+          this.sprintService.setCurrentSprint(this.currentActiveSprint);
+        }
+
         this.planningSprints = sprints.filter(
           (sprint) => sprint.status === 'planning'
         );
@@ -99,6 +109,16 @@ export class BoardHeadingComponent implements OnInit {
         );
         this.isLoading = false;
       });
+  }
+
+  get activeSprint(): Sprint | null {
+    return this.currentActiveSprint;
+  }
+
+  switchActiveSprint(sprint: Sprint): void {
+    this.currentActiveSprint = sprint;
+    this.sprintService.setCurrentSprint(sprint);
+    this.message.success(`Switched to sprint: ${sprint.name}`);
   }
 
   onContextMenuClick(): void {
@@ -186,7 +206,8 @@ export class BoardHeadingComponent implements OnInit {
       name: `Sprint ${
         this.planningSprints.length +
         this.completedSprints.length +
-        (this.activeSprint ? 2 : 1)
+        this.activeSprints.length +
+        1
       }`,
       goal: '',
       startDate: new Date(),

@@ -211,6 +211,16 @@
             </div>
           </div>
 
+          <!-- Start Sprint Button (for planning sprints) -->
+          <button
+            *ngIf="sprint.status === 'Planning'"
+            class="px-3 py-1.5 text-sm font-medium text-white bg-green-600 ml-4 rounded hover:bg-green-700"
+            (click)="startSprint(sprint.id)"
+          >
+            Start sprint
+          </button>
+
+          <!-- Complete Sprint Button (for active sprints) -->
           <button
             *ngIf="sprint.status === 'Active'"
             class="px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 ml-4 rounded hover:bg-gray-200"
@@ -908,6 +918,132 @@
             </svg>
           </span>
           {{ isEditingExistingSprint ? "Update Sprint" : "Create Sprint" }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sprint Completion Modal -->
+  <div
+    *ngIf="showCompleteSprintModal"
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50"
+  >
+    <div class="w-full max-w-md p-6 bg-white rounded-md shadow-xl">
+      <!-- Modal Header with Icon -->
+      <div class="mb-4">
+        <div class="flex items-center justify-center mb-2">
+          <div class="p-3 rounded-full bg-cyan-100">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-10 h-10 text-blue-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+        </div>
+        <h2 class="mb-1 text-xl font-semibold text-center text-gray-800">
+          Complete {{ sprintToComplete?.name }}
+        </h2>
+      </div>
+
+      <!-- Sprint Summary -->
+      <div class="mb-6">
+        <p class="mb-4 text-gray-700">
+          This sprint contains
+          <strong
+            >{{ getCompletedIssuesCount(sprintToComplete) }} completed work
+            {{
+              getCompletedIssuesCount(sprintToComplete) === 1 ? "item" : "items"
+            }}</strong
+          >
+          and
+          <strong
+            >{{ getOpenIssuesCount(sprintToComplete) }} open work
+            {{
+              getOpenIssuesCount(sprintToComplete) === 1 ? "item" : "items"
+            }}</strong
+          >.
+        </p>
+
+        <ul class="mb-4 ml-2 text-sm text-gray-600 list-disc list-inside">
+          <li class="mb-1">
+            Completed work items includes everything in the last column on the
+            board, <strong>DONE</strong>.
+          </li>
+          <li>
+            Open work items includes everything from any other column on the
+            board. Move these to a new sprint or the backlog.
+          </li>
+        </ul>
+      </div>
+
+      <!-- Move Open Items Section -->
+      <div class="mb-6" *ngIf="getOpenIssuesCount(sprintToComplete) > 0">
+        <label
+          for="move-to-sprint"
+          class="block mb-2 text-sm font-medium text-gray-700"
+        >
+          Move open work items to
+        </label>
+        <select
+          id="move-to-sprint"
+          [(ngModel)]="moveToSprintId"
+          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="backlog">Backlog</option>
+          <option
+            *ngFor="let sprint of getPlanningAndActiveSprints()"
+            [value]="sprint.id"
+          >
+            {{ sprint.name }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex justify-end gap-3">
+        <button
+          class="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+          (click)="cancelCompleteSprint()"
+        >
+          Cancel
+        </button>
+        <button
+          [disabled]="isCompletingSprint"
+          class="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
+          (click)="confirmCompleteSprint()"
+        >
+          <span *ngIf="isCompletingSprint" class="mr-2">
+            <svg
+              class="inline-block w-4 h-4 animate-spin"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+          </span>
+          Complete sprint
         </button>
       </div>
     </div>

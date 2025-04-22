@@ -23,7 +23,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { BASE_URL } from '../../../../core/constants/api.const';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Observable, of, finalize } from 'rxjs';
+import { Observable, of, finalize, forkJoin } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { IssueService } from '../../../services/issue.service';
 import { UserService } from '../../../../core/services/user.service';
@@ -161,6 +161,12 @@ export class BacklogComponent implements OnInit {
   filterFormGroup: FormGroup;
   groupByControl: FormControl;
   clearFiltersVisible = false;
+
+  // Sprint completion modal state
+  showCompleteSprintModal = false;
+  isCompletingSprint = false;
+  sprintToComplete: Sprint | null = null;
+  moveToSprintId: string = 'backlog';
 
   constructor(
     private backlogService: BacklogService,
@@ -1138,7 +1144,7 @@ export class BacklogComponent implements OnInit {
 
         this.isLoading = true;
         this.issueService
-          .moveIssueToSprint(movedIssue.id) // Pass undefined sprintId to remove from sprint
+          .moveIssueToSprint(movedIssue.id, undefined)
           .pipe(finalize(() => (this.isLoading = false)))
           .subscribe({
             next: (updatedIssue) => {
@@ -1397,33 +1403,123 @@ export class BacklogComponent implements OnInit {
   }
 
   completeSprint(sprintId: string): void {
-    if (confirm('Are you sure you want to complete this sprint?')) {
-      this.isLoading = true;
-      this.backlogService.completeSprint(sprintId).subscribe({
+    // Find the sprint to complete
+    const sprint = this.sprints.find((s) => s.id === sprintId);
+    if (!sprint) {
+      this.snackBar.open('Sprint not found', 'Close', { duration: 3000 });
+      return;
+    }
+
+    // Set the sprint to complete and show the modal
+    this.sprintToComplete = sprint;
+    this.moveToSprintId = 'backlog'; // Default to backlog
+    this.showCompleteSprintModal = true;
+  }
+
+  // Add methods to handle sprint completion
+
+  // Count completed issues in a sprint (status = Done)
+  getCompletedIssuesCount(sprint: Sprint | null): number {
+    if (!sprint) return 0;
+    return sprint.issues.filter((issue) => issue.status === 'Done').length;
+  }
+
+  // Count open issues in a sprint (status != Done)
+  getOpenIssuesCount(sprint: Sprint | null): number {
+    if (!sprint) return 0;
+    return sprint.issues.filter((issue) => issue.status !== 'Done').length;
+  }
+
+  // Get planning and active sprints for the dropdown (excluding the current sprint)
+  getPlanningAndActiveSprints(): Sprint[] {
+    if (!this.sprintToComplete) return [];
+    return this.sprints.filter(
+      (sprint) =>
+        (sprint.status === 'Planning' || sprint.status === 'Active') &&
+        sprint.id !== this.sprintToComplete?.id
+    );
+  }
+
+  // Handle cancel of sprint completion
+  cancelCompleteSprint(): void {
+    this.showCompleteSprintModal = false;
+    this.sprintToComplete = null;
+  }
+
+  // Handle confirmation of sprint completion
+  confirmCompleteSprint(): void {
+    if (!this.sprintToComplete) {
+      this.cancelCompleteSprint();
+      return;
+    }
+
+    this.isCompletingSprint = true;
+
+    // Get open issues to move
+    const openIssues = this.sprintToComplete.issues.filter(
+      (issue) => issue.status !== 'Done'
+    );
+
+    // First complete the sprint
+    this.backlogService.completeSprint(this.sprintToComplete.id).subscribe({
+      next: () => {
+        // If there are open issues to move
+        if (openIssues.length > 0) {
+          this.moveOpenIssues(openIssues, this.moveToSprintId);
+        } else {
+          this.finalizeCompleteSprint();
+        }
+      },
+      error: (err) => {
+        this.handleError(err, 'Failed to complete sprint');
+        this.isCompletingSprint = false;
+      },
+    });
+  }
+
+  // Move open issues to the selected sprint or backlog
+  private moveOpenIssues(issues: any[], targetSprintId: string): void {
+    const moveOperations: Observable<any>[] = [];
+
+    issues.forEach((issue) => {
+      if (targetSprintId === 'backlog') {
+        // Move to backlog - update the issue to remove sprint association
+        moveOperations.push(
+          this.issueService.moveIssueToSprint(issue.id, undefined)
+        );
+      } else {
+        // Move to another sprint
+        moveOperations.push(
+          this.issueService.moveIssueToSprint(issue.id, targetSprintId)
+        );
+      }
+    });
+
+    // Execute all move operations
+    if (moveOperations.length > 0) {
+      forkJoin(moveOperations).subscribe({
         next: () => {
-          this.isLoading = false;
+          this.finalizeCompleteSprint();
         },
         error: (err) => {
-          this.handleError(err, 'Failed to complete sprint');
-          this.isLoading = false;
+          this.handleError(err, 'Failed to move some issues');
+          this.finalizeCompleteSprint();
         },
       });
+    } else {
+      this.finalizeCompleteSprint();
     }
   }
 
-  deleteSprint(sprintId: string): void {
-    if (confirm('Are you sure you want to delete this sprint?')) {
-      this.isLoading = true;
-      this.backlogService.deleteSprint(sprintId).subscribe({
-        next: () => {
-          this.isLoading = false;
-        },
-        error: (err) => {
-          this.handleError(err, 'Failed to delete sprint');
-          this.isLoading = false;
-        },
-      });
-    }
+  // Finalize the sprint completion process
+  private finalizeCompleteSprint(): void {
+    this.snackBar.open('Sprint completed successfully', 'Close', {
+      duration: 3000,
+    });
+    this.isCompletingSprint = false;
+    this.showCompleteSprintModal = false;
+    this.sprintToComplete = null;
+    this.reloadBacklog();
   }
 
   // Edit sprint method
@@ -2204,5 +2300,21 @@ export class BacklogComponent implements OnInit {
       role: 'BASIC' as any,
       avatar: user.avatar || '',
     };
+  }
+
+  // Add deleteSprint method
+  deleteSprint(sprintId: string): void {
+    if (confirm('Are you sure you want to delete this sprint?')) {
+      this.backlogService.deleteSprint(sprintId).subscribe({
+        next: () => {
+          this.snackBar.open('Sprint deleted successfully', 'Close', {
+            duration: 3000,
+          });
+        },
+        error: (err) => {
+          this.handleError(err, 'Failed to delete sprint');
+        },
+      });
+    }
   }
 }

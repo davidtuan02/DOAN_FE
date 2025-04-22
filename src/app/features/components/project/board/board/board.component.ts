@@ -50,6 +50,21 @@ export class BoardComponent implements OnInit {
   ngOnInit(): void {
     this.initializeBoard();
     this.handleQueryParams();
+
+    // Subscribe to changes in the current selected sprint
+    this.sprintService.currentSelectedSprint$
+      .pipe(
+        filter((sprint) => !!sprint), // Only proceed if there's a valid sprint
+        takeUntilDestroyed(this)
+      )
+      .subscribe((sprint) => {
+        console.log('Board received new active sprint:', sprint);
+        if (sprint && sprint.id && this.currentSprint?.id !== sprint.id) {
+          this.currentSprint = sprint;
+          this.message.info(`Loading board for sprint: ${sprint.name}`);
+          this.loadBoardData(); // Reload the board data for the new sprint
+        }
+      });
   }
 
   private handleQueryParams(): void {

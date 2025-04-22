@@ -327,7 +327,7 @@ export class IssueService {
   // Move issue to a sprint
   moveIssueToSprint(issueId: string, sprintId?: string): Observable<Issue> {
     const url = `${this.apiUrl}/${issueId}/sprint`;
-    const body = sprintId ? { sprintId } : null;
+    const body = { sprintId: sprintId || null };
 
     return this.http.put<any>(url, body).pipe(
       map((response) => this.mapTaskToIssue(response)),

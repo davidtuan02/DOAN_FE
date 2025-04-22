@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { Observable, throwError, BehaviorSubject } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { BASE_URL } from '../../core/constants/api.const';
 import { UserService } from '../../core/services/user.service';
@@ -36,8 +36,26 @@ export interface UpdateSprintDto {
 })
 export class SprintService {
   private apiUrl = `${BASE_URL}/sprints`;
+  private currentSelectedSprintSubject = new BehaviorSubject<Sprint | null>(
+    null
+  );
+
+  // Observable that components can subscribe to
+  public currentSelectedSprint$ =
+    this.currentSelectedSprintSubject.asObservable();
 
   constructor(private http: HttpClient, private userService: UserService) {}
+
+  // Set the currently selected active sprint
+  setCurrentSprint(sprint: Sprint): void {
+    console.log('Setting current selected sprint:', sprint);
+    this.currentSelectedSprintSubject.next(sprint);
+  }
+
+  // Get the current active sprint
+  getCurrentSprint(): Sprint | null {
+    return this.currentSelectedSprintSubject.getValue();
+  }
 
   // Get all sprints
   getAllSprints(): Observable<Sprint[]> {

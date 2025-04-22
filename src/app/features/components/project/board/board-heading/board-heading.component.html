@@ -13,61 +13,70 @@
 
   <div class="board-title">
     <div class="flex flex-row items-center">
-      <h1 class="text-xl font-semibold mr-3">
-        {{ activeSprint?.name || "No Active Sprint" }}
+      <!-- Sprint Dropdown for Multiple Active Sprints -->
+      <div *ngIf="activeSprints.length > 0" class="flex items-center mr-3">
+        <div *ngIf="activeSprints.length === 1" class="text-xl font-semibold">
+          {{ activeSprint?.name }}
+        </div>
+        <div *ngIf="activeSprints.length > 1" class="relative">
+          <button
+            nz-button
+            class="text-xl font-semibold"
+            nz-dropdown
+            [nzDropdownMenu]="activeSprintMenu"
+          >
+            {{ activeSprint?.name }} <i nz-icon nzType="down"></i>
+          </button>
+          <nz-dropdown-menu #activeSprintMenu="nzDropdownMenu">
+            <ul nz-menu>
+              <li
+                *ngFor="let sprint of activeSprints"
+                nz-menu-item
+                (click)="switchActiveSprint(sprint)"
+                [nzSelected]="sprint.id === activeSprint?.id"
+              >
+                {{ sprint.name }}
+              </li>
+            </ul>
+          </nz-dropdown-menu>
+        </div>
+
+        <!-- Multiple Active Sprints Badge -->
+        <div
+          *ngIf="activeSprints.length > 1"
+          class="px-2 py-1 ml-2 text-xs text-blue-800 bg-blue-100 rounded-full"
+        >
+          {{ activeSprints.length }} Active Sprints
+        </div>
+
+        <!-- Single Active Sprint Badge -->
+        <div
+          *ngIf="activeSprints.length === 1"
+          class="px-2 py-1 text-xs text-green-800 bg-green-100 rounded-full"
+        >
+          Active
+        </div>
+      </div>
+
+      <!-- No Active Sprint Message -->
+      <h1 *ngIf="activeSprints.length === 0" class="mr-3 text-xl font-semibold">
+        No Active Sprint
       </h1>
 
-      <!-- Sprint Status Indicator -->
+      <!-- Planning Sprint Badge -->
       <div
-        *ngIf="activeSprint"
-        class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full"
-      >
-        Active
-      </div>
-      <div
-        *ngIf="!activeSprint && planningSprints.length > 0"
-        class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+        *ngIf="activeSprints.length === 0 && planningSprints.length > 0"
+        class="px-2 py-1 text-xs text-blue-800 bg-blue-100 rounded-full"
       >
         Planning
       </div>
+
+      <!-- No Sprint Badge -->
       <div
-        *ngIf="!activeSprint && planningSprints.length === 0"
-        class="px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full"
+        *ngIf="activeSprints.length === 0 && planningSprints.length === 0"
+        class="px-2 py-1 text-xs text-gray-800 bg-gray-100 rounded-full"
       >
         No Sprint
-      </div>
-
-      <!-- Sprint Management Dropdown -->
-      <div class="ml-4">
-        <button
-          nz-button
-          nzType="primary"
-          nz-dropdown
-          [nzDropdownMenu]="sprintMenu"
-        >
-          Sprint Actions <i nz-icon nzType="down"></i>
-        </button>
-        <nz-dropdown-menu #sprintMenu="nzDropdownMenu">
-          <ul nz-menu>
-            <li nz-menu-item (click)="showCreateSprintModal()">
-              Create Sprint
-            </li>
-            <ng-container *ngIf="planningSprints.length > 0">
-              <li
-                nz-menu-item
-                *ngFor="let sprint of planningSprints"
-                (click)="startSprint(sprint.id || '')"
-              >
-                Start Sprint: {{ sprint.name }}
-              </li>
-            </ng-container>
-            <ng-container *ngIf="activeSprint">
-              <li nz-menu-item (click)="completeSprint(activeSprint.id || '')">
-                Complete Current Sprint
-              </li>
-            </ng-container>
-          </ul>
-        </nz-dropdown-menu>
       </div>
     </div>
 
@@ -80,7 +89,7 @@
           fill="#fff"
         ></app-svg-icon>
       </button>
-      <button class="square-button mx-px">
+      <button class="mx-px square-button">
         <app-svg-icon name="star" [width]="32" [height]="24"></app-svg-icon>
       </button>
       <button
@@ -122,16 +131,16 @@
 </div>
 
 <ng-template #contextMenuTemplate>
-  <div class="flex flex-col justify-start items-start w-36">
+  <div class="flex flex-col items-start justify-start w-36">
     <button
       (click)="onContextMenuClick()"
-      class="w-full text-left px-3 py-1 hover:bg-backgroundDark"
+      class="w-full px-3 py-1 text-left hover:bg-backgroundDark"
     >
       Manage workflow
     </button>
     <button
       (click)="onContextMenuClick()"
-      class="w-full text-left px-3 py-1 hover:bg-backgroundDark"
+      class="w-full px-3 py-1 text-left hover:bg-backgroundDark"
     >
       Configure board
     </button>
@@ -142,7 +151,7 @@
 <ng-template #sprintFormTemplate>
   <div class="p-4">
     <div class="mb-4">
-      <label class="block text-sm font-medium text-gray-700 mb-1"
+      <label class="block mb-1 text-sm font-medium text-gray-700"
         >Sprint Name*</label
       >
       <input
@@ -154,7 +163,7 @@
     </div>
 
     <div class="mb-4">
-      <label class="block text-sm font-medium text-gray-700 mb-1"
+      <label class="block mb-1 text-sm font-medium text-gray-700"
         >Sprint Goal</label
       >
       <textarea
@@ -167,7 +176,7 @@
 
     <div class="grid grid-cols-2 gap-4">
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1"
+        <label class="block mb-1 text-sm font-medium text-gray-700"
           >Start Date</label
         >
         <input
@@ -179,7 +188,7 @@
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1"
+        <label class="block mb-1 text-sm font-medium text-gray-700"
           >End Date</label
         >
         <input

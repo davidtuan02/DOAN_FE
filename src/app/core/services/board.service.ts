@@ -197,38 +197,57 @@ export class BoardService {
           return of([]);
         }
 
-        // First get all sprints for the project
-        return this.sprintService.getSprintsByProjectId(projectId).pipe(
-          switchMap((sprints) => {
-            // Find active sprint
-            const activeSprint = sprints.find(
-              (sprint) => sprint.status === 'active'
-            );
+        // Get the current selected sprint from SprintService
+        const currentSprint = this.sprintService.getCurrentSprint();
 
-            if (!activeSprint || !activeSprint.id) {
-              console.warn(
-                'No active sprint found, returning empty cards array'
-              );
+        if (currentSprint && currentSprint.id) {
+          console.log('Loading cards for selected sprint:', currentSprint.name);
+
+          // Get issues specifically from the selected sprint
+          return this.sprintService.getSprintById(currentSprint.id).pipe(
+            map((sprint) => {
+              const sprintIssues = sprint.issues || [];
+              return this.mapIssuesToCards(sprintIssues);
+            }),
+            catchError((error) => {
+              console.error('Error loading sprint issues:', error);
               return of([]);
-            }
+            })
+          );
+        } else {
+          // Fallback to getting all sprints and finding an active one
+          return this.sprintService.getSprintsByProjectId(projectId).pipe(
+            switchMap((sprints) => {
+              // Find active sprint
+              const activeSprint = sprints.find(
+                (sprint) => sprint.status === 'active'
+              );
 
-            // Get issues specifically from the active sprint
-            return this.sprintService.getSprintById(activeSprint.id).pipe(
-              map((sprint) => {
-                const sprintIssues = sprint.issues || [];
-                return this.mapIssuesToCards(sprintIssues);
-              }),
-              catchError((error) => {
-                console.error('Error loading sprint issues:', error);
+              if (!activeSprint || !activeSprint.id) {
+                console.warn(
+                  'No active sprint found, returning empty cards array'
+                );
                 return of([]);
-              })
-            );
-          }),
-          catchError((error) => {
-            console.error('Error loading sprints:', error);
-            return of([]);
-          })
-        );
+              }
+
+              // Get issues specifically from the active sprint
+              return this.sprintService.getSprintById(activeSprint.id).pipe(
+                map((sprint) => {
+                  const sprintIssues = sprint.issues || [];
+                  return this.mapIssuesToCards(sprintIssues);
+                }),
+                catchError((error) => {
+                  console.error('Error loading sprint issues:', error);
+                  return of([]);
+                })
+              );
+            }),
+            catchError((error) => {
+              console.error('Error loading sprints:', error);
+              return of([]);
+            })
+          );
+        }
       })
     );
   }
