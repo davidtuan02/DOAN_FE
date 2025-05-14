@@ -141,6 +141,7 @@ export class LoginComponent implements OnInit {
         email: this.loginForm.value.email,
         username: this.loginForm.value.username,
         password: this.loginForm.value.password,
+        fullName: this.loginForm.value.name,
         role: 'BASIC', // Default role to BASIC
       };
 
