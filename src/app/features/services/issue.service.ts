@@ -465,22 +465,22 @@ export class IssueService {
       assignee: assigneeObj
         ? {
             id: assigneeObj.id,
-            name: `${assigneeObj.firstName} ${assigneeObj.lastName}`,
+            name: `${assigneeObj.firstName || ''} ${assigneeObj.lastName || ''}`,
             avatar: `https://ui-avatars.com/api/?name=${
-              assigneeObj.firstName.charAt(0) || '?'
+              assigneeObj.firstName && assigneeObj.firstName.charAt(0) || '?'
             }${
-              assigneeObj.lastName.charAt(0) || '?'
+              assigneeObj.lastName && assigneeObj.lastName.charAt(0) || '?'
             }&background=0052CC&color=fff`,
           }
         : undefined,
       reporter: task.reporter
         ? {
             id: task.reporter.id,
-            name: `${task.reporter.firstName} ${task.reporter.lastName}`,
+            name: `${task.reporter.firstName || ''} ${task.reporter.lastName || ''}`,
             avatar: `https://ui-avatars.com/api/?name=${
-              task.reporter.firstName.charAt(0) || '?'
+              task.reporter.firstName && task.reporter.firstName.charAt(0) || '?'
             }${
-              task.reporter.lastName.charAt(0) || '?'
+              task.reporter.lastName && task.reporter.lastName.charAt(0) || '?'
             }&background=7747AF&color=fff`,
           }
         : undefined,
