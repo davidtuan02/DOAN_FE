@@ -11,6 +11,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzProgressModule } from 'ng-zorro-antd/progress';
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
+import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { GoalService } from '../../../../../core/services/goal.service';
 import { ProjectService } from '../../../../../core/services/project.service';
 import { Goal, GoalStatus } from '../../../../../core/models/goal/goal.model';
@@ -32,6 +33,7 @@ import { GoalFormComponent } from '../goal-form/goal-form.component';
     NzProgressModule,
     NzToolTipModule,
     NzDropDownModule,
+    NzCheckboxModule,
     GoalFormComponent,
   ],
   templateUrl: './goals-page.component.html',
