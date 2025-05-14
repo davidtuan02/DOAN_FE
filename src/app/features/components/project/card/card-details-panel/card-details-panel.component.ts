@@ -116,8 +116,29 @@ export class CardDetailsPanelComponent implements OnInit {
   }
 
   // Helper method to format date for input field
-  formatDateForInput(dateStr?: string): string {
+  formatDateForInput(dateStr?: string | null | Date): string {
     if (!dateStr) return '';
+
+    // Handle Date object
+    if (dateStr instanceof Date) {
+      try {
+        return dateStr.toISOString().split('T')[0];
+      } catch (e) {
+        console.error('Error converting Date to string:', e);
+        return '';
+      }
+    }
+
+    // Ensure dateStr is a string
+    if (typeof dateStr !== 'string') {
+      try {
+        // If it's another type, try to stringify it
+        return String(dateStr);
+      } catch (e) {
+        console.error('Error converting value to string:', e);
+        return '';
+      }
+    }
 
     // If it's already in YYYY-MM-DD format, return as is
     if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
