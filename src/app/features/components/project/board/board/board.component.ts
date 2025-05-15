@@ -180,11 +180,15 @@ export class BoardComponent implements OnInit {
   }
 
   private loadBoardData(): void {
+    console.log('Loading board data for sprint:', this.currentSprint?.name);
+
     // Load columns
     this.columns$ = this.boardService.getBoardColumns();
 
-    // Load cards into store
+    // Clear previously loaded cards
     this.store.dispatch(fromStore.getCards());
+
+    // Load other data
     this.store.dispatch(fromStore.getColumns());
     this.store.dispatch(fromStore.getUsers());
     this.store.dispatch(fromStore.getLabels());
@@ -479,11 +483,29 @@ export class BoardComponent implements OnInit {
 
   // Method to switch to a different active sprint
   switchActiveSprint(sprint: any): void {
-    if (sprint && sprint.id && this.currentSprint?.id !== sprint.id) {
+    console.log('Switching to sprint:', sprint);
+    if (sprint && sprint.id) {
       this.currentSprint = sprint;
+
+      // First set loading state
+      this.isLoading = true;
+
+      // Set the current sprint in the sprint service
       this.sprintService.setCurrentSprint(sprint);
-      this.message.info(`Switched to sprint: ${sprint.name}`);
-      this.loadBoardData();
+
+      // Show a better formatted toast notification
+      this.message.success(`Switched to sprint: ${sprint.name}`, { nzDuration: 2000 });
+
+      // Use setTimeout to ensure the sprint service has time to update
+      setTimeout(() => {
+        // Clear previous card data
+        this.store.dispatch(fromStore.getCards());
+
+        // Reload the board data for the new sprint
+        this.loadBoardData();
+
+        this.isLoading = false;
+      }, 100);
     }
   }
 }

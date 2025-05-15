@@ -13,71 +13,7 @@
 
   <div class="board-title">
     <div class="flex flex-row items-center">
-      <!-- Sprint Dropdown for Multiple Active Sprints -->
-      <div *ngIf="activeSprints.length > 0" class="flex items-center mr-3">
-        <div *ngIf="activeSprints.length === 1" class="text-xl font-semibold">
-          {{ activeSprint?.name }}
-        </div>
-        <div *ngIf="activeSprints.length > 1" class="relative">
-          <button
-            nz-button
-            class="text-xl font-semibold"
-            nz-dropdown
-            [nzDropdownMenu]="activeSprintMenu"
-          >
-            {{ activeSprint?.name }} <i nz-icon nzType="down"></i>
-          </button>
-          <nz-dropdown-menu #activeSprintMenu="nzDropdownMenu">
-            <ul nz-menu>
-              <li
-                *ngFor="let sprint of activeSprints"
-                nz-menu-item
-                (click)="switchActiveSprint(sprint)"
-                [nzSelected]="sprint.id === activeSprint?.id"
-              >
-                {{ sprint.name }}
-              </li>
-            </ul>
-          </nz-dropdown-menu>
-        </div>
-
-        <!-- Multiple Active Sprints Badge -->
-        <div
-          *ngIf="activeSprints.length > 1"
-          class="px-2 py-1 ml-2 text-xs text-blue-800 bg-blue-100 rounded-full"
-        >
-          {{ activeSprints.length }} Active Sprints
-        </div>
-
-        <!-- Single Active Sprint Badge -->
-        <div
-          *ngIf="activeSprints.length === 1"
-          class="px-2 py-1 text-xs text-green-800 bg-green-100 rounded-full"
-        >
-          Active
-        </div>
-      </div>
-
-      <!-- No Active Sprint Message -->
-      <h1 *ngIf="activeSprints.length === 0" class="mr-3 text-xl font-semibold">
-        No Active Sprint
-      </h1>
-
-      <!-- Planning Sprint Badge -->
-      <div
-        *ngIf="activeSprints.length === 0 && planningSprints.length > 0"
-        class="px-2 py-1 text-xs text-blue-800 bg-blue-100 rounded-full"
-      >
-        Planning
-      </div>
-
-      <!-- No Sprint Badge -->
-      <div
-        *ngIf="activeSprints.length === 0 && planningSprints.length === 0"
-        class="px-2 py-1 text-xs text-gray-800 bg-gray-100 rounded-full"
-      >
-        No Sprint
-      </div>
+      <h1 class="mr-3 text-xl font-semibold">Board</h1>
     </div>
 
     <div class="flex flex-row items-baseline">
@@ -107,23 +43,9 @@
     </div>
   </div>
 
-  <!-- Sprint Info Section -->
-  <div *ngIf="activeSprint" class="mt-2 text-sm text-gray-600">
-    <div><strong>Goal:</strong> {{ activeSprint.goal || "No goal set" }}</div>
-    <div class="flex mt-1">
-      <div class="mr-4">
-        <strong>Start:</strong>
-        {{ activeSprint.startDate | date : "mediumDate" }}
-      </div>
-      <div>
-        <strong>End:</strong> {{ activeSprint.endDate | date : "mediumDate" }}
-      </div>
-    </div>
-  </div>
-
   <!-- Loading and Error States -->
   <div *ngIf="isLoading" class="mt-2 text-sm text-gray-600">
-    Loading sprint information...
+    Loading board information...
   </div>
   <div *ngIf="error" class="mt-2 text-sm text-red-600">
     {{ error }}

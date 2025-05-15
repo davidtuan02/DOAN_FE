@@ -1,0 +1,101 @@
+// Custom Toast Styling
+.taskflow-toast {
+  &.ant-message {
+    .ant-message-notice {
+      .ant-message-notice-content {
+        padding: 12px 16px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+
+        .ant-message-custom-content {
+          display: flex;
+          align-items: center;
+          font-weight: 500;
+
+          .anticon {
+            margin-right: 10px;
+            font-size: 18px;
+          }
+        }
+      }
+    }
+  }
+
+  // Success toast
+  &.ant-message .ant-message-success .ant-message-notice-content {
+    background-color: #EDF9F0;
+    border: 1px solid #36B37E;
+
+    .ant-message-custom-content {
+      color: #006644;
+
+      .anticon {
+        color: #36B37E;
+      }
+    }
+  }
+
+  // Info toast
+  &.ant-message .ant-message-info .ant-message-notice-content {
+    background-color: #DEEBFF;
+    border: 1px solid #2684FF;
+
+    .ant-message-custom-content {
+      color: #0747A6;
+
+      .anticon {
+        color: #2684FF;
+      }
+    }
+  }
+
+  // Warning toast
+  &.ant-message .ant-message-warning .ant-message-notice-content {
+    background-color: #FFFAE6;
+    border: 1px solid #FFAB00;
+
+    .ant-message-custom-content {
+      color: #974F0C;
+
+      .anticon {
+        color: #FFAB00;
+      }
+    }
+  }
+
+  // Error toast
+  &.ant-message .ant-message-error .ant-message-notice-content {
+    background-color: #FFEBE6;
+    border: 1px solid #FF5630;
+
+    .ant-message-custom-content {
+      color: #BF2600;
+
+      .anticon {
+        color: #FF5630;
+      }
+    }
+  }
+
+  // Loading toast
+  &.ant-message .ant-message-loading .ant-message-notice-content {
+    background-color: #F4F5F7;
+    border: 1px solid #6B778C;
+
+    .ant-message-custom-content {
+      color: #42526E;
+
+      .anticon {
+        color: #6B778C;
+      }
+    }
+  }
+
+  // Animation
+  &.ant-message .ant-message-notice.ant-move-up-enter,
+  &.ant-message .ant-message-notice.ant-move-up-appear {
+    animation-duration: 0.2s;
+  }
+}

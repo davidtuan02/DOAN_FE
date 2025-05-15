@@ -1,6 +1,9 @@
 .board-column {
-  @apply rounded bg-backgroundLightest w-boardColumn;
+  @apply rounded bg-backgroundLightest;
   height: fit-content;
+  flex: 1;
+  min-width: 300px;
+  margin: 0;
 
   .board-column-header {
     @apply w-full h-12 p-4 flex flex-row justify-between items-center uppercase;

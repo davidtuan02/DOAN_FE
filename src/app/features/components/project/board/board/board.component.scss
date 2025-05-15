@@ -8,7 +8,10 @@
   display: flex;
   flex-direction: row;
   overflow-x: auto;
+  overflow-y: auto;
   width: 100%;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .sprint-selector {
@@ -19,13 +22,29 @@
 .active-sprints-dropdown {
   ::ng-deep {
     .ant-select-selector {
-      @apply rounded-md px-4 py-1 border border-gray-300;
+      @apply rounded-md px-4 py-1 border border-gray-300 shadow-sm bg-white;
+      height: 38px;
+      display: flex;
+      align-items: center;
     }
 
     .ant-select-selection-item {
-      @apply flex items-center;
+      @apply flex items-center font-medium;
+    }
+
+    .ant-select-arrow {
+      color: #6b7280;
+    }
+
+    .ant-select:hover .ant-select-selector {
+      border-color: #3b82f6;
     }
   }
+}
+
+.current-sprint {
+  @apply px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm flex items-center;
+  height: 38px;
 }
 
 .loading-container,

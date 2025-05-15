@@ -1,11 +1,15 @@
 .action-container {
-  @apply px-10 my-7 w-full h-10 flex flex-row items-center justify-between;
+  @apply px-10 my-7 w-full flex flex-row items-center justify-between;
+  height: auto;
+  padding-bottom: 0.75rem;
 
   .search-container {
-    @apply w-32 relative rounded-md shadow-sm;
+    @apply w-52 relative rounded-md shadow-sm;
 
     .search-input {
-      @apply block w-full pr-10 sm:text-sm border-gray-300 border rounded py-2 bg-gray-50 focus:border-blue-550 focus:outline-none;
+      @apply block w-full pr-10 sm:text-sm border rounded py-2 bg-gray-50 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500;
+      height: 36px;
+      font-size: 14px;
     }
   }
 
@@ -13,11 +17,19 @@
     @apply flex flex-row items-center w-48 gap-2 justify-end;
 
     .label {
-      @apply block text-xs font-thin text-gray-700 uppercase;
+      @apply block text-xs font-medium text-gray-600 uppercase tracking-wide;
     }
 
     .custom-select {
-      @apply w-3/5 font-medium text-textDark bg-backgroundLightest rounded;
+      @apply w-3/5 font-medium text-gray-700 bg-white rounded border border-gray-200 shadow-sm;
+      ::ng-deep {
+        .ant-select-selector {
+          padding: 0 10px;
+          height: 36px;
+          display: flex;
+          align-items: center;
+        }
+      }
     }
   }
 }
