@@ -23,6 +23,10 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { FormsModule } from '@angular/forms';
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 import { NzBadgeModule } from 'ng-zorro-antd/badge';
+import { CompleteSprintComponent } from '../../shared/complete-sprint/complete-sprint.component';
+import { HttpClient } from '@angular/common/http';
+import { of, switchMap, map as rxjsMap } from 'rxjs';
+import { BASE_URL } from '../../../../../core/constants/api.const';
 
 @Destroyable()
 @Component({
@@ -40,6 +44,7 @@ import { NzBadgeModule } from 'ng-zorro-antd/badge';
     FormsModule,
     NzToolTipModule,
     NzBadgeModule,
+    CompleteSprintComponent
   ],
   providers: [NzModalService, NzMessageService],
   templateUrl: './board.component.html',
@@ -53,7 +58,10 @@ export class BoardComponent implements OnInit {
   currentProject: any;
   currentSprint: any;
   activeSprints: any[] = [];
+  planningSprints: any[] = [];
   private modalClosing = new Subject<void>();
+  showCompleteSprintModal = false;
+  isCompletingSprint = false;
 
   constructor(
     private store: Store<fromStore.AppState>,
@@ -64,7 +72,8 @@ export class BoardComponent implements OnInit {
     private boardService: BoardService,
     private projectService: ProjectService,
     private sprintService: SprintService,
-    private message: NzMessageService
+    private message: NzMessageService,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
@@ -129,6 +138,11 @@ export class BoardComponent implements OnInit {
                 (sprint) => sprint.status === 'active'
               );
               this.activeSprints = activeSprints;
+
+              // Get planning sprints
+              this.planningSprints = sprints.filter(
+                (sprint) => sprint.status === 'planning'
+              );
 
               if (activeSprints.length === 0) {
                 this.error =
@@ -301,6 +315,11 @@ export class BoardComponent implements OnInit {
       this.message.error('No active sprint to complete');
       return;
     }
+    this.showCompleteSprintModal = true;
+  }
+
+  handleCompleteSprintConfirm(moveToSprintId: string): void {
+    this.isCompletingSprint = true;
 
     this.sprintService.completeSprint(this.currentSprint.id).subscribe({
       next: () => {
@@ -323,12 +342,139 @@ export class BoardComponent implements OnInit {
           this.error =
             'No active sprint found. Please start a sprint to see the board.';
         }
+
+        this.isCompletingSprint = false;
+        this.showCompleteSprintModal = false;
       },
       error: (err) => {
         this.message.error('Failed to complete sprint');
         console.error('Error completing sprint:', err);
+        this.isCompletingSprint = false;
       },
     });
+  }
+
+  handleCompleteSprintCancel(): void {
+    this.showCompleteSprintModal = false;
+  }
+
+  handleStartSprint(data: {id: string, goal?: string}): void {
+    // Update sprint goal if provided
+    if (data.goal) {
+      const sprintToUpdate = this.planningSprints.find(sprint => sprint.id === data.id);
+      if (sprintToUpdate) {
+        sprintToUpdate.goal = data.goal;
+        // Here you would typically update the sprint in the backend
+        // But for simplicity we'll just start it with the updated goal
+      }
+    }
+
+    // Start the sprint
+    this.sprintService.startSprint(data.id).subscribe({
+      next: (startedSprint) => {
+        this.message.success('Sprint started successfully');
+
+        // Refresh sprint lists instead of closing the modal
+        this.refreshSprintLists();
+
+        // If no active sprint is set, set this one as active
+        if (!this.currentSprint) {
+          this.currentSprint = startedSprint;
+          this.sprintService.setCurrentSprint(startedSprint);
+          this.loadBoardData();
+        }
+      },
+      error: (err) => {
+        this.message.error('Failed to start sprint');
+        console.error('Error starting sprint:', err);
+      }
+    });
+  }
+
+  handleCreateSprint(data: {name: string, goal: string}): void {
+    if (!this.currentProject || !this.currentProject.id) {
+      this.message.error('No project selected');
+      return;
+    }
+
+    // Get board ID from project before creating sprint
+    this.http.get<any>(`${BASE_URL}/projects/${this.currentProject.id}`)
+      .pipe(
+        switchMap((project) => {
+          if (project.boards && project.boards.length > 0) {
+            const boardId = project.boards[0].id;
+            console.log('Found board ID for project:', boardId);
+            return of(boardId);
+          } else {
+            console.log('No boards found, creating default board');
+            return this.http.post<any>(
+              `${BASE_URL}/projects/${this.currentProject.id}/create-default-board`,
+              {}
+            ).pipe(
+              rxjsMap(board => {
+                console.log('Created default board:', board);
+                return board?.id;
+              })
+            );
+          }
+        })
+      )
+      .subscribe({
+        next: (boardId) => {
+          if (!boardId) {
+            this.message.error('Could not find or create board for this project');
+            return;
+          }
+
+          const newSprint = {
+            name: data.name,
+            goal: data.goal,
+            status: 'planning' as const
+          };
+
+          // Now create sprint with the correct board ID
+          this.sprintService.createSprint(boardId, newSprint).subscribe({
+            next: () => {
+              this.message.success('New sprint created');
+
+              // After creating a sprint, refresh the planning sprints list but keep modal open
+              this.refreshSprintLists();
+
+              // Send an event to reset the form in the component
+              const completeSprintComponent = document.querySelector('app-complete-sprint');
+              if (completeSprintComponent) {
+                // Using a custom event to reset the form
+                completeSprintComponent.dispatchEvent(new CustomEvent('resetCreateForm'));
+              }
+            },
+            error: (err) => {
+              this.message.error('Failed to create sprint');
+              console.error('Error creating sprint:', err);
+            }
+          });
+        },
+        error: (err) => {
+          this.message.error('Failed to get board information');
+          console.error('Error getting board info:', err);
+        }
+      });
+  }
+
+  // Helper method to refresh sprint lists
+  private refreshSprintLists(): void {
+    if (!this.currentProject || !this.currentProject.id) return;
+
+    this.sprintService.getSprintsByProjectId(this.currentProject.id)
+      .pipe(takeUntilDestroyed(this))
+      .subscribe({
+        next: (sprints) => {
+          this.activeSprints = sprints.filter(sprint => sprint.status === 'active');
+          this.planningSprints = sprints.filter(sprint => sprint.status === 'planning');
+        },
+        error: (err) => {
+          console.error('Error refreshing sprints:', err);
+        }
+      });
   }
 
   // Method to switch to a different active sprint

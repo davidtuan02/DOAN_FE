@@ -110,4 +110,16 @@
     <app-board-column *ngFor="let col of columns$ | async" [column]="col">
     </app-board-column>
   </div>
+
+  <app-complete-sprint
+    [visible]="showCompleteSprintModal"
+    [sprint]="currentSprint"
+    [availableSprints]="activeSprints"
+    [planningSprints]="planningSprints"
+    [isCompleting]="isCompletingSprint"
+    (confirm)="handleCompleteSprintConfirm($event)"
+    (cancel)="handleCompleteSprintCancel()"
+    (startSprint)="handleStartSprint($event)"
+    (createSprint)="handleCreateSprint($event)"
+  ></app-complete-sprint>
 </div>

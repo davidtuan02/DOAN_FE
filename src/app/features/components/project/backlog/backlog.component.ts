@@ -45,6 +45,7 @@ import { takeUntilDestroyed } from '../../../../shared/utils';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { AvatarComponent } from '../../../../shared/components/avatar/avatar.component';
 import { User } from '../../../../core/models';
+import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 
 @Component({
   selector: 'app-backlog',
@@ -61,6 +62,7 @@ import { User } from '../../../../core/models';
     SvgIconComponent,
     NzSelectModule,
     AvatarComponent,
+    NzToolTipModule
   ],
   templateUrl: './backlog.component.html',
   styleUrls: ['./backlog.component.scss'],
@@ -1393,6 +1395,7 @@ export class BacklogComponent implements OnInit {
       this.backlogService.startSprint(sprintId).subscribe({
         next: () => {
           this.isLoading = false;
+          this.router.navigate(['/board'])
         },
         error: (err) => {
           this.handleError(err, 'Failed to start sprint');

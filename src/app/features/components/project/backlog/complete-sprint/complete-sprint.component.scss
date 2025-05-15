@@ -1,0 +1,23 @@
+.action-container {
+  @apply px-10 my-7 w-full h-10 flex flex-row items-center justify-between;
+
+  .search-container {
+    @apply w-32 relative rounded-md shadow-sm;
+
+    .search-input {
+      @apply block w-full pr-10 sm:text-sm border-gray-300 border rounded py-2 bg-gray-50 focus:border-blue-550 focus:outline-none;
+    }
+  }
+
+  .grouping-action {
+    @apply flex flex-row items-center w-48 gap-2 justify-end;
+
+    .label {
+      @apply block text-xs font-thin text-gray-700 uppercase;
+    }
+
+    .custom-select {
+      @apply w-3/5 font-medium text-textDark bg-backgroundLightest rounded;
+    }
+  }
+}
