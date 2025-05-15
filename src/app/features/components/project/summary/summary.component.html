@@ -353,45 +353,152 @@
 
     <!-- Team Performance -->
     <div class="p-4 mt-6 bg-white rounded-lg shadow">
-      <h4 class="mb-4 text-base font-medium text-gray-700">Team Performance</h4>
+      <div class="flex justify-between items-center mb-4">
+        <h4 class="text-base font-medium text-gray-700">Team Performance</h4>
+        <div class="flex items-center">
+          <button
+            class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-md flex items-center"
+            (click)="refreshTeamData()"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Refresh
+          </button>
+        </div>
+      </div>
+
       <div *ngIf="teamMembers.length > 0; else noTeamMembers" class="space-y-4">
-        <div *ngFor="let member of teamMembers" class="flex items-center">
-          <div class="flex-shrink-0 w-10 h-10 overflow-hidden rounded-full">
-            <img
-              *ngIf="member.avatar"
-              [src]="member.avatar"
-              alt="{{ member.name }}"
-              class="object-cover w-full h-full"
-            />
-            <div
-              *ngIf="!member.avatar"
-              class="flex items-center justify-center w-full h-full font-medium text-white bg-purple-600"
-            >
-              {{ getInitials(member.name) }}
+        <div *ngFor="let member of teamMembers; let i = index" class="border border-gray-200 rounded-lg overflow-hidden">
+          <!-- Member Header - Always visible -->
+          <div class="flex items-center p-4 bg-gray-50 cursor-pointer" (click)="toggleMemberExpand(i)">
+            <div class="flex-shrink-0 w-10 h-10 overflow-hidden rounded-full">
+              <img
+                *ngIf="member.avatar"
+                [src]="member.avatar"
+                alt="{{ member.name }}"
+                class="object-cover w-full h-full"
+              />
+              <div
+                *ngIf="!member.avatar"
+                class="flex items-center justify-center w-full h-full font-medium text-white bg-purple-600"
+              >
+                {{ getInitials(member.name) }}
+              </div>
+            </div>
+
+            <div class="flex-grow ml-3">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-sm font-medium">{{ member.name }}</span>
+                <div class="flex items-center">
+                  <span class="text-xs font-medium text-gray-500 mr-2">
+                    {{ member.completedIssues }}/{{ member.assignedIssues }}
+                    issues completed
+                  </span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4 text-gray-500 transition-transform"
+                    [ngClass]="{'transform rotate-180': expandedMembers[i]}"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+
+              <div class="w-full h-2 bg-gray-200 rounded-full">
+                <div
+                  class="h-full rounded-full"
+                  [ngClass]="{
+                    'bg-green-500': getCompletionRate(member.assignedIssues, member.completedIssues) > 75,
+                    'bg-yellow-500': getCompletionRate(member.assignedIssues, member.completedIssues) > 25 && getCompletionRate(member.assignedIssues, member.completedIssues) <= 75,
+                    'bg-blue-500': getCompletionRate(member.assignedIssues, member.completedIssues) <= 25
+                  }"
+                  [style.width.%]="
+                    getCompletionRate(
+                      member.assignedIssues,
+                      member.completedIssues
+                    )
+                  "
+                ></div>
+              </div>
             </div>
           </div>
-          <div class="flex-grow ml-3">
-            <div class="flex items-center justify-between mb-1">
-              <span class="text-sm font-medium">{{ member.name }}</span>
-              <span class="text-xs font-medium text-gray-500">
-                {{ member.completedIssues }}/{{ member.assignedIssues }}
-                issues completed
-              </span>
+
+          <!-- Expanded Details -->
+          <div class="p-4 border-t border-gray-200" *ngIf="expandedMembers[i]">
+            <div class="grid grid-cols-4 gap-4 mb-4">
+              <div class="text-center p-2 bg-gray-50 rounded border border-gray-100">
+                <div class="text-xs text-gray-500">Assigned</div>
+                <div class="font-medium">{{ member.assignedIssues }}</div>
+              </div>
+              <div class="text-center p-2 bg-gray-50 rounded border border-gray-100">
+                <div class="text-xs text-gray-500">To Do</div>
+                <div class="font-medium">{{ member.assignedIssues - member.inProgressIssues - member.reviewIssues - member.completedIssues }}</div>
+              </div>
+              <div class="text-center p-2 bg-gray-50 rounded border border-gray-100">
+                <div class="text-xs text-gray-500">In Progress</div>
+                <div class="font-medium">{{ member.inProgressIssues || 0 }}</div>
+              </div>
+              <div class="text-center p-2 bg-gray-50 rounded border border-gray-100">
+                <div class="text-xs text-gray-500">Review</div>
+                <div class="font-medium">{{ member.reviewIssues || 0 }}</div>
+              </div>
             </div>
-            <div class="w-full h-2 bg-gray-200 rounded-full">
-              <div
-                class="h-full bg-blue-500 rounded-full"
-                [style.width.%]="
-                  getCompletionRate(
-                    member.assignedIssues,
-                    member.completedIssues
-                  )
-                "
-              ></div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <h5 class="text-xs text-gray-500 font-medium mb-2">Work Status</h5>
+                <div class="h-5 bg-gray-200 rounded-full overflow-hidden flex">
+                  <div class="bg-blue-500 h-full" [style.width.%]="getMemberStatusPercentage(member, 'todo')"></div>
+                  <div class="bg-yellow-500 h-full" [style.width.%]="getMemberStatusPercentage(member, 'inProgress')"></div>
+                  <div class="bg-purple-500 h-full" [style.width.%]="getMemberStatusPercentage(member, 'review')"></div>
+                  <div class="bg-green-500 h-full" [style.width.%]="getMemberStatusPercentage(member, 'completed')"></div>
+                </div>
+                <div class="flex justify-between mt-1 text-xs text-gray-500">
+                  <span>Todo</span>
+                  <span>In Progress</span>
+                  <span>Review</span>
+                  <span>Done</span>
+                </div>
+              </div>
+
+              <div>
+                <h5 class="text-xs text-gray-500 font-medium mb-2">Story Points</h5>
+                <div class="flex items-center">
+                  <span class="text-2xl font-bold text-gray-800">{{ member.storyPoints }}</span>
+                  <div class="ml-4 flex items-center">
+                    <div class="w-2 h-2 rounded-full bg-green-500 mr-1"></div>
+                    <span class="text-xs text-gray-500">{{ member.completedStoryPoints || 0 }} completed</span>
+                  </div>
+                </div>
+                <div class="w-full h-2 bg-gray-200 rounded-full mt-2">
+                  <div
+                    class="h-full bg-green-500 rounded-full"
+                    [style.width.%]="
+                      member.storyPoints
+                        ? (member.completedStoryPoints / member.storyPoints) * 100
+                        : 0
+                    "
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 text-right">
+              <button
+                class="text-xs text-blue-600 hover:underline"
+                (click)="viewMemberDetails(member.id)"
+              >
+                View More Details
+              </button>
             </div>
           </div>
         </div>
       </div>
+
       <ng-template #noTeamMembers>
         <div class="py-8 text-center text-gray-500">
           No team members data available

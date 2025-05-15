@@ -14,6 +14,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SvgIconComponent } from '../../../../shared/components';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-summary',
@@ -51,6 +52,7 @@ export class SummaryComponent implements OnInit {
 
   currentSprint: SprintProgress | null = null;
   teamMembers: TeamMemberStats[] = [];
+  expandedMembers: boolean[] = [];
   currentProjectId: string = '';
   currentProjectName: string = '';
   isLoading = true;
@@ -59,7 +61,8 @@ export class SummaryComponent implements OnInit {
   constructor(
     private projectStatsService: ProjectStatsService,
     private projectService: ProjectService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -119,7 +122,12 @@ export class SummaryComponent implements OnInit {
       .getTeamPerformance(this.currentProjectId)
       .subscribe({
         next: (members) => {
-          this.teamMembers = members;
+          this.teamMembers = members.sort((a, b) =>
+            (b.completedIssues / (b.assignedIssues || 1)) -
+            (a.completedIssues / (a.assignedIssues || 1))
+          );
+          // Initialize expanded state array
+          this.expandedMembers = new Array(this.teamMembers.length).fill(false);
           console.log('Team data loaded:', members.length, 'members');
         },
         error: (err) => {
@@ -183,7 +191,45 @@ export class SummaryComponent implements OnInit {
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   }
 
-  // Refresh data
+  // Toggle expand/collapse for team member details
+  toggleMemberExpand(index: number): void {
+    this.expandedMembers[index] = !this.expandedMembers[index];
+  }
+
+  // Get percentage of each status for a team member
+  getMemberStatusPercentage(member: TeamMemberStats, status: string): number {
+    if (!member.assignedIssues) return 0;
+
+    const todoCount = member.assignedIssues - member.inProgressIssues - member.reviewIssues - member.completedIssues;
+
+    switch(status) {
+      case 'todo':
+        return (todoCount / member.assignedIssues) * 100;
+      case 'inProgress':
+        return (member.inProgressIssues / member.assignedIssues) * 100;
+      case 'review':
+        return (member.reviewIssues / member.assignedIssues) * 100;
+      case 'completed':
+        return (member.completedIssues / member.assignedIssues) * 100;
+      default:
+        return 0;
+    }
+  }
+
+  // Navigate to view member details
+  viewMemberDetails(memberId: string): void {
+    // Navigate to a member details page or show a modal
+    this.snackBar.open('Member details feature coming soon', 'Close', {
+      duration: 3000,
+    });
+  }
+
+  // Refresh team data
+  refreshTeamData(): void {
+    this.loadTeamData();
+  }
+
+  // Refresh all data
   refreshData(): void {
     this.loadProjectData();
   }

@@ -49,7 +49,10 @@ export interface TeamMemberStats {
   role?: string;
   assignedIssues: number;
   completedIssues: number;
+  inProgressIssues: number;
+  reviewIssues: number;
   storyPoints: number;
+  completedStoryPoints: number;
 }
 
 @Injectable({
@@ -258,7 +261,10 @@ export class ProjectStatsService {
             role: member.role || 'Team Member',
             assignedIssues: 0,
             completedIssues: 0,
+            inProgressIssues: 0,
+            reviewIssues: 0,
             storyPoints: 0,
+            completedStoryPoints: 0,
           });
         });
 
@@ -271,6 +277,11 @@ export class ProjectStatsService {
 
             if (issue.status === 'Done') {
               stats.completedIssues++;
+              stats.completedStoryPoints += issue.storyPoints || 0;
+            } else if (issue.status === 'In Progress') {
+              stats.inProgressIssues++;
+            } else if (issue.status === 'Review') {
+              stats.reviewIssues++;
             }
           }
         });
