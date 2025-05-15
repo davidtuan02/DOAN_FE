@@ -79,6 +79,21 @@ export class SvgIconComponent implements OnChanges {
       target: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>`,
       roadmap: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`,
       summary: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>`,
+      taskflow: `<svg xmlns="http://www.w3.org/2000/svg" width="180" height="36" viewBox="0 0 180 36">
+        <g>
+          <rect x="2" y="4" width="28" height="28" rx="4" fill="#2563eb"/>
+          <rect x="8" y="10" width="16" height="3" rx="1" fill="white"/>
+          <rect x="8" y="16.5" width="16" height="3" rx="1" fill="white"/>
+          <rect x="8" y="23" width="16" height="3" rx="1" fill="white"/>
+          <text x="39" y="26" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#2563eb">TaskFlow</text>
+        </g>
+      </svg>`,
+      taskflowIcon: `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+        <rect x="2" y="2" width="28" height="28" rx="4" fill="#2563eb"/>
+        <rect x="8" y="8" width="16" height="3" rx="1" fill="white"/>
+        <rect x="8" y="14" width="16" height="3" rx="1" fill="white"/>
+        <rect x="8" y="20" width="16" height="3" rx="1" fill="white"/>
+      </svg>`,
     };
 
     return (

@@ -10,10 +10,15 @@
     <div class="sidebar-header">
       <!-- Project selector -->
       <div class="project-selector" (click)="toggleProjectSelector()">
-        <div class="project-avatar" *ngIf="selectedProject"></div>
+        <div class="project-avatar" *ngIf="selectedProject">
+          <svg class="taskflow-logo" width="16" height="16" viewBox="0 0 32 32" fill="white" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 6h20v4H6V6zm0 8h20v4H6v-4zm0 8h20v4H6v-4z" fill-rule="evenodd"/>
+            <path d="M28 4H4v24h24V4zm2-2v28H2V2h28z" fill-rule="evenodd"/>
+          </svg>
+        </div>
         <div *ngIf="!loading && selectedProject">
           <div class="font-semibold">{{ selectedProject.name }}</div>
-          <div class="text-xs text-gray-500">Software project</div>
+          <div class="text-xs text-gray-500">TaskFlow project</div>
         </div>
         <div *ngIf="loading" class="w-full">
           <nz-skeleton-element
@@ -106,7 +111,7 @@
 
     <div class="sidebar-footer">
       <p class="text-center">You're in a team-managed project</p>
-      <a class="p-3 font-medium">Learn more</a>
+      <a class="p-3 font-medium">TaskFlow App</a>
     </div>
   </div>
 </div>

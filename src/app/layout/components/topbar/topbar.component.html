@@ -2,19 +2,15 @@
   <div class="flex flex-row">
     <div class="brand">
       <app-svg-icon name="menu" [width]="24" [height]="24"></app-svg-icon>
-      <a routerLink="/">
-        <app-svg-icon
-          class="hidden xl:block"
-          name="jira"
-          [width]="134"
-          [height]="24"
-        ></app-svg-icon>
-        <app-svg-icon
-          class="block xl:hidden"
-          name="jiraIcon"
-          [width]="24"
-          [height]="24"
-        ></app-svg-icon>
+      <a routerLink="/" class="flex items-center ml-2">
+        <div class="taskflow-logo">
+          <app-svg-icon
+            name="jiraIcon"
+            [width]="32"
+            [height]="32"
+          ></app-svg-icon>
+        </div>
+        <span class="hidden xl:block text-blue-600 font-bold text-xl ml-2">TaskFlow</span>
       </a>
     </div>
 
