@@ -6,6 +6,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { finalize } from 'rxjs/operators';
 import { UserService } from '../../../../core/services/user.service';
+import { NzNotificationService } from 'ng-zorro-antd/notification';
 
 @Component({
   selector: 'app-team-form',
@@ -40,7 +41,8 @@ export class TeamFormComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private message: NzMessageService,
-    private userService: UserService
+    private userService: UserService,
+    private notification: NzNotificationService,
   ) {}
 
   ngOnInit(): void {
@@ -137,8 +139,10 @@ export class TeamFormComponent implements OnInit {
             .pipe(finalize(() => (this.submitting = false)))
             .subscribe({
               next: (team) => {
-                this.message.success(
-                  `Team "${team.name}" created successfully`
+                this.notification.success(
+                  'Success',
+                  `Team "${team.name}" created successfully`,
+                  { nzDuration: 3000 }
                 );
                 this.router.navigate(['/teams', team.id]);
               },

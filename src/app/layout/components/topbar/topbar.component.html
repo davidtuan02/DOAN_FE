@@ -369,30 +369,31 @@
 
     <ng-container *ngIf="currentUser$ | async as user">
       <a nz-dropdown [nzDropdownMenu]="userMenu" class="cursor-pointer">
-        <app-avatar [user]="user" [size]="48"> </app-avatar>
+        <app-avatar [user]="user" [size]="48" [showTooltip]="false"> </app-avatar>
       </a>
       <nz-dropdown-menu #userMenu="nzDropdownMenu" class="w-64">
-        <div class="px-4 py-3 border-b border-gray-200">
-          <div class="flex items-center gap-3">
-            <app-avatar [user]="user" [size]="40"></app-avatar>
-            <div>
-              <div class="font-medium">{{ user.username }}</div>
-              <div class="text-sm text-gray-500">{{ user.email }}</div>
+        <ul nz-menu>
+          <div class="px-4 py-3">
+            <div class="flex items-center gap-3">
+              <app-avatar [user]="user" [size]="40"></app-avatar>
+              <div>
+                <div class="font-medium">{{ user.username }}</div>
+                <div class="text-sm text-gray-500">{{ user.email }}</div>
+              </div>
             </div>
           </div>
-        </div>
-        <ul nz-menu class="py-2">
+          <li nz-menu-divider></li>
           <li
             nz-menu-item
             (click)="onProfileClick()"
-            class="flex items-center gap-3 px-4 py-2 text-sm hover:bg-gray-50"
+            class="flex items-center gap-3 px-4 py-2 text-sm"
           >
             <span>Profile</span>
           </li>
           <li
             nz-menu-item
             (click)="onLogoutClick()"
-            class="flex items-center gap-3 px-4 py-2 text-sm hover:bg-gray-50"
+            class="flex items-center gap-3 px-4 py-2 text-sm"
           >
             <span>Logout</span>
           </li>

@@ -15,6 +15,7 @@ export class AvatarComponent {
   @Input() size: number = 32;
   @Input() bordered: boolean = false;
   @Input() selected: boolean | undefined = false;
+  @Input() showTooltip: boolean = true;
 
   @Output() select = new EventEmitter();
 
