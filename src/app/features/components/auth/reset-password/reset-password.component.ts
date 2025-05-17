@@ -257,14 +257,25 @@ export class ResetPasswordComponent implements OnInit {
       .subscribe({
         next: (response) => {
           this.isLoading = false;
-          this.successMessage = 'Your password has been reset successfully!';
+          // this.successMessage = 'Your password has been reset successfully!';
+          this.notification.success(
+            'Success',
+            `Your password has been reset successfully!`,
+            { nzDuration: 3000 }
+          );
           this.resetForm.reset();
+          this.navigateToLogin();
         },
         error: (error) => {
           this.isLoading = false;
-          this.errorMessage =
-            error.error?.message ||
-            'Failed to reset password. Please try again.';
+          this.notification.error(
+            'Error',
+            `Failed to reset password. Please try again.!`,
+            { nzDuration: 3000 }
+          );
+          // this.errorMessage =
+          //   error.error?.message ||
+          //   'Failed to reset password. Please try again.';
           console.error('Password reset error:', error);
         },
       });

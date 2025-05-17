@@ -27,6 +27,7 @@ import { CompleteSprintComponent } from '../../shared/complete-sprint/complete-s
 import { HttpClient } from '@angular/common/http';
 import { of, switchMap, map as rxjsMap } from 'rxjs';
 import { BASE_URL } from '../../../../../core/constants/api.const';
+import { NzNotificationService } from 'ng-zorro-antd/notification';
 
 @Destroyable()
 @Component({
@@ -73,7 +74,8 @@ export class BoardComponent implements OnInit {
     private projectService: ProjectService,
     private sprintService: SprintService,
     private message: NzMessageService,
-    private http: HttpClient
+    private http: HttpClient,
+    private notification: NzNotificationService
   ) {}
 
   ngOnInit(): void {
@@ -257,7 +259,12 @@ export class BoardComponent implements OnInit {
 
   startSprint(): void {
     if (!this.currentProject || !this.currentProject.id) {
-      this.message.error('No project selected');
+      // this.message.error('No project selected');
+      this.notification.error(
+        'Error',
+        `No project selected!`,
+        { nzDuration: 3000 }
+      );
       return;
     }
 
@@ -275,11 +282,21 @@ export class BoardComponent implements OnInit {
             // Start this sprint
             this.sprintService.startSprint(planningSprint.id).subscribe({
               next: () => {
-                this.message.success('Sprint started successfully');
+                // this.message.success('Sprint started successfully');
+                this.notification.success(
+                  'Success',
+                  `Sprint started successfully!`,
+                  { nzDuration: 3000 }
+                );
                 this.initializeBoard(); // Reload board data
               },
               error: (err) => {
-                this.message.error('Failed to start sprint');
+                // this.message.error('Failed to start sprint');
+                this.notification.error(
+                  'Error',
+                  `Failed to start sprint!`,
+                  { nzDuration: 3000 }
+                );
                 console.error('Error starting sprint:', err);
               },
             });
@@ -297,18 +314,33 @@ export class BoardComponent implements OnInit {
               .createSprint(this.currentProject.id, newSprint)
               .subscribe({
                 next: () => {
-                  this.message.success('New sprint created and started');
+                  // this.message.success('New sprint created and started');
+                  this.notification.success(
+                    'Success',
+                    `New sprint created and started!`,
+                    { nzDuration: 3000 }
+                  );
                   this.initializeBoard(); // Reload board data
                 },
                 error: (err) => {
-                  this.message.error('Failed to create sprint');
+                  // this.message.error('Failed to create sprint');
+                  this.notification.error(
+                    'Error',
+                    `Failed to create sprint!`,
+                    { nzDuration: 3000 }
+                  );
                   console.error('Error creating sprint:', err);
                 },
               });
           }
         },
         error: (err) => {
-          this.message.error('Failed to load sprints');
+          // this.message.error('Failed to load sprints');
+          this.notification.error(
+            'Error',
+            `Failed to load sprints!`,
+            { nzDuration: 3000 }
+          );
           console.error('Error loading sprints:', err);
         },
       });
@@ -316,7 +348,12 @@ export class BoardComponent implements OnInit {
 
   completeSprint(): void {
     if (!this.currentSprint || !this.currentSprint.id) {
-      this.message.error('No active sprint to complete');
+      // this.message.error('No active sprint to complete');
+      this.notification.error(
+        'Error',
+        `No active sprint to complete!`,
+        { nzDuration: 3000 }
+      );
       return;
     }
     this.showCompleteSprintModal = true;
@@ -327,7 +364,12 @@ export class BoardComponent implements OnInit {
 
     this.sprintService.completeSprint(this.currentSprint.id).subscribe({
       next: () => {
-        this.message.success('Sprint completed successfully');
+        // this.message.success('Sprint completed successfully');
+        this.notification.success(
+          'Success',
+          `Sprint completed successfully!`,
+          { nzDuration: 3000 }
+        );
 
         // Remove the completed sprint from active sprints
         this.activeSprints = this.activeSprints.filter(

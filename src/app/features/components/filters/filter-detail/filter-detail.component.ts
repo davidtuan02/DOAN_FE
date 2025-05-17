@@ -23,6 +23,7 @@ import { FilterService } from '../../../services/filter/filter.service';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { SavedFilter } from '../../../../core/models/filter/filter.model';
 import { UserService } from '../../../../core/services/user.service';
+import { NzNotificationService } from 'ng-zorro-antd/notification';
 
 @Component({
   selector: 'app-filter-detail',
@@ -61,7 +62,8 @@ export class FilterDetailComponent implements OnInit {
     private fb: FormBuilder,
     private message: NzMessageService,
     private modalService: NzModalService,
-    private userService: UserService
+    private userService: UserService,
+    private notification: NzNotificationService
   ) {}
 
   ngOnInit(): void {
@@ -69,7 +71,12 @@ export class FilterDetailComponent implements OnInit {
     this.isEditMode = this.route.snapshot.data['isEdit'] || false;
 
     if (!this.filterId) {
-      this.message.error('No filter ID provided');
+      // this.message.error('No filter ID provided');
+      this.notification.error(
+        'Error',
+        `No filter ID provided`,
+        { nzDuration: 3000 }
+      );
       this.router.navigate(['/filters']);
       return;
     }
@@ -87,7 +94,12 @@ export class FilterDetailComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading filter:', error);
-        this.message.error('Failed to load filter details');
+        // this.message.error('Failed to load filter details');
+        this.notification.error(
+          'Error',
+          `Failed to load filter details!`,
+          { nzDuration: 3000 }
+        );
         this.router.navigate(['/filters']);
       },
     });
@@ -136,12 +148,22 @@ export class FilterDetailComponent implements OnInit {
       next: (filter) => {
         this.filter = filter;
         this.loading = false;
-        this.message.success('Filter updated successfully');
+        // this.message.success('Filter updated successfully');
+        this.notification.success(
+          'Success',
+          `Filter updated successfully!`,
+          { nzDuration: 3000 }
+        );
         this.router.navigate(['/filters', filter.id]);
       },
       error: (error) => {
         console.error('Error updating filter:', error);
-        this.message.error('Failed to update filter');
+        // this.message.error('Failed to update filter');
+        this.notification.error(
+          'Error',
+          `Failed to update filter!`,
+          { nzDuration: 3000 }
+        );
         this.loading = false;
       },
     });
@@ -174,7 +196,12 @@ export class FilterDetailComponent implements OnInit {
 
     this.filterService.deleteFilter(this.filter.id!).subscribe({
       next: () => {
-        this.message.success('Filter deleted successfully');
+        // this.message.success('Filter deleted successfully');
+        this.notification.success(
+          'Success',
+          `Filter deleted successfully!`,
+          { nzDuration: 3000 }
+        );
         this.router.navigate(['/filters']);
       },
     });
@@ -208,7 +235,12 @@ export class FilterDetailComponent implements OnInit {
     // Copy to clipboard
     navigator.clipboard.writeText(url).then(
       () => {
-        this.message.success('Filter link copied to clipboard!');
+        // this.message.success('Filter link copied to clipboard!');
+        this.notification.success(
+          'Success',
+          `Filter link copied to clipboard!`,
+          { nzDuration: 3000 }
+        );
       },
       () => {
         // Show the URL in a modal if clipboard copy fails
