@@ -6,10 +6,14 @@
   @apply w-screen h-screen flex flex-col overflow-hidden;
 
   .app-content {
-    @apply w-screen h-full flex flex-row;
+    @apply w-full flex-grow flex flex-row overflow-hidden;
 
     .main-content {
-      @apply w-full overflow-hidden;
+      @apply w-full overflow-auto;
     }
+  }
+
+  app-footer {
+    @apply flex-shrink-0 z-10;
   }
 }
