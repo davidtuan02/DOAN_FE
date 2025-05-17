@@ -1,52 +1,58 @@
-<div class="filters-container p-6">
-  <div class="flex justify-between items-center mb-5">
-    <div>
-      <h1 class="text-2xl font-bold mb-1">Filters</h1>
-      <p class="text-gray-500">View and manage your saved filters</p>
-    </div>
-    <div class="flex gap-2">
-      <div class="search-box">
-        <input
-          type="text"
-          placeholder="Search filters..."
-          [(ngModel)]="searchTerm"
-          (ngModelChange)="applySearch()"
-          class="w-full px-3 py-2 border rounded-md"
-          nz-input
-        />
+<div class="flex flex-col h-screen">
+  <!-- Header -->
+  <div class="bg-gray-100 border-b border-gray-300 p-6 flex-shrink-0">
+    <div class="flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-bold">Filters</h1>
+        <p class="text-gray-500">View and manage your saved filters</p>
       </div>
-      <button nz-button nzType="primary" [routerLink]="['/issues']">
-        <span nz-icon nzType="plus"></span>
-        Create Filter
-      </button>
+      <div class="flex gap-2">
+        <div class="search-box">
+          <input
+            type="text"
+            placeholder="Search filters..."
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="applySearch()"
+            class="w-full px-3 py-2 border rounded-md"
+            nz-input
+          />
+        </div>
+        <button nz-button nzType="primary" [routerLink]="['/issues']">
+          <span nz-icon nzType="plus"></span>
+          Create Filter
+        </button>
+      </div>
     </div>
   </div>
 
-  <nz-tabset class="filter-tabs">
-    <nz-tab nzTitle="All Filters">
-      <ng-container
-        *ngTemplateOutlet="
-          filtersTable;
-          context: { $implicit: filteredFilters }
-        "
-      ></ng-container>
-    </nz-tab>
-    <nz-tab nzTitle="My Filters">
-      <ng-container
-        *ngTemplateOutlet="filtersTable; context: { $implicit: myFilters }"
-      ></ng-container>
-    </nz-tab>
-    <nz-tab nzTitle="Starred">
-      <ng-container
-        *ngTemplateOutlet="filtersTable; context: { $implicit: starredFilters }"
-      ></ng-container>
-    </nz-tab>
-    <nz-tab nzTitle="Shared with Me">
-      <ng-container
-        *ngTemplateOutlet="filtersTable; context: { $implicit: sharedFilters }"
-      ></ng-container>
-    </nz-tab>
-  </nz-tabset>
+  <!-- Main content area with scroll -->
+  <div class="flex-grow overflow-y-auto p-6">
+    <nz-tabset class="filter-tabs">
+      <nz-tab nzTitle="All Filters">
+        <ng-container
+          *ngTemplateOutlet="
+            filtersTable;
+            context: { $implicit: filteredFilters }
+          "
+        ></ng-container>
+      </nz-tab>
+      <nz-tab nzTitle="My Filters">
+        <ng-container
+          *ngTemplateOutlet="filtersTable; context: { $implicit: myFilters }"
+        ></ng-container>
+      </nz-tab>
+      <nz-tab nzTitle="Starred">
+        <ng-container
+          *ngTemplateOutlet="filtersTable; context: { $implicit: starredFilters }"
+        ></ng-container>
+      </nz-tab>
+      <nz-tab nzTitle="Shared with Me">
+        <ng-container
+          *ngTemplateOutlet="filtersTable; context: { $implicit: sharedFilters }"
+        ></ng-container>
+      </nz-tab>
+    </nz-tabset>
+  </div>
 </div>
 
 <ng-template #filtersTable let-filters>

@@ -1,438 +1,440 @@
-<div class="container mx-auto py-6 px-4 bg-gray-50 min-h-screen">
-  <!-- Main Heading -->
-  <h1 class="text-2xl font-semibold text-gray-900 mb-8">Your work</h1>
-
-  <!-- Divider -->
-  <div class="border-b border-gray-200 mb-6"></div>
-
-  <!-- Recent Projects Section -->
-  <div class="mb-8">
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="text-lg font-medium text-gray-900">Recent projects</h2>
-      <a routerLink="/projects" class="text-blue-600 hover:underline text-sm"
-        >View all projects</a
-      >
-    </div>
-
-    <!-- Loading Spinner -->
-    <div *ngIf="isLoading" class="flex justify-center py-6">
-      <div
-        class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"
-      ></div>
-    </div>
-
-    <!-- Error Message -->
-    <div *ngIf="error" class="bg-red-50 text-red-700 p-4 rounded-md mb-4">
-      {{ error }}
-    </div>
-
-    <!-- Project Cards Grid -->
-    <div
-      *ngIf="!isLoading && !error"
-      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
-    >
-      <!-- Project Card (repeat for each project) -->
-      <div
-        *ngFor="let project of recentProjects"
-        class="bg-white border border-gray-200 rounded-md shadow-sm overflow-hidden"
-      >
-        <!-- Project Header -->
-        <div class="flex items-center p-4 bg-blue-50">
-          <div
-            class="flex-shrink-0 h-8 w-8 rounded bg-blue-600 flex items-center justify-center text-white font-medium"
-          >
-            {{ project.key.substring(0, 2) }}
-          </div>
-          <div class="ml-3">
-            <h3 class="font-medium text-gray-800">{{ project.name }}</h3>
-            <p class="text-sm text-gray-500">Team-managed {{ project.type }}</p>
-          </div>
-        </div>
-
-        <!-- Quick Links -->
-        <div class="p-4">
-          <h4 class="text-xs font-medium text-gray-500 mb-2">Quick links</h4>
-
-          <!-- My Open Issues Link -->
-          <a
-            routerLink="/projects/{{ project.id }}/issues"
-            class="flex justify-between items-center py-1 text-gray-700 hover:text-blue-600"
-          >
-            <span class="text-sm">My open issues</span>
-            <span
-              class="bg-gray-100 text-gray-700 rounded-full px-2 py-0.5 text-xs"
-            >
-              {{ project.issueCount?.open || 0 }}
-            </span>
-          </a>
-
-          <!-- Done Issues Link -->
-          <a
-            routerLink="/projects/{{ project.id }}/issues"
-            class="flex justify-between items-center py-1 text-gray-700 hover:text-blue-600"
-          >
-            <span class="text-sm">Done issues</span>
-            <span
-              class="bg-gray-100 text-gray-700 rounded-full px-2 py-0.5 text-xs"
-            >
-              {{ project.issueCount?.done || 0 }}
-            </span>
-          </a>
-        </div>
-
-        <!-- Board Link -->
-        <div class="px-4 pb-3 border-t border-gray-100 pt-2">
-          <div class="flex items-center">
-            <a
-              routerLink="/projects/{{ project.id }}/board"
-              class="flex items-center text-gray-700 hover:text-blue-600"
-            >
-              <span class="text-sm">1 board</span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="w-4 h-4 ml-1"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M19.5 8.25l-7.5 7.5-7.5-7.5"
-                />
-              </svg>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
+<div class="flex flex-col h-screen">
+  <!-- Header -->
+  <div class="bg-gray-100 border-b border-gray-300 p-6 flex-shrink-0">
+    <h1 class="text-2xl font-semibold text-gray-900">Your work</h1>
   </div>
 
-  <!-- Tasks Section -->
-  <div>
-    <!-- Tabs -->
-    <div class="border-b border-gray-200">
-      <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-        <button
-          (click)="setActiveTab(0)"
-          [class.text-blue-600]="activeTab === 0"
-          [class.border-blue-600]="activeTab === 0"
-          [class.text-gray-500]="activeTab !== 0"
-          [class.hover:text-gray-700]="activeTab !== 0"
-          [class.border-transparent]="activeTab !== 0"
-          class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm"
+  <!-- Main content area with scroll -->
+  <div class="flex-grow overflow-y-auto p-6 bg-gray-50">
+    <!-- Recent Projects Section -->
+    <div class="mb-8">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-medium text-gray-900">Recent projects</h2>
+        <a routerLink="/projects" class="text-blue-600 hover:underline text-sm"
+          >View all projects</a
         >
-          Worked on
-        </button>
-        <button
-          (click)="setActiveTab(1)"
-          [class.text-blue-600]="activeTab === 1"
-          [class.border-blue-600]="activeTab === 1"
-          [class.text-gray-500]="activeTab !== 1"
-          [class.hover:text-gray-700]="activeTab !== 1"
-          [class.border-transparent]="activeTab !== 1"
-          class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm"
-        >
-          Viewed
-        </button>
-        <button
-          (click)="setActiveTab(2)"
-          [class.text-blue-600]="activeTab === 2"
-          [class.border-blue-600]="activeTab === 2"
-          [class.text-gray-500]="activeTab !== 2"
-          [class.hover:text-gray-700]="activeTab !== 2"
-          [class.border-transparent]="activeTab !== 2"
-          class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm"
-        >
-          Assigned to me
-          <span
-            *ngIf="assignedTasks.length > 0"
-            class="ml-2 px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100"
-          >
-            {{ assignedTasks.length }}
-          </span>
-        </button>
-        <button
-          (click)="setActiveTab(3)"
-          [class.text-blue-600]="activeTab === 3"
-          [class.border-blue-600]="activeTab === 3"
-          [class.text-gray-500]="activeTab !== 3"
-          [class.hover:text-gray-700]="activeTab !== 3"
-          [class.border-transparent]="activeTab !== 3"
-          class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm"
-        >
-          Starred
-        </button>
-      </nav>
-    </div>
+      </div>
 
-    <!-- TODAY Header -->
-    <div class="pt-6">
-      <h3
-        class="text-xs font-semibold text-gray-500 tracking-wider uppercase mb-3"
+      <!-- Loading Spinner -->
+      <div *ngIf="isLoading" class="flex justify-center py-6">
+        <div
+          class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"
+        ></div>
+      </div>
+
+      <!-- Error Message -->
+      <div *ngIf="error" class="bg-red-50 text-red-700 p-4 rounded-md mb-4">
+        {{ error }}
+      </div>
+
+      <!-- Project Cards Grid -->
+      <div
+        *ngIf="!isLoading && !error"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
       >
-        TODAY
-      </h3>
+        <!-- Project Card (repeat for each project) -->
+        <div
+          *ngFor="let project of recentProjects"
+          class="bg-white border border-gray-200 rounded-md shadow-sm overflow-hidden"
+        >
+          <!-- Project Header -->
+          <div class="flex items-center p-4 bg-blue-50">
+            <div
+              class="flex-shrink-0 h-8 w-8 rounded bg-blue-600 flex items-center justify-center text-white font-medium"
+            >
+              {{ project.key.substring(0, 2) }}
+            </div>
+            <div class="ml-3">
+              <h3 class="font-medium text-gray-800">{{ project.name }}</h3>
+              <p class="text-sm text-gray-500">Team-managed {{ project.type }}</p>
+            </div>
+          </div>
+
+          <!-- Quick Links -->
+          <div class="p-4">
+            <h4 class="text-xs font-medium text-gray-500 mb-2">Quick links</h4>
+
+            <!-- My Open Issues Link -->
+            <a
+              routerLink="/projects/{{ project.id }}/issues"
+              class="flex justify-between items-center py-1 text-gray-700 hover:text-blue-600"
+            >
+              <span class="text-sm">My open issues</span>
+              <span
+                class="bg-gray-100 text-gray-700 rounded-full px-2 py-0.5 text-xs"
+              >
+                {{ project.issueCount?.open || 0 }}
+              </span>
+            </a>
+
+            <!-- Done Issues Link -->
+            <a
+              routerLink="/projects/{{ project.id }}/issues"
+              class="flex justify-between items-center py-1 text-gray-700 hover:text-blue-600"
+            >
+              <span class="text-sm">Done issues</span>
+              <span
+                class="bg-gray-100 text-gray-700 rounded-full px-2 py-0.5 text-xs"
+              >
+                {{ project.issueCount?.done || 0 }}
+              </span>
+            </a>
+          </div>
+
+          <!-- Board Link -->
+          <div class="px-4 pb-3 border-t border-gray-100 pt-2">
+            <div class="flex items-center">
+              <a
+                routerLink="/projects/{{ project.id }}/board"
+                class="flex items-center text-gray-700 hover:text-blue-600"
+              >
+                <span class="text-sm">1 board</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  class="w-4 h-4 ml-1"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                  />
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Task Tab Content -->
-    <div class="space-y-4">
-      <!-- Worked On Tab Content -->
-      <div *ngIf="activeTab === 0">
-        <div
-          *ngIf="workedOnTasks.length === 0"
-          class="text-center py-8 text-gray-500"
-        >
-          No recent tasks found.
-        </div>
-
-        <div
-          *ngFor="let task of workedOnTasks"
-          class="flex items-start py-4 border-b border-gray-100"
-        >
-          <!-- Task Icon -->
-          <div
-            class="flex-shrink-0 w-8 h-8 bg-blue-100 rounded flex items-center justify-center"
+    <!-- Tasks Section -->
+    <div>
+      <!-- Tabs -->
+      <div class="border-b border-gray-200">
+        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+          <button
+            (click)="setActiveTab(0)"
+            [class.text-blue-600]="activeTab == 0"
+            [class.border-blue-600]="activeTab == 0"
+            [class.text-gray-500]="activeTab != 0"
+            [class.hover:text-gray-700]="activeTab != 0"
+            [class.border-transparent]="activeTab != 0"
+            class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              class="w-5 h-5 text-blue-600"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm11.378-3.917c-.89-.777-2.366-.777-3.255 0a.75.75 0 01-.988-1.129c1.454-1.272 3.776-1.272 5.23 0 1.513 1.324 1.513 3.518 0 4.842a3.75 3.75 0 01-.837.552c-.676.328-1.028.774-1.028 1.152v.75a.75.75 0 01-1.5 0v-.75c0-1.279 1.06-2.107 1.875-2.502.182-.088.351-.199.503-.331.83-.727.83-1.857 0-2.584zM12 18a.75.75 0 100-1.5.75.75 0 000 1.5z"
-                clip-rule="evenodd"
-              />
-            </svg>
-          </div>
-
-          <!-- Task Content -->
-          <div class="ml-4 flex-1">
-            <div class="flex items-center mb-1">
-              <span class="text-xs text-gray-500"
-                >{{ task.projectKey }}-{{ task.key }}</span
-              >
-              <span class="mx-2 text-gray-300">·</span>
-              <span class="text-xs text-gray-500">{{
-                task.created | date : "MMM d"
-              }}</span>
-            </div>
-
-            <a
-              routerLink="/projects/{{ task.projectId }}/issues/{{ task.id }}"
-              class="text-sm font-medium text-gray-900 hover:text-blue-600"
-            >
-              {{ task.title }}
-            </a>
-
-            <div class="flex items-center mt-2">
-              <span class="text-xs text-gray-500">{{ task.projectName }}</span>
-              <span class="mx-2 text-gray-300">·</span>
-
-              <!-- Priority Badge -->
-              <span
-                [class]="
-                  'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ' +
-                  (task.priority === 'High'
-                    ? 'bg-red-100 text-red-800'
-                    : task.priority === 'Medium'
-                    ? 'bg-yellow-100 text-yellow-800'
-                    : 'bg-green-100 text-green-800')
-                "
-              >
-                {{ task.priority }}
-              </span>
-
-              <!-- Status Badge -->
-              <span
-                class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-              >
-                {{ task.status }}
-              </span>
-            </div>
-          </div>
-
-          <!-- Task Creator -->
-          <div class="ml-4 flex-shrink-0">
-            <div
-              *ngIf="task.assignee"
-              class="w-8 h-8 rounded-full overflow-hidden bg-purple-600 flex items-center justify-center text-white"
-            >
-              <img
-                *ngIf="task.assignee.avatarUrl"
-                [src]="task.assignee.avatarUrl"
-                [alt]="task.assignee.name"
-                class="w-full h-full object-cover"
-              />
-              <span *ngIf="!task.assignee.avatarUrl">{{
-                task.assignee.name.charAt(0)
-              }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Viewed Tab Content -->
-      <div *ngIf="activeTab === 1">
-        <div
-          *ngIf="viewedTasks.length === 0"
-          class="text-center py-8 text-gray-500"
-        >
-          No recently viewed tasks.
-        </div>
-
-        <div
-          *ngFor="let task of viewedTasks"
-          class="flex items-start py-4 border-b border-gray-100"
-        >
-          <!-- Task Icon -->
-          <div
-            class="flex-shrink-0 w-8 h-8 bg-green-100 rounded flex items-center justify-center"
+            Worked on
+          </button>
+          <button
+            (click)="setActiveTab(1)"
+            [class.text-blue-600]="activeTab == 1"
+            [class.border-blue-600]="activeTab == 1"
+            [class.text-gray-500]="activeTab != 1"
+            [class.hover:text-gray-700]="activeTab != 1"
+            [class.border-transparent]="activeTab != 1"
+            class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              class="w-5 h-5 text-green-600"
-            >
-              <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
-              <path
-                fill-rule="evenodd"
-                d="M1.323 11.447C2.811 6.976 7.028 3.75 12.001 3.75c4.97 0 9.185 3.223 10.675 7.69.12.362.12.752 0 1.113-1.487 4.471-5.705 7.697-10.677 7.697-4.97 0-9.186-3.223-10.675-7.69a1.762 1.762 0 010-1.113zM17.25 12a5.25 5.25 0 11-10.5 0 5.25 5.25 0 0110.5 0z"
-                clip-rule="evenodd"
-              />
-            </svg>
-          </div>
-
-          <!-- Task Content -->
-          <div class="ml-4 flex-1">
-            <div class="flex items-center mb-1">
-              <span class="text-xs text-gray-500"
-                >{{ task.projectKey }}-{{ task.key }}</span
-              >
-              <span class="mx-2 text-gray-300">·</span>
-              <span class="text-xs text-gray-500">{{
-                task.created | date : "MMM d"
-              }}</span>
-            </div>
-
-            <a
-              routerLink="/projects/{{ task.projectId }}/issues/{{ task.id }}"
-              class="text-sm font-medium text-gray-900 hover:text-blue-600"
-            >
-              {{ task.title }}
-            </a>
-
-            <div class="flex items-center mt-2">
-              <span class="text-xs text-gray-500">{{ task.projectName }}</span>
-              <span class="mx-2 text-gray-300">·</span>
-
-              <!-- Status Badge -->
-              <span
-                class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-              >
-                {{ task.status }}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Assigned to Me Tab Content -->
-      <div *ngIf="activeTab === 2">
-        <div
-          *ngIf="assignedTasks.length === 0"
-          class="text-center py-8 text-gray-500"
-        >
-          No tasks are currently assigned to you.
-        </div>
-
-        <div
-          *ngFor="let task of assignedTasks"
-          class="flex items-start py-4 border-b border-gray-100"
-        >
-          <!-- Task Icon -->
-          <div
-            class="flex-shrink-0 w-8 h-8 bg-purple-100 rounded flex items-center justify-center"
+            Viewed
+          </button>
+          <button
+            (click)="setActiveTab(2)"
+            [class.text-blue-600]="activeTab == 2"
+            [class.border-blue-600]="activeTab == 2"
+            [class.text-gray-500]="activeTab != 2"
+            [class.hover:text-gray-700]="activeTab != 2"
+            [class.border-transparent]="activeTab != 2"
+            class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              class="w-5 h-5 text-purple-600"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z"
-                clip-rule="evenodd"
-              />
-            </svg>
-          </div>
-
-          <!-- Task Content -->
-          <div class="ml-4 flex-1">
-            <div class="flex items-center mb-1">
-              <span class="text-xs text-gray-500"
-                >{{ task.projectKey }}-{{ task.key }}</span
-              >
-              <span class="mx-2 text-gray-300">·</span>
-              <span class="text-xs text-gray-500">{{
-                task.created | date : "MMM d"
-              }}</span>
-            </div>
-
-            <a
-              routerLink="/projects/{{ task.projectId }}/issues/{{ task.id }}"
-              class="text-sm font-medium text-gray-900 hover:text-blue-600"
-            >
-              {{ task.title }}
-            </a>
-
-            <div class="flex items-center mt-2">
-              <span class="text-xs text-gray-500">{{ task.projectName }}</span>
-              <span class="mx-2 text-gray-300">·</span>
-
-              <!-- Priority Badge -->
-              <span
-                [class]="
-                  'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ' +
-                  (task.priority === 'High'
-                    ? 'bg-red-100 text-red-800'
-                    : task.priority === 'Medium'
-                    ? 'bg-yellow-100 text-yellow-800'
-                    : 'bg-green-100 text-green-800')
-                "
-              >
-                {{ task.priority }}
-              </span>
-
-              <!-- Status Badge -->
-              <span
-                class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-              >
-                {{ task.status }}
-              </span>
-            </div>
-          </div>
-
-          <!-- Created Tag -->
-          <div class="ml-4 flex-shrink-0">
+            Assigned to me
             <span
-              class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800"
+              *ngIf="assignedTasks.length > 0"
+              class="ml-2 px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100"
             >
-              Created
+              {{ assignedTasks.length }}
             </span>
-          </div>
-        </div>
+          </button>
+          <button
+            (click)="setActiveTab(3)"
+            [class.text-blue-600]="activeTab == 3"
+            [class.border-blue-600]="activeTab == 3"
+            [class.text-gray-500]="activeTab != 3"
+            [class.hover:text-gray-700]="activeTab != 3"
+            [class.border-transparent]="activeTab != 3"
+            class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm"
+          >
+            Starred
+          </button>
+        </nav>
       </div>
 
-      <!-- Starred Tab Content -->
-      <div *ngIf="activeTab === 3">
-        <div class="text-center py-8 text-gray-500">
-          You haven't starred any issues yet.
+      <!-- TODAY Header -->
+      <div class="pt-6">
+        <h3
+          class="text-xs font-semibold text-gray-500 tracking-wider uppercase mb-3"
+        >
+          TODAY
+        </h3>
+      </div>
+
+      <!-- Task Tab Content -->
+      <div class="space-y-4">
+        <!-- Worked On Tab Content -->
+        <div *ngIf="activeTab == 0">
+          <div
+            *ngIf="workedOnTasks.length === 0"
+            class="text-center py-8 text-gray-500"
+          >
+            No recent tasks found.
+          </div>
+
+          <div
+            *ngFor="let task of workedOnTasks"
+            class="flex items-start py-4 border-b border-gray-100"
+          >
+            <!-- Task Icon -->
+            <div
+              class="flex-shrink-0 w-8 h-8 bg-blue-100 rounded flex items-center justify-center"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                class="w-5 h-5 text-blue-600"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm11.378-3.917c-.89-.777-2.366-.777-3.255 0a.75.75 0 01-.988-1.129c1.454-1.272 3.776-1.272 5.23 0 1.513 1.324 1.513 3.518 0 4.842a3.75 3.75 0 01-.837.552c-.676.328-1.028.774-1.028 1.152v.75a.75.75 0 01-1.5 0v-.75c0-1.279 1.06-2.107 1.875-2.502.182-.088.351-.199.503-.331.83-.727.83-1.857 0-2.584zM12 18a.75.75 0 100-1.5.75.75 0 000 1.5z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </div>
+
+            <!-- Task Content -->
+            <div class="ml-4 flex-1">
+              <div class="flex items-center mb-1">
+                <span class="text-xs text-gray-500"
+                  >{{ task.projectKey }}-{{ task.key }}</span
+                >
+                <span class="mx-2 text-gray-300">·</span>
+                <span class="text-xs text-gray-500">{{
+                  task.created | date : "MMM d"
+                }}</span>
+              </div>
+
+              <a
+                routerLink="/projects/{{ task.projectId }}/issues/{{ task.id }}"
+                class="text-sm font-medium text-gray-900 hover:text-blue-600"
+              >
+                {{ task.title }}
+              </a>
+
+              <div class="flex items-center mt-2">
+                <span class="text-xs text-gray-500">{{ task.projectName }}</span>
+                <span class="mx-2 text-gray-300">·</span>
+
+                <!-- Priority Badge -->
+                <span
+                  [class]="
+                    'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ' +
+                    (task.priority === 'High'
+                      ? 'bg-red-100 text-red-800'
+                      : task.priority === 'Medium'
+                      ? 'bg-yellow-100 text-yellow-800'
+                      : 'bg-green-100 text-green-800')
+                  "
+                >
+                  {{ task.priority }}
+                </span>
+
+                <!-- Status Badge -->
+                <span
+                  class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                >
+                  {{ task.status }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Task Creator -->
+            <div class="ml-4 flex-shrink-0">
+              <div
+                *ngIf="task.assignee"
+                class="w-8 h-8 rounded-full overflow-hidden bg-purple-600 flex items-center justify-center text-white"
+              >
+                <img
+                  *ngIf="task.assignee.avatarUrl"
+                  [src]="task.assignee.avatarUrl"
+                  [alt]="task.assignee.name"
+                  class="w-full h-full object-cover"
+                />
+                <span *ngIf="!task.assignee.avatarUrl">{{
+                  task.assignee.name.charAt(0)
+                }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Viewed Tab Content -->
+        <div *ngIf="activeTab == 1">
+          <div
+            *ngIf="viewedTasks.length === 0"
+            class="text-center py-8 text-gray-500"
+          >
+            No recently viewed tasks.
+          </div>
+
+          <div
+            *ngFor="let task of viewedTasks"
+            class="flex items-start py-4 border-b border-gray-100"
+          >
+            <!-- Task Icon -->
+            <div
+              class="flex-shrink-0 w-8 h-8 bg-green-100 rounded flex items-center justify-center"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                class="w-5 h-5 text-green-600"
+              >
+                <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
+                <path
+                  fill-rule="evenodd"
+                  d="M1.323 11.447C2.811 6.976 7.028 3.75 12.001 3.75c4.97 0 9.185 3.223 10.675 7.69.12.362.12.752 0 1.113-1.487 4.471-5.705 7.697-10.677 7.697-4.97 0-9.186-3.223-10.675-7.69a1.762 1.762 0 010-1.113zM17.25 12a5.25 5.25 0 11-10.5 0 5.25 5.25 0 0110.5 0z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </div>
+
+            <!-- Task Content -->
+            <div class="ml-4 flex-1">
+              <div class="flex items-center mb-1">
+                <span class="text-xs text-gray-500"
+                  >{{ task.projectKey }}-{{ task.key }}</span
+                >
+                <span class="mx-2 text-gray-300">·</span>
+                <span class="text-xs text-gray-500">{{
+                  task.created | date : "MMM d"
+                }}</span>
+              </div>
+
+              <a
+                routerLink="/projects/{{ task.projectId }}/issues/{{ task.id }}"
+                class="text-sm font-medium text-gray-900 hover:text-blue-600"
+              >
+                {{ task.title }}
+              </a>
+
+              <div class="flex items-center mt-2">
+                <span class="text-xs text-gray-500">{{ task.projectName }}</span>
+                <span class="mx-2 text-gray-300">·</span>
+
+                <!-- Status Badge -->
+                <span
+                  class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                >
+                  {{ task.status }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assigned to Me Tab Content -->
+        <div *ngIf="activeTab == 2">
+          <div
+            *ngIf="assignedTasks.length === 0"
+            class="text-center py-8 text-gray-500"
+          >
+            No tasks are currently assigned to you.
+          </div>
+
+          <div
+            *ngFor="let task of assignedTasks"
+            class="flex items-start py-4 border-b border-gray-100"
+          >
+            <!-- Task Icon -->
+            <div
+              class="flex-shrink-0 w-8 h-8 bg-purple-100 rounded flex items-center justify-center"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                class="w-5 h-5 text-purple-600"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </div>
+
+            <!-- Task Content -->
+            <div class="ml-4 flex-1">
+              <div class="flex items-center mb-1">
+                <span class="text-xs text-gray-500"
+                  >{{ task.projectKey }}-{{ task.key }}</span
+                >
+                <span class="mx-2 text-gray-300">·</span>
+                <span class="text-xs text-gray-500">{{
+                  task.created | date : "MMM d"
+                }}</span>
+              </div>
+
+              <a
+                routerLink="/projects/{{ task.projectId }}/issues/{{ task.id }}"
+                class="text-sm font-medium text-gray-900 hover:text-blue-600"
+              >
+                {{ task.title }}
+              </a>
+
+              <div class="flex items-center mt-2">
+                <span class="text-xs text-gray-500">{{ task.projectName }}</span>
+                <span class="mx-2 text-gray-300">·</span>
+
+                <!-- Priority Badge -->
+                <span
+                  [class]="
+                    'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ' +
+                    (task.priority === 'High'
+                      ? 'bg-red-100 text-red-800'
+                      : task.priority === 'Medium'
+                      ? 'bg-yellow-100 text-yellow-800'
+                      : 'bg-green-100 text-green-800')
+                  "
+                >
+                  {{ task.priority }}
+                </span>
+
+                <!-- Status Badge -->
+                <span
+                  class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                >
+                  {{ task.status }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Created Tag -->
+            <div class="ml-4 flex-shrink-0">
+              <span
+                class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800"
+              >
+                Created
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Starred Tab Content -->
+        <div *ngIf="activeTab == 3">
+          <div class="text-center py-8 text-gray-500">
+            You haven't starred any issues yet.
+          </div>
         </div>
       </div>
     </div>

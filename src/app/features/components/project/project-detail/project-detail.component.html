@@ -1,221 +1,249 @@
-<div class="container px-4 py-8 mx-auto">
-  <!-- Loading indicator -->
-  <div *ngIf="loading" class="flex justify-center my-8">
-    <div
-      class="w-8 h-8 border-blue-200 rounded-full border-3 border-t-blue-600 animate-spin"
-    ></div>
-  </div>
-
-  <!-- Error message -->
-  <div
-    *ngIf="error"
-    class="p-4 mb-4 text-red-700 bg-red-100 border border-red-200 rounded-md"
-  >
-    <div class="flex items-center">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="w-5 h-5 mr-2"
-        viewBox="0 0 20 20"
-        fill="currentColor"
+<div class="flex flex-col h-screen">
+  <!-- Header -->
+  <div class="bg-gray-100 border-b border-gray-300 p-6 flex-shrink-0">
+    <div class="flex justify-between items-center">
+      <h1 class="text-2xl font-bold">Project Details</h1>
+      <button
+        class="flex items-center px-4 py-2 border rounded-md hover:bg-gray-100"
+        (click)="goBack()"
       >
-        <path
-          fill-rule="evenodd"
-          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-          clip-rule="evenodd"
-        />
-      </svg>
-      {{ error }}
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-4 h-4 mr-1"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+            clip-rule="evenodd"
+          />
+        </svg>
+        Back
+      </button>
     </div>
   </div>
 
-  <!-- Project details -->
-  <div *ngIf="project && !loading" class="bg-white border rounded-lg shadow-sm">
-    <!-- Header -->
-    <div class="p-6 border-b bg-blue-50">
+  <!-- Main content area with scroll -->
+  <div class="flex-grow overflow-y-auto p-6">
+    <!-- Loading indicator -->
+    <div *ngIf="loading" class="flex justify-center my-8">
       <div
-        class="flex flex-col items-start justify-between md:flex-row md:items-center"
-      >
-        <div>
-          <div class="flex items-center gap-3">
-            <div
-              class="flex items-center justify-center w-10 h-10 text-blue-700 bg-blue-100 rounded-md"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="w-6 h-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                />
-              </svg>
-            </div>
-            <h1 class="text-2xl font-bold">{{ project.name }}</h1>
-          </div>
+        class="w-8 h-8 border-blue-200 rounded-full border-3 border-t-blue-600 animate-spin"
+      ></div>
+    </div>
 
-          <div class="mt-2 text-gray-500" *ngIf="project.key">
-            Key: {{ project.key }}
-          </div>
-        </div>
-
-        <div class="flex gap-2 mt-4 md:mt-0">
-          <button
-            class="flex items-center px-4 py-2 border rounded-md hover:bg-gray-100"
-            (click)="goBack()"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="w-4 h-4 mr-1"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
-                clip-rule="evenodd"
-              />
-            </svg>
-            Back
-          </button>
-
-          <button
-            class="flex items-center px-4 py-2 border rounded-md hover:bg-gray-100"
-            (click)="editProject()"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="w-4 h-4 mr-1"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
-              />
-            </svg>
-            Edit
-          </button>
-
-          <button
-            class="flex items-center px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700"
-            (click)="confirmDelete()"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="w-4 h-4 mr-1"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                clip-rule="evenodd"
-              />
-            </svg>
-            Delete
-          </button>
-        </div>
+    <!-- Error message -->
+    <div
+      *ngIf="error"
+      class="p-4 mb-4 text-red-700 bg-red-100 border border-red-200 rounded-md"
+    >
+      <div class="flex items-center">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-5 h-5 mr-2"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+            clip-rule="evenodd"
+          />
+        </svg>
+        {{ error }}
       </div>
     </div>
 
-    <!-- Content -->
-    <div class="p-6">
-      <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
-        <!-- Left column -->
-        <div class="md:col-span-2">
-          <div class="mb-6">
-            <h2 class="mb-2 text-lg font-semibold">Description</h2>
-            <p class="text-gray-700 whitespace-pre-line">
-              {{ project.description }}
-            </p>
+    <!-- Project details -->
+    <div *ngIf="project && !loading" class="bg-white border rounded-lg shadow-sm">
+      <!-- Project header -->
+      <div class="p-6 border-b bg-blue-50">
+        <div
+          class="flex flex-col items-start justify-between md:flex-row md:items-center"
+        >
+          <div>
+            <div class="flex items-center gap-3">
+              <div
+                class="flex items-center justify-center w-10 h-10 text-blue-700 bg-blue-100 rounded-md"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="w-6 h-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                  />
+                </svg>
+              </div>
+              <h1 class="text-2xl font-bold">{{ project.name }}</h1>
+            </div>
+
+            <div class="mt-2 text-gray-500" *ngIf="project.key">
+              Key: {{ project.key }}
+            </div>
           </div>
 
-          <!-- Project members -->
-          <div
-            *ngIf="project.usersIncludes && project.usersIncludes.length > 0"
-          >
-            <h2 class="mb-2 text-lg font-semibold">Team Members</h2>
-            <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-              <div
-                *ngFor="let member of project.usersIncludes"
-                class="flex items-center p-3 border rounded-md"
+          <div class="flex gap-2 mt-4 md:mt-0">
+            <button
+              class="flex items-center px-4 py-2 border rounded-md hover:bg-gray-100"
+              (click)="goBack()"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-4 h-4 mr-1"
+                viewBox="0 0 20 20"
+                fill="currentColor"
               >
+                <path
+                  fill-rule="evenodd"
+                  d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              Back
+            </button>
+
+            <button
+              class="flex items-center px-4 py-2 border rounded-md hover:bg-gray-100"
+              (click)="editProject()"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-4 h-4 mr-1"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
+                />
+              </svg>
+              Edit
+            </button>
+
+            <button
+              class="flex items-center px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700"
+              (click)="confirmDelete()"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-4 h-4 mr-1"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div class="p-6">
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+          <!-- Left column -->
+          <div class="md:col-span-2">
+            <div class="mb-6">
+              <h2 class="mb-2 text-lg font-semibold">Description</h2>
+              <p class="text-gray-700 whitespace-pre-line">
+                {{ project.description }}
+              </p>
+            </div>
+
+            <!-- Project members -->
+            <div
+              *ngIf="project.usersIncludes && project.usersIncludes.length > 0"
+            >
+              <h2 class="mb-2 text-lg font-semibold">Team Members</h2>
+              <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <div
-                  class="flex items-center justify-center w-8 h-8 mr-3 bg-gray-200 rounded-full"
+                  *ngFor="let member of project.usersIncludes"
+                  class="flex items-center p-3 border rounded-md"
                 >
-                  <svg
-                    *ngIf="!member.user?.avatar"
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="w-4 h-4 text-gray-500"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
+                  <div
+                    class="flex items-center justify-center w-8 h-8 mr-3 bg-gray-200 rounded-full"
                   >
-                    <path
-                      fill-rule="evenodd"
-                      d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                      clip-rule="evenodd"
+                    <svg
+                      *ngIf="!member.user?.avatar"
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="w-4 h-4 text-gray-500"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                    <img
+                      *ngIf="member.user?.avatar"
+                      [src]="member.user.avatar"
+                      alt="User avatar"
+                      class="w-8 h-8 rounded-full"
                     />
-                  </svg>
-                  <img
-                    *ngIf="member.user?.avatar"
-                    [src]="member.user.avatar"
-                    alt="User avatar"
-                    class="w-8 h-8 rounded-full"
-                  />
-                </div>
-                <div>
-                  <div class="font-medium">
-                    {{ member.user?.firstName }} {{ member.user?.lastName }}
                   </div>
-                  <div class="text-sm text-gray-500">
-                    {{ member.accessLevel || "Member" }}
+                  <div>
+                    <div class="font-medium">
+                      {{ member.user?.firstName }} {{ member.user?.lastName }}
+                    </div>
+                    <div class="text-sm text-gray-500">
+                      {{ member.accessLevel || "Member" }}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Right column -->
-        <div>
-          <div class="p-4 border rounded-md bg-gray-50">
-            <h2 class="mb-3 text-lg font-semibold">Project Details</h2>
+          <!-- Right column -->
+          <div>
+            <div class="p-4 border rounded-md bg-gray-50">
+              <h2 class="mb-3 text-lg font-semibold">Project Details</h2>
 
-            <div class="mb-3">
-              <div class="text-sm text-gray-500">Created</div>
-              <div>{{ project.createdAt | date : "medium" }}</div>
-            </div>
+              <div class="mb-3">
+                <div class="text-sm text-gray-500">Created</div>
+                <div>{{ project.createdAt | date : "medium" }}</div>
+              </div>
 
-            <div class="mb-3" *ngIf="project.updatedAt">
-              <div class="text-sm text-gray-500">Last Updated</div>
-              <div>{{ project.updatedAt | date : "medium" }}</div>
-            </div>
+              <div class="mb-3" *ngIf="project.updatedAt">
+                <div class="text-sm text-gray-500">Last Updated</div>
+                <div>{{ project.updatedAt | date : "medium" }}</div>
+              </div>
 
-            <div class="mb-3" *ngIf="project.status">
-              <div class="text-sm text-gray-500">Status</div>
-              <div class="capitalize">{{ project.status }}</div>
+              <div class="mb-3" *ngIf="project.status">
+                <div class="text-sm text-gray-500">Status</div>
+                <div class="capitalize">{{ project.status }}</div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Project tabs section -->
-      <div class="mt-6">
-        <nz-tabset>
-          <nz-tab nzTitle="Overview">
-            <!-- Overview content is already above, so leave this empty or 
-                 move some content here if you want a cleaner tab structure -->
-          </nz-tab>
-          <nz-tab nzTitle="Members">
-            <app-project-members
-              [projectId]="project.id!"
-            ></app-project-members>
-          </nz-tab>
-        </nz-tabset>
+        <!-- Project tabs section -->
+        <div class="mt-6">
+          <nz-tabset>
+            <nz-tab nzTitle="Overview">
+              <!-- Overview content is already above, so leave this empty or
+                   move some content here if you want a cleaner tab structure -->
+            </nz-tab>
+            <nz-tab nzTitle="Members">
+              <app-project-members
+                [projectId]="project.id!"
+              ></app-project-members>
+            </nz-tab>
+          </nz-tabset>
+        </div>
       </div>
     </div>
   </div>
