@@ -9,11 +9,11 @@
       >
         Create project
       </button>
-      <button
+      <!-- <button
         class="border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-2 px-4 rounded"
       >
         Templates
-      </button>
+      </button> -->
     </div>
   </div>
 
@@ -60,7 +60,7 @@
           <option value="business">Business</option>
           <option value="software">Software</option>
         </select>
-        <div
+        <!-- <div
           class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"
         >
           <svg
@@ -72,7 +72,7 @@
               d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
             />
           </svg>
-        </div>
+        </div> -->
       </div>
     </div>
 
@@ -100,7 +100,7 @@
         <div class="col-span-1 flex items-center">
           <span class="text-blue-600">★</span>
         </div>
-        <div class="col-span-3 flex items-center">
+        <div class="col-span-5 flex items-center">
           Name
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -120,8 +120,8 @@
         <div class="col-span-2">Key</div>
         <div class="col-span-2">Type</div>
         <div class="col-span-2">Lead</div>
-        <div class="col-span-1">Project URL</div>
-        <div class="col-span-1 text-right">More actions</div>
+        <!-- <div class="col-span-1">Project URL</div>
+        <div class="col-span-1 text-right">More actions</div> -->
       </div>
 
       <!-- Empty state -->
@@ -159,7 +159,7 @@
         </div>
 
         <!-- Name Column -->
-        <div class="col-span-3 flex items-center">
+        <div class="col-span-5 flex items-center">
           <div
             [ngClass]="
               project.type === 'business' ? 'bg-purple-600' : 'bg-blue-600'
@@ -178,7 +178,7 @@
 
         <!-- Type Column -->
         <div class="col-span-2 text-gray-600">
-          Team-managed {{ project.type }}
+           {{ project.type | titlecase  }}
         </div>
 
         <!-- Lead Column -->
@@ -203,12 +203,11 @@
         </div>
 
         <!-- URL Column -->
-        <div class="col-span-1">
-          <!-- Empty by default in JIRA UI -->
-        </div>
+        <!-- <div class="col-span-1">
+        </div> -->
 
         <!-- Actions Column -->
-        <div class="col-span-1 text-right">
+        <!-- <div class="col-span-1 text-right">
           <button
             (click)="showProjectActions($event, project)"
             class="text-gray-500 hover:text-gray-800 focus:outline-none"
@@ -228,7 +227,7 @@
               />
             </svg>
           </button>
-        </div>
+        </div> -->
       </div>
     </div>
 
