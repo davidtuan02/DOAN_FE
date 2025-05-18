@@ -83,7 +83,7 @@
       </div>
 
       <!-- Avatar -->
-      <div class="form-group">
+      <!-- <div class="form-group">
         <label
           for="project-avatar"
           class="block text-sm font-medium text-gray-700"
@@ -112,7 +112,7 @@
             Change
           </button>
         </div>
-      </div>
+      </div> -->
 
       <!-- Save Button -->
       <div class="form-actions">
@@ -121,7 +121,7 @@
           [disabled]="loading"
           class="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <app-svg-icon
+          <!-- <app-svg-icon
             name="save"
             class="w-4 h-4 mr-2"
             *ngIf="!loading"
@@ -130,7 +130,7 @@
             name="spinner"
             class="w-4 h-4 mr-2 animate-spin"
             *ngIf="loading"
-          ></app-svg-icon>
+          ></app-svg-icon> -->
           Save Changes
         </button>
       </div>
@@ -201,7 +201,7 @@
             <p class="mt-1 text-xs text-gray-400">{{ filter.query }}</p>
           </div>
           <div class="flex space-x-2">
-            <button
+            <!-- <button
               (click)="toggleFilterShare(filter.id)"
               [class.text-blue-600]="filter.isShared"
               [class.text-gray-400]="!filter.isShared"
@@ -211,7 +211,7 @@
                 [name]="filter.isShared ? 'share-fill' : 'share'"
                 class="w-5 h-5"
               ></app-svg-icon>
-            </button>
+            </button> -->
             <button class="p-1 text-gray-400 hover:text-blue-600">
               <app-svg-icon name="edit" class="w-5 h-5"></app-svg-icon>
             </button>

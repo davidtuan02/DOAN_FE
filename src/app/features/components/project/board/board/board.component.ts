@@ -92,7 +92,7 @@ export class BoardComponent implements OnInit {
         console.log('Board received new active sprint:', sprint);
         if (sprint && sprint.id && this.currentSprint?.id !== sprint.id) {
           this.currentSprint = sprint;
-          this.message.info(`Loading board for sprint: ${sprint.name}`);
+          // this.message.info(`Loading board for sprint: ${sprint.name}`);
           this.loadBoardData(); // Reload the board data for the new sprint
         }
       });
@@ -140,6 +140,8 @@ export class BoardComponent implements OnInit {
                 (sprint) => sprint.status === 'active'
               );
               this.activeSprints = activeSprints;
+
+              this.currentSprint = this.activeSprints[0];
 
               // Get planning sprints
               this.planningSprints = sprints.filter(

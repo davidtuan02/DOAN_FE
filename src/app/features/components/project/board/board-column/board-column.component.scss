@@ -2,7 +2,8 @@
   @apply rounded bg-backgroundLightest;
   height: fit-content;
   flex: 1;
-  min-width: 300px;
+  // min-width: 250px;
+  width: 100%;
   margin: 0;
 
   .board-column-header {

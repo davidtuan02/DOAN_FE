@@ -185,6 +185,11 @@ export class LoginComponent implements OnInit {
             this.errorMessage =
               err.error?.message || 'Login failed. Invalid credentials.';
             this.isLoading = false;
+            this.notification.error(
+              'Error',
+              'Email or password is wrong!',
+              { nzDuration: 3000 }
+            );
           },
           complete: () => {
             this.isLoading = false;

@@ -358,7 +358,7 @@
       ></app-svg-icon>
     </button>
 
-    <button
+    <!-- <button
       class="circle-icon-button text-textHeader"
       nz-tooltip
       nzTooltipTitle="Settings"
@@ -366,6 +366,14 @@
     >
       <app-svg-icon name="config" [width]="24" [height]="24"></app-svg-icon>
     </button>
+    <button
+      class="circle-icon-button text-textHeader"
+      nz-tooltip
+      nzTooltipTitle="Settings"
+      nzTooltipPlacement="bottom"
+    >
+      <app-svg-icon name="config" [width]="24" [height]="24"></app-svg-icon>
+    </button> -->
 
     <ng-container *ngIf="currentUser$ | async as user">
       <a nz-dropdown [nzDropdownMenu]="userMenu" class="cursor-pointer">

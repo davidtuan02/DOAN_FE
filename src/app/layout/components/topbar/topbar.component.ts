@@ -17,7 +17,7 @@ import {
   LogoutOutline,
   SettingOutline,
 } from '@ant-design/icons-angular/icons';
-import { Router, NavigationExtras, NavigationEnd } from '@angular/router';
+import { Router, NavigationExtras, NavigationEnd, RouterModule } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { UserService } from '../../../core/services';
 import { IssueService } from '../../../features/services/issue.service';
@@ -70,6 +70,7 @@ interface BoardItem {
     NzIconModule,
     NzToolTipModule,
     NotificationListComponent,
+    RouterModule
   ],
   templateUrl: './topbar.component.html',
   styleUrls: ['./topbar.component.scss'],
