@@ -26,7 +26,7 @@ import { HttpClient } from '@angular/common/http';
 import { BASE_URL } from '../../../../core/constants/api.const';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Observable, of, finalize, forkJoin, firstValueFrom, catchError, tap, Subscription } from 'rxjs';
-import { map, catchError, tap } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { IssueService } from '../../../services/issue.service';
 import { UserService } from '../../../../core/services/user.service';
 import { CommentService, Comment } from '../../../services/comment.service';
@@ -34,27 +34,25 @@ import { NzModalService, NzModalRef } from 'ng-zorro-antd/modal';
 import { CardDetailsComponent } from '../../project/card/card-details/card-details.component';
 import { Store } from '@ngrx/store';
 import * as fromStore from '../../../../core/store';
-import { CardTypesEnum } from '../../../../core/enums';
 import { CreateCardFormComponent } from '../../project/card/create-card-form/create-card-form.component';
 import { nanoid } from 'nanoid';
 import { AssigneeFilterControlComponent } from '../../project/filter/assignee-filter-control/assignee-filter-control.component';
 import { LabelFilterControlComponent } from '../../project/filter/label-filter-control/label-filter-control.component';
 import { TypeFilterControlComponent } from '../../project/filter/type-filter-control/type-filter-control.component';
 import { SvgIconComponent } from '../../../../shared/components';
-import { CardFilter } from '../../../../core/models/card/card-filter';
 import { takeUntilDestroyed } from '../../../../shared/utils';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { AvatarComponent } from '../../../../shared/components/avatar/avatar.component';
-import { User } from '../../../../core/models';
+import { CardFilter, User } from '../../../../core/models';
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
-import { CardTypesEnum } from '../../../../shared/components';
-import { CardFilter } from '../../../interfaces/card-filter';
-import { GetBoard } from '../../../../store/actions/board.actions';
 import { RichTextEditorComponent } from '../../../../shared/components/rich-text-editor/rich-text-editor.component';
+import { TeamRole } from '../../../../core/models/team-role.model';
+import { PermissionService } from '../../../../core/services/permission.service';
+import { CardTypesEnum } from '../../../../core/enums';
 
 @Component({
   selector: 'app-backlog',
@@ -183,6 +181,10 @@ export class BacklogComponent implements OnInit {
   sprintToComplete: Sprint | null = null;
   moveToSprintId: string = 'backlog';
 
+  // Add permission related properties
+  userTeamRole: TeamRole = TeamRole.MEMBER;
+  canManageSprints = false;
+
   constructor(
     private backlogService: BacklogService,
     private projectService: ProjectService,
@@ -195,7 +197,9 @@ export class BacklogComponent implements OnInit {
     private modal: NzModalService,
     private viewContainerRef: ViewContainerRef,
     private store: Store<fromStore.AppState>,
-    private notification: NzNotificationService
+    private notification: NzNotificationService,
+    private permissionService: PermissionService,
+    private snackBar: MatSnackBar
   ) {
     // Initialize filter form controls
     this.groupByControl = new FormControl('None');
@@ -207,6 +211,9 @@ export class BacklogComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Load user permissions first
+    this.loadUserPermissions();
+
     this.isLoading = true;
 
     // Set current user info for assignee dropdown
@@ -552,9 +559,10 @@ export class BacklogComponent implements OnInit {
             this.selectedIssue = updatedIssue;
             this.editingIssue = { ...updatedIssue };
             this.isEditingTitle = false;
-            this.snackBar.open('Title updated successfully', 'Close', {
-              duration: 3000,
-            });
+            // this.snackBar.open('Title updated successfully', 'Close', {
+            //   duration: 3000,
+            // });
+            this.notification.success('Success', 'Title updated successfully', { nzDuration: 3000 });
           },
           error: (err) => {
             console.error('Error updating title:', err);
@@ -602,9 +610,7 @@ export class BacklogComponent implements OnInit {
             this.selectedIssue = updatedIssue;
             this.editingIssue = { ...updatedIssue };
             this.isEditingDescription = false;
-            this.snackBar.open('Description updated successfully', 'Close', {
-              duration: 3000,
-            });
+            this.notification.success('Success', 'Description updated successfully', { nzDuration: 3000 });
           },
           error: (err) => {
             console.error('Error updating description:', err);
@@ -618,9 +624,7 @@ export class BacklogComponent implements OnInit {
   // Save all changes to issue from the detail view
   saveIssueChanges(): void {
     if (!this.selectedIssue || !this.editingIssue) {
-      this.snackBar.open('No issue selected or no changes to save', 'Close', {
-        duration: 3000,
-      });
+      this.notification.error('Error', 'No issue selected or no changes to save', { nzDuration: 3000 });
       return;
     }
 
@@ -677,7 +681,8 @@ export class BacklogComponent implements OnInit {
 
     // If no changes, don't make the API call
     if (Object.keys(changedFields).length === 0) {
-      this.snackBar.open('No changes to save', 'Close', { duration: 3000 });
+      // this.snackBar.open('No changes to save', 'Close', { duration: 3000 });
+      this.notification.error('Error', 'No changes to save', { nzDuration: 3000 });
       return;
     }
 
@@ -698,9 +703,7 @@ export class BacklogComponent implements OnInit {
           this.selectedIssue = updatedIssue;
           this.editingIssue = { ...updatedIssue };
 
-          this.snackBar.open('Issue updated successfully', 'Close', {
-            duration: 3000,
-          });
+          this.notification.success('Success', 'Issue updated successfully', { nzDuration: 3000 });
         },
         error: (err) => {
           console.error('Error updating issue:', err);
@@ -714,9 +717,10 @@ export class BacklogComponent implements OnInit {
   // CRUD Operations
   createIssue(): void {
     if (!this.newIssue.title) {
-      this.snackBar.open('Please enter a title for the issue', 'Close', {
-        duration: 3000,
-      });
+      // this.snackBar.open('Please enter a title for the issue', 'Close', {
+      //   duration: 3000,
+      // });
+      this.notification.error('Error', 'Please enter a title for the issue', { nzDuration: 3000 });
       return;
     }
 
@@ -750,9 +754,10 @@ export class BacklogComponent implements OnInit {
           };
 
           this.showCreateIssueModal = false;
-          this.snackBar.open('Issue created successfully', 'Close', {
-            duration: 3000,
-          });
+          // this.snackBar.open('Issue created successfully', 'Close', {
+          //   duration: 3000,
+          // });
+          this.notification.success('Success', 'Issue created successfully', { nzDuration: 3000 });
         },
         error: (err) => {
           console.error('Error creating issue:', err);
@@ -763,7 +768,8 @@ export class BacklogComponent implements OnInit {
 
   updateIssue(issue: Issue): void {
     if (!issue || !issue.id) {
-      this.snackBar.open('Invalid issue data', 'Close', { duration: 3000 });
+      // this.snackBar.open('Invalid issue data', 'Close', { duration: 3000 });
+      this.notification.error('Error', 'Invalid issue data', { nzDuration: 3000 });
       return;
     }
 
@@ -784,9 +790,7 @@ export class BacklogComponent implements OnInit {
             this.editingIssue = { ...updatedIssue };
           }
 
-          this.snackBar.open('Issue updated successfully', 'Close', {
-            duration: 3000,
-          });
+          this.notification.success('Success', 'Issue updated successfully', { nzDuration: 3000 });
         },
         error: (err) => {
           console.error('Error updating issue:', err);
@@ -819,9 +823,7 @@ export class BacklogComponent implements OnInit {
               // Close the issue details panel
               this.closeIssueDetail();
 
-              this.snackBar.open('Issue deleted successfully', 'Close', {
-                duration: 3000,
-              });
+              this.notification.success('Success', 'Issue deleted successfully', { nzDuration: 3000 });
             },
             error: (err) => {
               console.error('Error deleting issue:', err);
@@ -835,9 +837,7 @@ export class BacklogComponent implements OnInit {
   // Update issue status from dropdown
   updateIssueStatus(status: 'To Do' | 'In Progress' | 'Review' | 'Done'): void {
     if (!this.selectedIssue || !this.editingIssue) {
-      this.snackBar.open('Cannot update: no issue selected', 'Close', {
-        duration: 3000,
-      });
+      this.notification.error('Error', 'Cannot update: no issue selected', { nzDuration: 3000 });
       return;
     }
 
@@ -879,9 +879,10 @@ export class BacklogComponent implements OnInit {
           const card = this.convertIssueToCard(updatedIssue);
           this.store.dispatch(fromStore.updateCard({ partial: card }));
 
-          this.snackBar.open(`Status updated to: ${status}`, 'Close', {
-            duration: 3000,
-          });
+          // this.snackBar.open(`Status updated to: ${status}`, 'Close', {
+          //   duration: 3000,
+          // });
+          this.notification.success('Success', `Status updated to: ${status}`, { nzDuration: 3000 });
         },
         error: (err) => {
           // Restore old status if error
@@ -984,9 +985,7 @@ export class BacklogComponent implements OnInit {
           const card = this.convertIssueToCard(updatedIssue);
           this.store.dispatch(fromStore.updateCard({ partial: card }));
 
-          this.snackBar.open(`Status updated to: ${newStatus}`, 'Close', {
-            duration: 3000,
-          });
+          this.notification.success('Success', `Status updated to: ${newStatus}`, { nzDuration: 3000 });
         },
         error: (err) => {
           // Revert UI change on error
@@ -1011,9 +1010,7 @@ export class BacklogComponent implements OnInit {
             const card = this.convertIssueToCard(updatedIssue);
             this.store.dispatch(fromStore.updateCard({ partial: card }));
 
-            this.snackBar.open('Issue assigned successfully', 'Close', {
-              duration: 3000,
-            });
+            this.notification.success('Success', 'Issue assigned successfully', { nzDuration: 3000 });
           },
           error: (err) => {
             this.handleError(err, 'Failed to assign issue');
@@ -1142,9 +1139,7 @@ export class BacklogComponent implements OnInit {
               // Ensure the issue data is up to date
               this.updateIssueInLists(updatedIssue);
 
-              this.snackBar.open('Issue moved to sprint', 'Close', {
-                duration: 3000,
-              });
+              this.notification.success('Success', 'Issue moved to sprint', { nzDuration: 3000 });
             },
             error: (err) => {
               console.error('Error moving issue to sprint:', err);
@@ -1167,9 +1162,7 @@ export class BacklogComponent implements OnInit {
               // Ensure the issue data is up to date
               this.updateIssueInLists(updatedIssue);
 
-              this.snackBar.open('Issue moved to backlog', 'Close', {
-                duration: 3000,
-              });
+              this.notification.success('Success', 'Issue moved to backlog', { nzDuration: 3000 });
             },
             error: (err) => {
               console.error('Error moving issue to backlog:', err);
@@ -1324,16 +1317,12 @@ export class BacklogComponent implements OnInit {
 
   createSprint(): void {
     if (!this.newSprint.name?.trim()) {
-      this.snackBar.open('Sprint name is required', 'Close', {
-        duration: 3000,
-      });
+      this.notification.error('Error', 'Sprint name is required', { nzDuration: 3000 });
       return;
     }
 
     if (!this.newSprint.startDate || !this.newSprint.endDate) {
-      this.snackBar.open('Sprint dates are required', 'Close', {
-        duration: 3000,
-      });
+      this.notification.error('Error', 'Sprint dates are required', { nzDuration: 3000 });
       return;
     }
 
@@ -1438,7 +1427,8 @@ export class BacklogComponent implements OnInit {
     // Find the sprint to complete
     const sprint = this.sprints.find((s) => s.id === sprintId);
     if (!sprint) {
-      this.snackBar.open('Sprint not found', 'Close', { duration: 3000 });
+      // this.snackBar.open('Sprint not found', 'Close', { duration: 3000 });
+      this.notification.error('Error', 'Sprint not found', { nzDuration: 3000 });
       return;
     }
 
@@ -1545,9 +1535,7 @@ export class BacklogComponent implements OnInit {
 
   // Finalize the sprint completion process
   private finalizeCompleteSprint(): void {
-    this.snackBar.open('Sprint completed successfully', 'Close', {
-      duration: 3000,
-    });
+    this.notification.success('Success', 'Sprint completed successfully', { nzDuration: 3000 });
     this.isCompletingSprint = false;
     this.showCompleteSprintModal = false;
     this.sprintToComplete = null;
@@ -1585,16 +1573,12 @@ export class BacklogComponent implements OnInit {
   // Update existing sprint
   updateSprint(): void {
     if (!this.newSprint.name?.trim()) {
-      this.snackBar.open('Sprint name is required', 'Close', {
-        duration: 3000,
-      });
+      this.notification.error('Error', 'Sprint name is required', { nzDuration: 3000 });
       return;
     }
 
     if (!this.newSprint.startDate || !this.newSprint.endDate) {
-      this.snackBar.open('Sprint dates are required', 'Close', {
-        duration: 3000,
-      });
+      this.notification.error('Error', 'Sprint dates are required', { nzDuration: 3000 });
       return;
     }
 
@@ -1625,9 +1609,7 @@ export class BacklogComponent implements OnInit {
           this.showCreateSprintModal = false;
           this.isEditingExistingSprint = false;
           this.sprintBeingEdited = '';
-          this.snackBar.open('Sprint updated successfully', 'Close', {
-            duration: 3000,
-          });
+          this.notification.success('Success', 'Sprint updated successfully', { nzDuration: 3000 });
           console.log('Sprint update successful:', response);
 
           // Reset the form
@@ -1646,9 +1628,7 @@ export class BacklogComponent implements OnInit {
             errorMessage = err;
           }
 
-          this.snackBar.open(errorMessage, 'Close', {
-            duration: 5000,
-          });
+          this.notification.error('Error', errorMessage, { nzDuration: 5000 });
         },
       });
   }
@@ -1804,7 +1784,8 @@ export class BacklogComponent implements OnInit {
   // Assign the current issue to the current user
   assignToMe(): void {
     if (!this.selectedIssue) {
-      this.snackBar.open('No issue selected', 'Close', { duration: 3000 });
+      // this.snackBar.open('No issue selected', 'Close', { duration: 3000 });
+      this.notification.error('Error', 'No issue selected', { nzDuration: 3000 });
       return;
     }
 
@@ -1814,9 +1795,7 @@ export class BacklogComponent implements OnInit {
     const currentUserId = this.userService.getCurrentUserId();
 
     if (!currentUserId) {
-      this.snackBar.open('Cannot identify current user', 'Close', {
-        duration: 3000,
-      });
+      this.notification.error('Error', 'Cannot identify current user', { nzDuration: 3000 });
       this.isLoading = false;
       return;
     }
@@ -1840,13 +1819,7 @@ export class BacklogComponent implements OnInit {
 
           if (!isTeamMember) {
             this.isLoading = false;
-            this.snackBar.open(
-              'You are not a member of this project team',
-              'Close',
-              {
-                duration: 3000,
-              }
-            );
+            this.notification.error('Error', 'You are not a member of this project team', { nzDuration: 3000 });
             return;
           }
 
@@ -1875,9 +1848,7 @@ export class BacklogComponent implements OnInit {
           this.selectedIssue = updatedIssue;
           this.editingIssue = { ...updatedIssue };
 
-          this.snackBar.open('Issue assigned to you', 'Close', {
-            duration: 3000,
-          });
+          this.notification.success('Success', 'Issue assigned to you', { nzDuration: 3000 });
         },
         error: (err) => {
           console.error('Error assigning issue:', err);
@@ -1933,7 +1904,8 @@ export class BacklogComponent implements OnInit {
   // Unassign the current issue
   unassignIssue(): void {
     if (!this.selectedIssue) {
-      this.snackBar.open('No issue selected', 'Close', { duration: 3000 });
+      // this.snackBar.open('No issue selected', 'Close', { duration: 3000 });
+      this.notification.error('Error', 'No issue selected', { nzDuration: 3000 });
       return;
     }
 
@@ -1954,7 +1926,8 @@ export class BacklogComponent implements OnInit {
           this.selectedIssue = updatedIssue;
           this.editingIssue = { ...updatedIssue };
 
-          this.snackBar.open('Issue unassigned', 'Close', { duration: 3000 });
+          // this.snackBar.open('Issue unassigned', 'Close', { duration: 3000 });
+          this.notification.success('Success', 'Issue unassigned', { nzDuration: 3000 });
         },
         error: (err) => {
           console.error('Error unassigning issue:', err);
@@ -1966,7 +1939,8 @@ export class BacklogComponent implements OnInit {
   // Implement automatic assignment (randomly assign to a user on the project team)
   assignAutomatic(): void {
     if (!this.selectedIssue) {
-      this.snackBar.open('No issue selected', 'Close', { duration: 3000 });
+      // this.snackBar.open('No issue selected', 'Close', { duration: 3000 });
+      this.notification.error('Error', 'No issue selected', { nzDuration: 3000 });
       return;
     }
 
@@ -2011,11 +1985,7 @@ export class BacklogComponent implements OnInit {
               this.selectedIssue = updatedIssue;
               this.editingIssue = { ...updatedIssue };
 
-              this.snackBar.open(
-                `Issue automatically assigned to ${randomUser.firstName} ${randomUser.lastName}`,
-                'Close',
-                { duration: 3000 }
-              );
+              this.notification.success('Success', `Issue automatically assigned to ${randomUser.firstName} ${randomUser.lastName}`, { nzDuration: 3000 });
             },
             error: (err: any) => {
               console.error('Error auto-assigning issue:', err);
@@ -2026,11 +1996,7 @@ export class BacklogComponent implements OnInit {
       error: (err: any) => {
         this.isLoading = false;
         console.error('Error fetching team members for auto-assignment:', err);
-        this.snackBar.open(
-          'Failed to fetch team members for auto-assignment',
-          'Close',
-          { duration: 3000 }
-        );
+        this.notification.error('Error', 'Failed to fetch team members for auto-assignment', { nzDuration: 3000 });
       },
     });
   }
@@ -2050,9 +2016,7 @@ export class BacklogComponent implements OnInit {
         },
         error: (err) => {
           console.error('Error loading comments:', err);
-          this.snackBar.open('Failed to load comments', 'Close', {
-            duration: 3000,
-          });
+          this.notification.error('Error', 'Failed to load comments', { nzDuration: 3000 });
         },
       });
   }
@@ -2075,13 +2039,12 @@ export class BacklogComponent implements OnInit {
           this.comments.unshift(comment);
           this.sortComments();
           this.newCommentContent = '';
-          this.snackBar.open('Comment added', 'Close', { duration: 2000 });
+          // this.snackBar.open('Comment added', 'Close', { duration: 2000 });
+          this.notification.success('Success', 'Comment added', { nzDuration: 2000 });
         },
         error: (err) => {
           console.error('Error adding comment:', err);
-          this.snackBar.open('Failed to add comment', 'Close', {
-            duration: 3000,
-          });
+          this.notification.error('Error', 'Failed to add comment', { nzDuration: 3000 });
         },
       });
   }
@@ -2118,13 +2081,15 @@ export class BacklogComponent implements OnInit {
           }
           this.editingCommentId = null;
           this.editingCommentContent = '';
-          this.snackBar.open('Comment updated', 'Close', { duration: 2000 });
+          // this.snackBar.open('Comment updated', 'Close', { duration: 2000 });
+          this.notification.success('Success', 'Comment updated', { nzDuration: 2000 });
         },
         error: (err) => {
           console.error('Error updating comment:', err);
-          this.snackBar.open('Failed to update comment', 'Close', {
-            duration: 3000,
-          });
+          this.notification.error('Error', 'Failed to update comment', { nzDuration: 3000 });
+          // this.snackBar.open('Failed to update comment', 'Close', {
+          //   duration: 3000,
+          // });
         },
       });
   }
@@ -2139,13 +2104,15 @@ export class BacklogComponent implements OnInit {
         .subscribe({
           next: () => {
             this.comments = this.comments.filter((c) => c.id !== commentId);
-            this.snackBar.open('Comment deleted', 'Close', { duration: 2000 });
+            // this.snackBar.open('Comment deleted', 'Close', { duration: 2000 });
+            this.notification.success('Success', 'Comment deleted', { nzDuration: 2000 });
           },
           error: (err) => {
             console.error('Error deleting comment:', err);
-            this.snackBar.open('Failed to delete comment', 'Close', {
-              duration: 3000,
-            });
+            this.notification.error('Error', 'Failed to delete comment', { nzDuration: 3000 });
+            // this.snackBar.open('Failed to delete comment', 'Close', {
+            //   duration: 3000,
+            // });
           },
         });
     }
@@ -2348,5 +2315,19 @@ export class BacklogComponent implements OnInit {
         },
       });
     }
+  }
+
+  // Add method to load user permissions
+  private loadUserPermissions(): void {
+    this.permissionService.getCurrentTeamRole().subscribe(role => {
+      if (role) {
+        this.userTeamRole = role;
+
+        // Check if user can manage sprints
+        this.permissionService.canManageSprint(role).subscribe(can => {
+          this.canManageSprints = can;
+        });
+      }
+    });
   }
 }

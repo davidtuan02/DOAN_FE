@@ -32,6 +32,8 @@ import {
 } from '../../../../core/services/board-column.service';
 import { ProjectService } from '../../../../core/services/project.service';
 import { SvgIconComponent } from '../../../../shared/components';
+import { TeamRole } from '../../../../core/models/team-role.model';
+import { PermissionService } from '../../../../core/services/permission.service';
 
 @Component({
   selector: 'app-board-columns-settings',
@@ -67,13 +69,16 @@ export class BoardColumnsSettingsComponent implements OnInit {
   columnForm: FormGroup;
   currentProjectId: string | null = null;
   currentBoardId: string | null = null;
+  userTeamRole: TeamRole = TeamRole.MEMBER;
+  canManageProject = false;
 
   constructor(
     private fb: FormBuilder,
     private boardColumnService: BoardColumnService,
     private projectService: ProjectService,
     private modal: NzModalService,
-    private message: NzMessageService
+    private message: NzMessageService,
+    private permissionService: PermissionService
   ) {
     this.columnForm = this.fb.group({
       name: ['', [Validators.required]],
@@ -88,6 +93,19 @@ export class BoardColumnsSettingsComponent implements OnInit {
       if (project && project.id) {
         this.currentProjectId = project.id;
         this.loadColumns();
+      }
+    });
+    this.loadUserPermissions();
+  }
+
+  loadUserPermissions(): void {
+    this.permissionService.getCurrentTeamRole().subscribe(role => {
+      if (role) {
+        this.userTeamRole = role;
+
+        this.permissionService.canManageProject(role).subscribe(can => {
+          this.canManageProject = can;
+        });
       }
     });
   }

@@ -19,6 +19,8 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzPaginationModule } from 'ng-zorro-antd/pagination';
+import { TeamRole } from '../../../../core/models/team-role.model';
+import { PermissionService } from '../../../../core/services/permission.service';
 
 // Interface extending Project with display-specific properties
 interface ProjectDisplay extends Project {
@@ -66,15 +68,37 @@ export class ProjectsListComponent implements OnInit {
   currentPage = 1;
   totalProjects = 0;
 
+  // Add permission related properties
+  userTeamRole: TeamRole = TeamRole.MEMBER;
+  canManageProject = false;
+
   constructor(
     private projectService: ProjectService,
     private userService: UserService,
-    private router: Router
+    private router: Router,
+    private permissionService: PermissionService
   ) {}
 
   ngOnInit(): void {
+    // Load user permissions first
+    this.loadUserPermissions();
+
     this.loadProjects();
     this.loadFavorites();
+  }
+
+  // Add method to load user permissions
+  private loadUserPermissions(): void {
+    this.permissionService.getCurrentTeamRole().subscribe(role => {
+      if (role) {
+        this.userTeamRole = role;
+
+        // Check if user can manage projects
+        this.permissionService.canManageProject(role).subscribe(can => {
+          this.canManageProject = can;
+        });
+      }
+    });
   }
 
   loadProjects(): void {

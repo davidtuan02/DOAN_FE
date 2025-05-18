@@ -28,6 +28,8 @@ import { HttpClient } from '@angular/common/http';
 import { of, switchMap, map as rxjsMap } from 'rxjs';
 import { BASE_URL } from '../../../../../core/constants/api.const';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
+import { TeamRole } from '../../../../../core/models/team-role.model';
+import { PermissionService } from '../../../../../core/services/permission.service';
 
 @Destroyable()
 @Component({
@@ -64,6 +66,10 @@ export class BoardComponent implements OnInit {
   showCompleteSprintModal = false;
   isCompletingSprint = false;
 
+  // Permission related properties
+  userTeamRole: TeamRole = TeamRole.MEMBER;
+  canManageSprints = false;
+
   constructor(
     private store: Store<fromStore.AppState>,
     private activatedRoute: ActivatedRoute,
@@ -75,10 +81,14 @@ export class BoardComponent implements OnInit {
     private sprintService: SprintService,
     private message: NzMessageService,
     private http: HttpClient,
-    private notification: NzNotificationService
+    private notification: NzNotificationService,
+    private permissionService: PermissionService
   ) {}
 
   ngOnInit(): void {
+    // Load user permissions first
+    this.loadUserPermissions();
+
     this.initializeBoard();
     this.handleQueryParams();
 
@@ -96,6 +106,20 @@ export class BoardComponent implements OnInit {
           this.loadBoardData(); // Reload the board data for the new sprint
         }
       });
+  }
+
+  // Add method to load user permissions
+  private loadUserPermissions(): void {
+    this.permissionService.getCurrentTeamRole().subscribe(role => {
+      if (role) {
+        this.userTeamRole = role;
+
+        // Check if user can manage sprints
+        this.permissionService.canManageSprint(role).subscribe(can => {
+          this.canManageSprints = can;
+        });
+      }
+    });
   }
 
   private handleQueryParams(): void {

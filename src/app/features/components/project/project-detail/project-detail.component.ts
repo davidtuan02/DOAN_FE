@@ -12,6 +12,8 @@ import {
   Project,
 } from '../../../../core/services/project.service';
 import { ProjectMembersComponent } from '../project-members/project-members.component';
+import { TeamRole } from '../../../../core/models/team-role.model';
+import { PermissionService } from '../../../../core/services/permission.service';
 
 @Component({
   selector: 'app-project-detail',
@@ -30,33 +32,58 @@ import { ProjectMembersComponent } from '../project-members/project-members.comp
   ],
 })
 export class ProjectDetailComponent implements OnInit {
-  projectId: string = '';
+  projectId: string | null = null;
   project: Project | null = null;
-  loading = false;
+  loading = true;
   error: string | null = null;
   deleteLoading = false;
+
+  // Add permission related properties
+  userTeamRole: TeamRole = TeamRole.MEMBER;
+  canManageProject = false;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private projectService: ProjectService,
     private message: NzMessageService,
-    private modal: NzModalService
+    private modal: NzModalService,
+    private permissionService: PermissionService
   ) {}
 
   ngOnInit(): void {
-    this.projectId = this.route.snapshot.paramMap.get('id') || '';
-    if (this.projectId) {
-      this.loadProject();
-    } else {
-      this.error = 'Project ID is missing';
-    }
+    // Load user permissions first
+    this.loadUserPermissions();
+
+    this.route.paramMap.subscribe(params => {
+      this.projectId = params.get('id');
+      if (this.projectId) {
+        this.loadProject();
+      } else {
+        this.error = 'No project ID provided';
+        this.loading = false;
+      }
+    });
+  }
+
+  // Add method to load user permissions
+  private loadUserPermissions(): void {
+    this.permissionService.getCurrentTeamRole().subscribe(role => {
+      if (role) {
+        this.userTeamRole = role;
+
+        // Check if user can manage projects
+        this.permissionService.canManageProject(role).subscribe(can => {
+          this.canManageProject = can;
+        });
+      }
+    });
   }
 
   loadProject(): void {
     this.loading = true;
     this.projectService
-      .getProjectById(this.projectId)
+      .getProjectById(this.projectId || '')
       .pipe(finalize(() => (this.loading = false)))
       .subscribe({
         next: (project) => {
@@ -89,7 +116,7 @@ export class ProjectDetailComponent implements OnInit {
   deleteProject(): void {
     this.deleteLoading = true;
     this.projectService
-      .deleteProject(this.projectId)
+      .deleteProject(this.projectId || '')
       .pipe(finalize(() => (this.deleteLoading = false)))
       .subscribe({
         next: () => {

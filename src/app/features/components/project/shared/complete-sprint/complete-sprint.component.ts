@@ -91,8 +91,8 @@ import { Sprint } from '../../../../../features/services/sprint.service';
           </select>
         </div>
 
-        <!-- Planning Sprints Section -->
-        <div class="mb-6 border-t pt-4">
+        <!-- Planning Sprints Section - Only visible for users with permission -->
+        <div class="mb-6 border-t pt-4" *ngIf="canCreateSprint">
           <h3 class="mb-3 text-md font-medium text-gray-700">Next Sprint:</h3>
 
           <div *ngIf="planningSprints.length > 0">
@@ -237,6 +237,7 @@ export class CompleteSprintComponent implements OnChanges, AfterViewInit, OnDest
   @Input() availableSprints: Sprint[] = [];
   @Input() planningSprints: Sprint[] = [];
   @Input() isCompleting = false;
+  @Input() canCreateSprint = false;
 
   @Output() confirm = new EventEmitter<string>();
   @Output() cancel = new EventEmitter<void>();

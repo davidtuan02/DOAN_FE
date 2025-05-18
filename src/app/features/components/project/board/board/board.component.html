@@ -49,12 +49,13 @@
       </div>
 
       <div class="flex items-center space-x-2">
+        <!-- Complete Sprint Button - Only show for users with permission -->
         <button
+          *ngIf="currentSprint && canManageSprints"
           class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-md transition-colors duration-150 ease-in-out flex items-center"
           nz-tooltip
           nzTooltipTitle="Complete Current Sprint"
           (click)="completeSprint()"
-          *ngIf="currentSprint"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
@@ -96,13 +97,18 @@
         <div class="ml-3">
           <h3 class="text-sm font-medium text-red-800">{{ error }}</h3>
           <div class="mt-2 text-sm text-red-700">
-            <p *ngIf="!currentSprint && error.includes('no active sprint')">
+            <!-- Only show "Start a Sprint" button if the user has permission -->
+            <p *ngIf="!currentSprint && error.includes('no active sprint') && canManageSprints">
               <button
                 (click)="startSprint()"
                 class="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 Start a Sprint
               </button>
+            </p>
+            <!-- Show alternative message if user doesn't have permission -->
+            <p *ngIf="!currentSprint && error.includes('no active sprint') && !canManageSprints">
+              Please contact an admin or team leader to start a sprint.
             </p>
           </div>
         </div>
@@ -122,6 +128,7 @@
     [availableSprints]="activeSprints"
     [planningSprints]="planningSprints"
     [isCompleting]="isCompletingSprint"
+    [canCreateSprint]="canManageSprints"
     (confirm)="handleCompleteSprintConfirm($event)"
     (cancel)="handleCompleteSprintCancel()"
     (startSprint)="handleStartSprint($event)"

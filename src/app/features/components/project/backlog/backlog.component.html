@@ -119,32 +119,33 @@
 
     <div class="flex gap-[20px]">
       <div class="grouping-action">
-      <label class="label">Group by</label>
-      <nz-select
-        class="custom-select"
-        [formControl]="groupByControl"
-        [nzDropdownMatchSelectWidth]="false"
-        nzBorderless
-        [nzSuffixIcon]="selectSuffixIcon"
-      >
-        <nz-option nzCustomContent nzLabel="None" nzValue="None">
-          <span>None</span>
-        </nz-option>
-        <nz-option nzCustomContent nzLabel="Assignee" nzValue="Assignee">
-          <span>Assignee</span>
-        </nz-option>
-        <nz-option nzCustomContent nzLabel="Subtask" nzValue="Subtask">
-          <span>Subtask</span>
-        </nz-option>
-      </nz-select>
-    </div>
+        <label class="label">Group by</label>
+        <nz-select
+          class="custom-select"
+          [formControl]="groupByControl"
+          [nzDropdownMatchSelectWidth]="false"
+          nzBorderless
+          [nzSuffixIcon]="selectSuffixIcon"
+        >
+          <nz-option nzCustomContent nzLabel="None" nzValue="None">
+            <span>None</span>
+          </nz-option>
+          <nz-option nzCustomContent nzLabel="Assignee" nzValue="Assignee">
+            <span>Assignee</span>
+          </nz-option>
+          <nz-option nzCustomContent nzLabel="Subtask" nzValue="Subtask">
+            <span>Subtask</span>
+          </nz-option>
+        </nz-select>
+      </div>
 
-    <button
-      class="px-3 py-1.5 text-sm font-medium text-blue-700 bg-blue-100 ml-4 rounded hover:bg-blue-200"
-      (click)="showCreateSprintModal = true"
-    >
-      Create sprint
-    </button>
+      <button
+        *ngIf="canManageSprints"
+        class="px-3 py-1.5 text-sm font-medium text-blue-700 bg-blue-100 ml-4 rounded hover:bg-blue-200"
+        (click)="showCreateSprintModal = true"
+      >
+        Create sprint
+      </button>
     </div>
   </div>
 
@@ -223,7 +224,7 @@
 
           <!-- Start Sprint Button (for planning sprints) -->
           <button
-            *ngIf="sprint.status === 'Planning'"
+            *ngIf="sprint.status === 'Planning' && canManageSprints"
             class="px-3 py-1.5 text-sm font-medium text-white bg-green-600 ml-4 rounded hover:bg-green-700"
             (click)="startSprint(sprint.id)"
           >
@@ -232,14 +233,14 @@
 
           <!-- Complete Sprint Button (for active sprints) -->
           <button
-            *ngIf="sprint.status === 'Active'"
+            *ngIf="sprint.status === 'Active' && canManageSprints"
             class="px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 ml-4 rounded hover:bg-gray-200"
             (click)="completeSprint(sprint.id)"
           >
             Complete sprint
           </button>
 
-          <div class="relative">
+          <div class="relative" *ngIf="canManageSprints">
             <button
               class="p-1.5 text-gray-500 hover:bg-gray-100 rounded ml-2"
               (click)="showSprintMenu = sprint.id"
