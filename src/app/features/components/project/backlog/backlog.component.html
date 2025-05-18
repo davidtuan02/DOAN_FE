@@ -117,7 +117,8 @@
       </button>
     </form>
 
-    <div class="grouping-action">
+    <div class="flex gap-[20px]">
+      <div class="grouping-action">
       <label class="label">Group by</label>
       <nz-select
         class="custom-select"
@@ -136,6 +137,14 @@
           <span>Subtask</span>
         </nz-option>
       </nz-select>
+    </div>
+
+    <button
+      class="px-3 py-1.5 text-sm font-medium text-blue-700 bg-blue-100 ml-4 rounded hover:bg-blue-200"
+      (click)="showCreateSprintModal = true"
+    >
+      Create sprint
+    </button>
     </div>
   </div>
 
@@ -532,14 +541,7 @@
             </div>
           </div>
 
-          <button
-            class="px-3 py-1.5 text-sm font-medium text-blue-700 bg-blue-100 ml-4 rounded hover:bg-blue-200"
-            (click)="showCreateSprintModal = true"
-          >
-            Create sprint
-          </button>
-
-          <button class="ml-2">
+          <!-- <button class="ml-2">
             <svg
               class="w-6 h-6 text-gray-400"
               viewBox="0 0 24 24"
@@ -554,7 +556,7 @@
                 stroke-linejoin="round"
               />
             </svg>
-          </button>
+          </button> -->
 
           <button class="p-1.5 text-gray-500 hover:bg-gray-100 rounded ml-1">
             <svg
