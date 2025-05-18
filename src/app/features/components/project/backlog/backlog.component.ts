@@ -46,6 +46,7 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { AvatarComponent } from '../../../../shared/components/avatar/avatar.component';
 import { User } from '../../../../core/models';
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
+import { NzNotificationService } from 'ng-zorro-antd/notification';
 
 @Component({
   selector: 'app-backlog',
@@ -182,7 +183,8 @@ export class BacklogComponent implements OnInit {
     private commentService: CommentService,
     private modal: NzModalService,
     private viewContainerRef: ViewContainerRef,
-    private store: Store<fromStore.AppState>
+    private store: Store<fromStore.AppState>,
+    private notification: NzNotificationService
   ) {
     // Initialize filter form controls
     this.groupByControl = new FormControl('None');
@@ -1343,19 +1345,27 @@ export class BacklogComponent implements OnInit {
             this.proceedWithSprintCreation();
           } else {
             this.isCreatingSprint = false;
-            this.snackBar.open(
-              'Could not find board for this project',
-              'Close',
-              { duration: 3000 }
-            );
+            // this.snackBar.open(
+            //   'Could not find board for this project',
+            //   'Close',
+            //   { duration: 3000 }
+            // );
+            this.notification.error(
+            'Error',
+            'Could not find board for this project!'
+          )
           }
         },
         error: (err) => {
           this.isCreatingSprint = false;
           console.error('Error loading board ID:', err);
-          this.snackBar.open('Error loading board information', 'Close', {
-            duration: 3000,
-          });
+          // this.snackBar.open('Error loading board information', 'Close', {
+          //   duration: 3000,
+          // });
+          this.notification.error(
+            'Error',
+            'Error loading board information!'
+          )
         },
       });
     } else {
@@ -1372,9 +1382,13 @@ export class BacklogComponent implements OnInit {
         this.showCreateSprintModal = false;
         this.isEditingExistingSprint = false;
         this.sprintBeingEdited = '';
-        this.snackBar.open('Sprint created successfully', 'Close', {
-          duration: 3000,
-        });
+        // this.snackBar.open('Sprint created successfully', 'Close', {
+        //   duration: 3000,
+        // });
+        this.notification.success(
+            'Success',
+            'Sprint created successfully!'
+          )
 
         // Reset the form
         this.resetSprintForm();
@@ -1382,9 +1396,13 @@ export class BacklogComponent implements OnInit {
       error: (err) => {
         this.isCreatingSprint = false;
         console.error('Error creating sprint:', err);
-        this.snackBar.open(err.message || 'Error creating sprint', 'Close', {
-          duration: 3000,
-        });
+        // this.snackBar.open(err.message || 'Error creating sprint', 'Close', {
+        //   duration: 3000,
+        // });
+        this.notification.error(
+            'Error',
+            `${err.message} || 'Error creating sprint!`
+          )
       },
     });
   }
@@ -2310,11 +2328,19 @@ export class BacklogComponent implements OnInit {
     if (confirm('Are you sure you want to delete this sprint?')) {
       this.backlogService.deleteSprint(sprintId).subscribe({
         next: () => {
-          this.snackBar.open('Sprint deleted successfully', 'Close', {
-            duration: 3000,
-          });
+          this.notification.success(
+            'Success',
+            'Sprint deleted successfully!'
+          )
+          // this.snackBar.open('Sprint deleted successfully', 'Close', {
+          //   duration: 3000,
+          // });
         },
         error: (err) => {
+          this.notification.error(
+            'Error',
+            'Sprint deleted failed!'
+          )
           this.handleError(err, 'Failed to delete sprint');
         },
       });
