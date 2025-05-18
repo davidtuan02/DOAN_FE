@@ -328,6 +328,7 @@ export class TopbarComponent implements OnInit, OnDestroy {
           name: `${project.name} Board`,
           project: project.name,
         }));
+        console.log(this.boards)
     });
   }
 
