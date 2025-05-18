@@ -56,7 +56,7 @@
 
             <!-- My Open Issues Link -->
             <a
-              routerLink="/projects/{{ project.id }}/issues"
+
               class="flex justify-between items-center py-1 text-gray-700 hover:text-blue-600"
             >
               <span class="text-sm">My open issues</span>
@@ -69,7 +69,7 @@
 
             <!-- Done Issues Link -->
             <a
-              routerLink="/projects/{{ project.id }}/issues"
+
               class="flex justify-between items-center py-1 text-gray-700 hover:text-blue-600"
             >
               <span class="text-sm">Done issues</span>
@@ -83,13 +83,13 @@
 
           <!-- Board Link -->
           <div class="px-4 pb-3 border-t border-gray-100 pt-2">
-            <div class="flex items-center">
+            <div class="flex items-center justify-end">
               <a
-                routerLink="/projects/{{ project.id }}/board"
-                class="flex items-center text-gray-700 hover:text-blue-600"
+                (click)="goToBoard(project)"
+                class="flex items-center text-gray-700 hover:text-blue-600 cursor-pointer"
               >
-                <span class="text-sm">1 board</span>
-                <svg
+                <span class="text-sm underline text-end">Go to board view</span>
+                <!-- <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
@@ -102,7 +102,7 @@
                     stroke-linejoin="round"
                     d="M19.5 8.25l-7.5 7.5-7.5-7.5"
                   />
-                </svg>
+                </svg> -->
               </a>
             </div>
           </div>

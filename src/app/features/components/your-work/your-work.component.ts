@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { ProjectService } from '../../../core/services/project.service';
 import { IssueService } from '../../services/issue.service';
 import { UserService } from '../../../core/services/user.service';
@@ -61,12 +61,34 @@ export class YourWorkComponent implements OnInit {
   constructor(
     private projectService: ProjectService,
     private issueService: IssueService,
-    private userService: UserService
+    private userService: UserService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
     this.loadRecentProjects();
     this.loadAssignedTasks();
+  }
+
+  /**
+   * Handles navigation to board view for the selected project
+   */
+  goToBoard(project: Project): void {
+    // Convert local Project model to service's Project model
+    const serviceProject = {
+      id: project.id,
+      name: project.name,
+      key: project.key,
+      description: project.description || '',  // Convert undefined to empty string
+      type: project.type,
+      // Include any other necessary fields
+    };
+
+    // Set the selected project in the project service
+    this.projectService.setSelectedProject(serviceProject);
+
+    // Navigate to the board page
+    this.router.navigate(['/board']);
   }
 
   loadRecentProjects(): void {
