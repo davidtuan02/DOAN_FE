@@ -1,6 +1,8 @@
 import {
   Component,
   OnInit,
+  inject,
+  DestroyRef,
   HostListener,
   ViewContainerRef,
   ElementRef,
@@ -21,7 +23,7 @@ import {
 } from '@angular/cdk/drag-drop';
 import { BacklogService, Issue, Sprint } from './backlog.service';
 import { ProjectService } from '../../../../core/services/project.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { BASE_URL } from '../../../../core/constants/api.const';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -32,7 +34,7 @@ import { UserService } from '../../../../core/services/user.service';
 import { CommentService, Comment } from '../../../services/comment.service';
 import { NzModalService, NzModalRef } from 'ng-zorro-antd/modal';
 import { CardDetailsComponent } from '../../project/card/card-details/card-details.component';
-import { Store } from '@ngrx/store';
+import { Store, select } from '@ngrx/store';
 import * as fromStore from '../../../../core/store';
 import { CreateCardFormComponent } from '../../project/card/create-card-form/create-card-form.component';
 import { nanoid } from 'nanoid';
@@ -40,7 +42,7 @@ import { AssigneeFilterControlComponent } from '../../project/filter/assignee-fi
 import { LabelFilterControlComponent } from '../../project/filter/label-filter-control/label-filter-control.component';
 import { TypeFilterControlComponent } from '../../project/filter/type-filter-control/type-filter-control.component';
 import { SvgIconComponent } from '../../../../shared/components';
-import { takeUntilDestroyed } from '../../../../shared/utils';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { AvatarComponent } from '../../../../shared/components/avatar/avatar.component';
 import { CardFilter, User } from '../../../../core/models';
@@ -79,6 +81,8 @@ import { CardTypesEnum } from '../../../../core/enums';
   styleUrls: ['./backlog.component.scss'],
 })
 export class BacklogComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
+
   // Main data
   sprints: Sprint[] = [];
   backlogIssues: Issue[] = [];
@@ -214,87 +218,85 @@ export class BacklogComponent implements OnInit {
     // Load user permissions first
     this.loadUserPermissions();
 
-    this.isLoading = true;
+    // Subscribe to project changes from sidebar
+    this.projectService.selectedProject$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((project) => {
+        if (project && project.id) {
+          this.currentProjectId = project.id;
+          this.currentProjectName = project.name;
+          this.isLoading = true;
+
+          // Reset state when project changes
+          this.sprints = [];
+          this.backlogIssues = [];
+          this.errorMessage = '';
+
+          // Call loadBoardIdFromProject which will then call initializeBacklog when done
+          this.loadBoardIdFromProject().subscribe({
+            next: (boardId) => {
+              if (boardId) {
+                this.currentBoardId = boardId;
+                console.log('Found board ID:', this.currentBoardId);
+                this.initializeBacklog();
+              } else {
+                console.warn('Board ID is undefined despite board being found');
+                this.initializeBacklog();
+              }
+            },
+            error: (err) => {
+              console.error('Error fetching project boards:', err);
+              // Still initialize even if we can't get the board ID
+              this.initializeBacklog();
+            },
+          });
+        }
+      });
 
     // Set current user info for assignee dropdown
     this.loadCurrentUserInfo();
 
-    // Get current project ID from route or service
-    const selectedProject = this.projectService.getSelectedProject();
+    // Get current project ID from route params as fallback
+    this.route.queryParams.subscribe((params) => {
+      if (params['projectId'] && !this.currentProjectId) {
+        const projectId = params['projectId'];
 
-    if (selectedProject && selectedProject.id) {
-      this.currentProjectId = selectedProject.id;
-      this.currentProjectName = selectedProject.name;
-      // Call loadBoardIdFromProject which will then call initializeBacklog when done
-      this.loadBoardIdFromProject().subscribe({
-        next: (boardId) => {
-          if (boardId) {
-            this.currentBoardId = boardId;
-            console.log('Found board ID:', this.currentBoardId);
-            this.initializeBacklog();
-          } else {
-            console.warn('Board ID is undefined despite board being found');
-            this.initializeBacklog();
-          }
-        },
-        error: (err) => {
-          console.error('Error fetching project boards:', err);
-          // Still initialize even if we can't get the board ID
-          this.initializeBacklog();
-        },
-      });
-    } else {
-      // Try to get project ID from query params
-      this.route.queryParams.subscribe((params) => {
-        if (params['projectId']) {
-          this.currentProjectId = params['projectId'];
-
-          // Fetch project details to get the name and boardId
-          this.projectService.getProjectById(this.currentProjectId).subscribe({
-            next: (project) => {
+        // Fetch project details to get the name
+        this.projectService.getProjectById(projectId).subscribe({
+          next: (project) => {
+            if (!this.currentProjectId) {  // Only proceed if not already set by selectedProject$
+              this.currentProjectId = projectId;
               this.currentProjectName = project.name;
-              if (project.id) {
-                // Call loadBoardIdFromProject which will then call initializeBacklog when done
-                this.loadBoardIdFromProject().subscribe({
-                  next: (boardId) => {
-                    if (boardId) {
-                      this.currentBoardId = boardId;
-                      console.log('Found board ID:', this.currentBoardId);
-                      this.initializeBacklog();
-                    } else {
-                      console.warn(
-                        'Board ID is undefined despite board being found'
-                      );
-                      this.initializeBacklog();
-                    }
-                  },
-                  error: (err) => {
-                    console.error('Error fetching project boards:', err);
-                    // Still initialize even if we can't get the board ID
+              this.isLoading = true;
+
+              this.loadBoardIdFromProject().subscribe({
+                next: (boardId) => {
+                  if (boardId) {
+                    this.currentBoardId = boardId;
                     this.initializeBacklog();
-                  },
-                });
-              } else {
-                this.isLoading = false;
-                this.errorMessage = 'Project details are invalid.';
-              }
-            },
-            error: (err) => {
-              this.handleError(err, 'Failed to load project details');
-            },
-          });
-        } else {
-          this.isLoading = false;
-          this.errorMessage =
-            'No project selected. Please select a project first.';
-        }
-      });
-    }
+                  } else {
+                    this.initializeBacklog();
+                  }
+                },
+                error: (err) => {
+                  console.error('Error fetching project boards:', err);
+                  this.initializeBacklog();
+                },
+              });
+            }
+          },
+          error: (err) => {
+            this.isLoading = false;
+            this.errorMessage = 'Failed to load project details.';
+          }
+        });
+      }
+    });
 
     // Setup filter form change listener
     this.filterFormGroup.valueChanges
       .pipe(
-        takeUntilDestroyed(this),
+        takeUntilDestroyed(this.destroyRef),
         tap((filters) => this.updateFilters(filters))
       )
       .subscribe();

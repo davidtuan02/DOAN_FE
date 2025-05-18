@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewContainerRef } from '@angular/core';
+import { Component, OnInit, ViewContainerRef, inject, DestroyRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, Subject } from 'rxjs';
 import { NzModalService } from 'ng-zorro-antd/modal';
@@ -6,7 +6,7 @@ import { filter, map, takeUntil } from 'rxjs/operators';
 import { NzModalRef } from 'ng-zorro-antd/modal/modal-ref';
 import { Column } from '../../../../../core/models';
 import { CardDetailsComponent } from '../../card/card-details/card-details.component';
-import { Destroyable, takeUntilDestroyed } from '../../../../../shared/utils';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BoardColumnComponent } from '../board-column/board-column.component';
 import { AsyncPipe, CommonModule } from '@angular/common';
 import { DragDropModule } from '@angular/cdk/drag-drop';
@@ -31,7 +31,6 @@ import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { TeamRole } from '../../../../../core/models/team-role.model';
 import { PermissionService } from '../../../../../core/services/permission.service';
 
-@Destroyable()
 @Component({
   selector: 'app-board',
   standalone: true,
@@ -54,6 +53,8 @@ import { PermissionService } from '../../../../../core/services/permission.servi
   styleUrls: ['./board.component.scss'],
 })
 export class BoardComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
+
   columns$!: Observable<Array<Column>>;
   modalRef!: NzModalRef;
   isLoading = true;
@@ -96,7 +97,7 @@ export class BoardComponent implements OnInit {
     this.sprintService.currentSelectedSprint$
       .pipe(
         filter((sprint) => !!sprint), // Only proceed if there's a valid sprint
-        takeUntilDestroyed(this)
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((sprint) => {
         console.log('Board received new active sprint:', sprint);
@@ -129,7 +130,7 @@ export class BoardComponent implements OnInit {
         filter((params) => !this.modalClosing.observed), // Only process if we're not in the closing sequence
         filter((params) => params && params['selectedIssue']),
         map((params) => params['selectedIssue']),
-        takeUntilDestroyed(this)
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((id) => {
         this.store.dispatch(fromStore.setSelectedCardId({ id }));
@@ -143,7 +144,7 @@ export class BoardComponent implements OnInit {
 
     // Get the current project
     this.projectService.selectedProject$
-      .pipe(takeUntilDestroyed(this))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((project) => {
         this.currentProject = project;
 
@@ -157,7 +158,7 @@ export class BoardComponent implements OnInit {
         // Find active sprints for this project
         this.sprintService
           .getSprintsByProjectId(project.id)
-          .pipe(takeUntilDestroyed(this))
+          .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe({
             next: (sprints) => {
               const activeSprints = sprints.filter(
@@ -297,7 +298,7 @@ export class BoardComponent implements OnInit {
     // First check if there's a planning sprint
     this.sprintService
       .getSprintsByProjectId(this.currentProject.id)
-      .pipe(takeUntilDestroyed(this))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (sprints) => {
           const planningSprint = sprints.find(
@@ -530,7 +531,7 @@ export class BoardComponent implements OnInit {
     if (!this.currentProject || !this.currentProject.id) return;
 
     this.sprintService.getSprintsByProjectId(this.currentProject.id)
-      .pipe(takeUntilDestroyed(this))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (sprints) => {
           this.activeSprints = sprints.filter(sprint => sprint.status === 'active');

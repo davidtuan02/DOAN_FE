@@ -1,7 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
 import {
   ProjectStatsService,
   ProjectStats,
@@ -10,9 +15,6 @@ import {
 } from '../../../services/project-stats.service';
 import { ProjectService } from '../../../../core/services/project.service';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatButtonModule } from '@angular/material/button';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SvgIconComponent } from '../../../../shared/components';
 import { Router } from '@angular/router';
 
@@ -30,6 +32,8 @@ import { Router } from '@angular/router';
   templateUrl: './summary.component.html',
 })
 export class SummaryComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
+
   projectStats: ProjectStats = {
     totalIssues: 0,
     completedIssues: 0,
@@ -66,16 +70,19 @@ export class SummaryComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Get selected project from ProjectService
-    const selectedProject = this.projectService.getSelectedProject();
-    if (selectedProject && selectedProject.id) {
-      this.currentProjectId = selectedProject.id;
-      this.currentProjectName = selectedProject.name;
-      this.loadProjectData();
-    } else {
-      this.error = 'No project selected. Please select a project first.';
-      this.isLoading = false;
-    }
+    // Subscribe to changes in the selected project
+    this.projectService.selectedProject$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((project) => {
+        if (project && project.id) {
+          this.currentProjectId = project.id;
+          this.currentProjectName = project.name;
+          this.loadProjectData();
+        } else {
+          this.error = 'No project selected. Please select a project first.';
+          this.isLoading = false;
+        }
+      });
   }
 
   loadProjectData(): void {
