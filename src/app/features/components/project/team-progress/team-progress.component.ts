@@ -7,7 +7,7 @@ import {
   TeamMemberStats,
 } from '../../../services/project-stats.service';
 import { ProjectService } from '../../../../core/services/project.service';
-import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
+import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SvgIconComponent } from '../../../../shared/components';
@@ -18,7 +18,6 @@ import { SvgIconComponent } from '../../../../shared/components';
   imports: [
     CommonModule,
     FormsModule,
-    MatSnackBarModule,
     MatButtonModule,
     MatProgressSpinnerModule,
     SvgIconComponent,
@@ -132,7 +131,7 @@ export class TeamProgressComponent implements OnInit {
   constructor(
     private projectStatsService: ProjectStatsService,
     private projectService: ProjectService,
-    private snackBar: MatSnackBar
+    private notification: NzNotificationService
   ) {}
 
   ngOnInit(): void {

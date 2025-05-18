@@ -9,7 +9,7 @@ import {
   TeamMemberStats,
 } from '../../../services/project-stats.service';
 import { ProjectService } from '../../../../core/services/project.service';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -61,7 +61,7 @@ export class SummaryComponent implements OnInit {
   constructor(
     private projectStatsService: ProjectStatsService,
     private projectService: ProjectService,
-    private snackBar: MatSnackBar,
+    private notification: NzNotificationService,
     private router: Router
   ) {}
 
@@ -97,9 +97,11 @@ export class SummaryComponent implements OnInit {
         error: (err) => {
           console.error('Error loading project stats:', err);
           this.error = 'Failed to load project statistics. Please try again.';
-          this.snackBar.open('Error loading project data', 'Close', {
-            duration: 3000,
-          });
+          this.notification.error(
+            'Error',
+            'Error loading project data',
+            { nzDuration: 3000 }
+          );
         },
       });
   }
@@ -219,9 +221,11 @@ export class SummaryComponent implements OnInit {
   // Navigate to view member details
   viewMemberDetails(memberId: string): void {
     // Navigate to a member details page or show a modal
-    this.snackBar.open('Member details feature coming soon', 'Close', {
-      duration: 3000,
-    });
+    this.notification.info(
+      'Info',
+      'Member details feature coming soon',
+      { nzDuration: 3000 }
+    );
   }
 
   // Refresh team data

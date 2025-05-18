@@ -3,6 +3,7 @@ import {
   OnInit,
   HostListener,
   ViewContainerRef,
+  ElementRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -10,6 +11,7 @@ import {
   ReactiveFormsModule,
   FormGroup,
   FormControl,
+  FormBuilder,
 } from '@angular/forms';
 import {
   DragDropModule,
@@ -23,13 +25,12 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { BASE_URL } from '../../../../core/constants/api.const';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Observable, of, finalize, forkJoin } from 'rxjs';
+import { Observable, of, finalize, forkJoin, firstValueFrom, catchError, tap, Subscription } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { IssueService } from '../../../services/issue.service';
 import { UserService } from '../../../../core/services/user.service';
 import { CommentService, Comment } from '../../../services/comment.service';
-import { NzModalService } from 'ng-zorro-antd/modal';
-import { NzModalRef } from 'ng-zorro-antd/modal/modal-ref';
+import { NzModalService, NzModalRef } from 'ng-zorro-antd/modal';
 import { CardDetailsComponent } from '../../project/card/card-details/card-details.component';
 import { Store } from '@ngrx/store';
 import * as fromStore from '../../../../core/store';
@@ -47,6 +48,13 @@ import { AvatarComponent } from '../../../../shared/components/avatar/avatar.com
 import { User } from '../../../../core/models';
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
+import { NzTagModule } from 'ng-zorro-antd/tag';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
+import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
+import { CardTypesEnum } from '../../../../shared/components';
+import { CardFilter } from '../../../interfaces/card-filter';
+import { GetBoard } from '../../../../store/actions/board.actions';
+import { RichTextEditorComponent } from '../../../../shared/components/rich-text-editor/rich-text-editor.component';
 
 @Component({
   selector: 'app-backlog',
@@ -63,7 +71,11 @@ import { NzNotificationService } from 'ng-zorro-antd/notification';
     SvgIconComponent,
     NzSelectModule,
     AvatarComponent,
-    NzToolTipModule
+    NzToolTipModule,
+    NzTagModule,
+    NzSpinModule,
+    NzDropDownModule,
+    RichTextEditorComponent
   ],
   templateUrl: './backlog.component.html',
   styleUrls: ['./backlog.component.scss'],
@@ -177,7 +189,6 @@ export class BacklogComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private http: HttpClient,
-    private snackBar: MatSnackBar,
     private issueService: IssueService,
     public userService: UserService,
     private commentService: CommentService,
@@ -2173,11 +2184,7 @@ export class BacklogComponent implements OnInit {
     };
 
     if (!newIssue.title || newIssue.title.trim() === '') {
-      this.snackBar.open('Please enter a title for the issue', 'Close', {
-        duration: 3000,
-      });
-      return;
-    }
+        this.notification.error(        'Error',        'Please enter a title for the issue',        { nzDuration: 3000 }      );      return;    }
 
     this.isLoading = true;
     this.issueService
@@ -2190,9 +2197,7 @@ export class BacklogComponent implements OnInit {
           // Cập nhật state thống nhất qua backlogService thay vì thêm trực tiếp
           this.backlogService.updateLocalIssueState(createdIssue, 'create');
 
-          this.snackBar.open('Issue created in backlog', 'Close', {
-            duration: 3000,
-          });
+                    this.notification.success(            'Success',            'Issue created in backlog',            { nzDuration: 3000 }          );
         },
         error: (err) => {
           console.error('Error creating issue:', err);
@@ -2252,9 +2257,7 @@ export class BacklogComponent implements OnInit {
                   this.recalculateSprintMetrics(targetSprint);
                 }
 
-                this.snackBar.open('Issue created in sprint', 'Close', {
-                  duration: 3000,
-                });
+                                this.notification.success(                  'Success',                  'Issue created in sprint',                  { nzDuration: 3000 }                );
               },
               error: (err) => {
                 console.error('Error moving to sprint:', err);

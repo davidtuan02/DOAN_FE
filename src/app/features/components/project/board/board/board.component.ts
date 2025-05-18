@@ -394,11 +394,7 @@ export class BoardComponent implements OnInit {
         this.isCompletingSprint = false;
         this.showCompleteSprintModal = false;
       },
-      error: (err) => {
-        this.message.error('Failed to complete sprint');
-        console.error('Error completing sprint:', err);
-        this.isCompletingSprint = false;
-      },
+            error: (err) => {        this.notification.error(          'Error',          'Failed to complete sprint',          { nzDuration: 3000 }        );        console.error('Error completing sprint:', err);        this.isCompletingSprint = false;      },
     });
   }
 
@@ -419,10 +415,7 @@ export class BoardComponent implements OnInit {
 
     // Start the sprint
     this.sprintService.startSprint(data.id).subscribe({
-      next: (startedSprint) => {
-        this.message.success('Sprint started successfully');
-
-        // Refresh sprint lists instead of closing the modal
+            next: (startedSprint) => {        this.notification.success(          'Success',          'Sprint started successfully',          { nzDuration: 3000 }        );        // Refresh sprint lists instead of closing the modal
         this.refreshSprintLists();
 
         // If no active sprint is set, set this one as active
