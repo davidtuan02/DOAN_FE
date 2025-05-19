@@ -395,6 +395,14 @@
                     {{ member.completedIssues }}/{{ member.assignedIssues }}
                     issues completed
                   </span>
+                  <span class="text-xs font-medium text-red-500 ml-2 flex items-center">
+                    <span class="flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4V3a2 2 0 114 0v1m-4 0h4" />
+                      </svg>
+                      {{ member.bugCount || 0 }} bugs
+                    </span>
+                  </span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     class="h-4 w-4 text-gray-500 transition-transform"
@@ -484,6 +492,18 @@
                     "
                   ></div>
                 </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mt-4">
+              <div class="text-center p-2 bg-gray-50 rounded border border-gray-100">
+                <div class="text-xs text-gray-500">Bugs</div>
+                <span class="font-medium text-red-500 flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4V3a2 2 0 114 0v1m-4 0h4" />
+                  </svg>
+                  {{ member.bugCount || 0 }}
+                </span>
               </div>
             </div>
 
