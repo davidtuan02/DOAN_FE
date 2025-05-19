@@ -131,6 +131,8 @@ export class SummaryComponent implements OnInit {
       .getTeamPerformance(this.currentProjectId)
       .subscribe({
         next: (members) => {
+          console.log(this.currentProjectId)
+          console.log(members)
           this.teamMembers = members.sort((a, b) =>
             (b.completedIssues / (b.assignedIssues || 1)) -
             (a.completedIssues / (a.assignedIssues || 1))

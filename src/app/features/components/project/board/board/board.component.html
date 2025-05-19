@@ -118,7 +118,7 @@
 
   <!-- Board Content -->
   <div *ngIf="!isLoading && !error" class="board-content" cdkDropListGroup>
-    <app-board-column *ngFor="let col of columns$ | async" [column]="col" style="width: 25%;">
+    <app-board-column *ngFor="let col of columns$ | async" [column]="col" style="width: 25%;" (cardUpdated)="onCardUpdated()">
     </app-board-column>
   </div>
 

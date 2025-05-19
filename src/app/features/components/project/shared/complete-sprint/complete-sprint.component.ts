@@ -1,7 +1,12 @@
-import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges, AfterViewInit, ElementRef, OnDestroy } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges, AfterViewInit, ElementRef, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Sprint } from '../../../../../features/services/sprint.service';
+import { SprintService } from '../../../../../features/services/sprint.service';
+import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzModalService } from 'ng-zorro-antd/modal';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-complete-sprint',
@@ -12,7 +17,7 @@ import { Sprint } from '../../../../../features/services/sprint.service';
       *ngIf="visible"
       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50"
     >
-      <div class="w-full max-w-md p-6 bg-white rounded-md shadow-xl">
+      <div class="w-full max-w-md p-6 bg-white rounded-md shadow-xl overflow-y-auto" style="max-height: 500px;">
         <!-- Modal Header with Icon -->
         <div class="mb-4">
           <div class="flex items-center justify-center mb-2">
@@ -55,40 +60,16 @@ import { Sprint } from '../../../../../features/services/sprint.service';
 
           <ul class="mb-4 ml-2 text-sm text-gray-600 list-disc list-inside">
             <li class="mb-1">
-              Complete sprint with Goal {{ sprint?.goal }}
+              Complete sprint with goal: <strong>{{ sprint?.goal }}</strong>
             </li>
             <li class="mb-1">
               Completed work items includes everything in the last column on the
               board, <strong>DONE</strong>.
             </li>
             <li>
-              Open work items includes everything from any other column on the
-              board. Move these to a new sprint or the backlog.
+              Open work items will be moved to the backlog.
             </li>
           </ul>
-        </div>
-
-        <!-- Move Open Items Section -->
-        <div class="mb-6" *ngIf="getOpenIssuesCount() > 0">
-          <label
-            for="move-to-sprint"
-            class="block mb-2 text-sm font-medium text-gray-700"
-          >
-            Move open work items to
-          </label>
-          <select
-            id="move-to-sprint"
-            [(ngModel)]="moveToSprintId"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="backlog">Backlog</option>
-            <option
-              *ngFor="let availableSprint of availableSprints"
-              [value]="availableSprint.id"
-            >
-              {{ availableSprint.name }}
-            </option>
-          </select>
         </div>
 
         <!-- Planning Sprints Section - Only visible for users with permission -->
@@ -231,28 +212,36 @@ import { Sprint } from '../../../../../features/services/sprint.service';
     </div>
   `
 })
-export class CompleteSprintComponent implements OnChanges, AfterViewInit, OnDestroy {
+export class CompleteSprintComponent implements OnChanges, AfterViewInit, OnDestroy, OnInit {
   @Input() visible = false;
   @Input() sprint: Sprint | null = null;
   @Input() availableSprints: Sprint[] = [];
   @Input() planningSprints: Sprint[] = [];
   @Input() isCompleting = false;
   @Input() canCreateSprint = false;
+  @Input() projectId: string = '';
 
   @Output() confirm = new EventEmitter<string>();
   @Output() cancel = new EventEmitter<void>();
   @Output() startSprint = new EventEmitter<{id: string, goal?: string}>();
   @Output() createSprint = new EventEmitter<{name: string, goal: string}>();
+  @Output() sprintCompleted = new EventEmitter<void>();
+  @Output() sprintCancelled = new EventEmitter<void>();
 
-  moveToSprintId = 'backlog';
   selectedPlanningSprint: Sprint | null = null;
   updatedSprintGoal = '';
   newSprintName = '';
   newSprintGoal = '';
-
+  isCreatingSprint = false;
+  private destroy$ = new Subject<void>();
   private resetFormHandler: (() => void) | null = null;
 
-  constructor(private el: ElementRef) {}
+  constructor(
+    private el: ElementRef,
+    private sprintService: SprintService,
+    private message: NzMessageService,
+    private modal: NzModalService
+  ) {}
 
   ngAfterViewInit(): void {
     // Listen for custom events to reset the form
@@ -268,6 +257,8 @@ export class CompleteSprintComponent implements OnChanges, AfterViewInit, OnDest
     if (this.resetFormHandler) {
       this.el.nativeElement.removeEventListener('resetCreateForm', this.resetFormHandler);
     }
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -275,6 +266,30 @@ export class CompleteSprintComponent implements OnChanges, AfterViewInit, OnDest
     if (changes['visible'] && changes['visible'].currentValue === true) {
       this.resetFormFields();
     }
+  }
+
+  ngOnInit(): void {
+    // Subscribe to sprint changes
+    this.sprintService.currentSelectedSprint$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(updatedSprint => {
+      if (updatedSprint?.id && updatedSprint.id === this.sprint?.id) {
+        this.refreshSprintData(updatedSprint.id);
+      }
+    });
+  }
+
+  private refreshSprintData(sprintId: string): void {
+    this.sprintService.getSprintById(sprintId).subscribe(
+      (updatedSprint) => {
+        if (updatedSprint) {
+          this.sprint = updatedSprint;
+        }
+      },
+      (error) => {
+        console.error('Error refreshing sprint data:', error);
+      }
+    );
   }
 
   resetFormFields(): void {
@@ -290,19 +305,22 @@ export class CompleteSprintComponent implements OnChanges, AfterViewInit, OnDest
 
   getCompletedIssuesCount(): number {
     if (!this.sprint || !this.sprint.issues) return 0;
-    return this.sprint.issues.filter((issue: any) => issue.status === 'Done').length;
+    return this.sprint.issues.filter((issue: any) => issue.status === 'DONE').length;
   }
 
   getOpenIssuesCount(): number {
     if (!this.sprint || !this.sprint.issues) return 0;
-    return this.sprint.issues.filter((issue: any) => issue.status !== 'Done').length;
+    return this.sprint.issues.filter((issue: any) => issue.status !== 'DONE').length;
   }
 
-  onConfirm() {
-    this.confirm.emit(this.moveToSprintId);
+  onConfirm(): void {
+    if (!this.sprint?.id) return;
+
+    // Emit the moveToSprintId to parent component
+    this.confirm.emit(this.selectedPlanningSprint?.id || '');
   }
 
-  onCancel() {
+  onCancel(): void {
     this.cancel.emit();
   }
 

@@ -21,7 +21,7 @@ import { Subscription } from 'rxjs';
   imports: [CommonModule, RouterModule],
   template: `
     <div
-      class="fixed top-[60px] right-[12px] sm:absolute sm:top-auto sm:right-0 sm:mt-2 w-80 bg-white rounded-md shadow-lg overflow-hidden z-50 max-h-[600px] flex flex-col border border-gray-200"
+      class="fixed top-[60px] right-[12px] sm:absolute sm:top-auto sm:right-0 sm:mt-2 w-80 bg-white rounded-md shadow-lg overflow-hidden z-50 max-h-[400px] flex flex-col border border-gray-200"
     >
       <div
         class="px-4 py-3 border-b border-gray-200 flex justify-between items-center"
@@ -56,7 +56,7 @@ import { Subscription } from 'rxjs';
       </div>
 
       <!-- Notification List -->
-      <div *ngIf="!isLoading && !error" class="overflow-y-auto max-h-[460px]">
+      <div *ngIf="!isLoading && !error" class="overflow-y-auto" style="max-height: 400px;">
         <ng-container *ngIf="notifications.length > 0; else emptyState">
           <div
             *ngFor="let notification of notifications"

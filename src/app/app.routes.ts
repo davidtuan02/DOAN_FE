@@ -21,6 +21,7 @@ import { IssuesPageComponent } from './features/components/project/issues/issues
 import { FiltersComponent } from './features/components/filters/filters.component';
 import { FilterDetailComponent } from './features/components/filters/filter-detail/filter-detail.component';
 import { GoalsPageComponent } from './features/components/project/goals/goals-page/goals-page.component';
+import { FormsComponent } from './features/forms/forms.component';
 
 export const routes: Routes = [
   {
@@ -244,6 +245,18 @@ export const routes: Routes = [
         data: {
           isEdit: true,
         },
+      },
+    ],
+  },
+  {
+    path: 'forms',
+    component: LayoutComponent,
+    canActivate: [AuthGuard],
+    children: [
+      {
+        path: '',
+        component: FormsComponent,
+        title: 'Project Reports',
       },
     ],
   },

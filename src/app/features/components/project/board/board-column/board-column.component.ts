@@ -4,6 +4,8 @@ import {
   OnChanges,
   OnInit,
   SimpleChanges,
+  EventEmitter,
+  Output,
 } from '@angular/core';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -38,6 +40,7 @@ import { CardTypesEnum } from '../../../../../core/enums';
 })
 export class BoardColumnComponent implements OnInit, OnChanges {
   @Input() column!: Column;
+  @Output() cardUpdated = new EventEmitter<void>();
 
   cards$!: Observable<Array<Card>>;
   loadingCardIds$!: Observable<Array<string>>;
@@ -79,6 +82,9 @@ export class BoardColumnComponent implements OnInit, OnChanges {
 
       this.store.dispatch(fromStore.updateCard({ partial }));
     }
+
+    // Emit event when card is dropped
+    this.cardUpdated.emit();
   }
 
   onCreateCard(issueData: Partial<Issue>): void {

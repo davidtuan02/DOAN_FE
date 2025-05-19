@@ -59,6 +59,11 @@ export class SidebarComponent implements OnInit {
       link: '/summary',
     },
     {
+      label: 'Forms',
+      icon: 'form',
+      link: '/forms',
+    },
+    {
       label: 'Project settings',
       icon: 'settings',
       link: '/project-settings',
