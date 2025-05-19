@@ -53,6 +53,7 @@ export interface TeamMemberStats {
   reviewIssues: number;
   storyPoints: number;
   completedStoryPoints: number;
+  bugCount: number;
 }
 
 @Injectable({
@@ -265,6 +266,7 @@ export class ProjectStatsService {
             reviewIssues: 0,
             storyPoints: 0,
             completedStoryPoints: 0,
+            bugCount: 0,
           });
         });
 
@@ -282,6 +284,9 @@ export class ProjectStatsService {
               stats.inProgressIssues++;
             } else if (issue.status === 'Review') {
               stats.reviewIssues++;
+            }
+            if (issue.type === 'Bug') {
+              stats.bugCount++;
             }
           }
         });
