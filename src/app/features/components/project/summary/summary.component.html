@@ -29,6 +29,327 @@
   <!-- Project Overview -->
   <div *ngIf="!isLoading && !error" class="px-4 py-6">
     <!-- Project Overview Cards -->
+    <div class="grid grid-cols-1 gap-4 mb-8 md:grid-cols-2 lg:grid-cols-3">
+      <!-- Total Issues Card -->
+      <div class="p-4 bg-white rounded-lg shadow">
+        <h4 class="text-sm font-medium text-gray-500">Total Issues</h4>
+        <div class="flex items-end mt-2">
+          <span class="text-3xl font-bold text-gray-900">{{
+            projectStats.totalIssues
+          }}</span>
+          <div class="flex items-center ml-auto">
+            <span class="text-sm font-medium text-gray-500"
+              >{{ getCompletionPercentage() }}% Complete</span
+            >
+          </div>
+        </div>
+        <div class="w-full h-2 mt-3 bg-gray-200 rounded-full">
+          <div
+            class="h-full bg-green-500 rounded-full"
+            [style.width.%]="getCompletionPercentage()"
+          ></div>
+        </div>
+        <div class="flex justify-between mt-2 text-xs text-gray-500">
+          <span>{{ projectStats.todoIssues }} To Do</span>
+          <span>{{ projectStats.inProgressIssues }} In Progress</span>
+          <span>{{ projectStats.reviewIssues }} In Review</span>
+          <span>{{ projectStats.completedIssues }} Done</span>
+        </div>
+      </div>
+
+      <!-- Story Points Card -->
+      <div class="p-4 bg-white rounded-lg shadow">
+        <h4 class="text-sm font-medium text-gray-500">Story Points</h4>
+        <div class="flex items-end mt-2">
+          <span class="text-3xl font-bold text-gray-900">{{
+            projectStats.totalStoryPoints
+          }}</span>
+          <div class="flex items-center ml-auto">
+            <span class="text-sm font-medium text-gray-500"
+              >{{ getStoryPointsCompletionPercentage() }}% Complete</span
+            >
+          </div>
+        </div>
+        <div class="w-full h-2 mt-3 bg-gray-200 rounded-full">
+          <div
+            class="h-full bg-blue-500 rounded-full"
+            [style.width.%]="getStoryPointsCompletionPercentage()"
+          ></div>
+        </div>
+        <div class="flex justify-between mt-2 text-xs text-gray-500">
+          <span>{{ projectStats.todoStoryPoints }} To Do</span>
+          <span>{{ projectStats.inProgressStoryPoints }} In Progress</span>
+          <span>{{ projectStats.reviewStoryPoints }} Review</span>
+          <span>{{ projectStats.completedStoryPoints }} Completed</span>
+        </div>
+      </div>
+
+      <!-- Overdue Issues Card -->
+      <div class="p-4 bg-white rounded-lg shadow">
+        <h4 class="text-sm font-medium text-gray-500">Overdue Issues</h4>
+        <div class="flex items-end mt-2">
+          <span class="text-3xl font-bold text-gray-900">{{
+            projectStats.overdueIssues
+          }}</span>
+          <div class="flex items-center ml-auto">
+            <span
+              [class]="
+                'px-2 py-1 text-xs rounded-full ' +
+                (projectStats.overdueIssues > 0
+                  ? 'bg-red-100 text-red-800'
+                  : 'bg-green-100 text-green-800')
+              "
+            >
+              {{
+                projectStats.overdueIssues > 0
+                  ? "Attention Required"
+                  : "On Track"
+              }}
+            </span>
+          </div>
+        </div>
+        <div class="mt-3 text-sm text-gray-600">
+          {{
+            projectStats.overdueIssues === 0
+              ? "No overdue issues"
+              : projectStats.overdueIssues === 1
+              ? "1 issue requires attention"
+              : projectStats.overdueIssues + " issues require attention"
+          }}
+        </div>
+      </div>
+
+      <!-- Current Sprint Card -->
+    </div>
+
+    <!-- Priority Distribution and Team Performance -->
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <!-- Priority Distribution -->
+      <div class="p-4 bg-white rounded-lg shadow">
+        <h4 class="mb-4 text-base font-medium text-gray-700">
+          Priority Distribution
+        </h4>
+        <div class="space-y-4">
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-sm font-medium">High Priority</span>
+              <span class="text-xs font-medium text-gray-500"
+                >{{ projectStats.highPriorityIssues }} issues</span
+              >
+            </div>
+            <div class="w-full h-2 bg-gray-200 rounded-full">
+              <div
+                class="h-full bg-red-500 rounded-full"
+                [style.width.%]="
+                  projectStats.totalIssues
+                    ? (projectStats.highPriorityIssues /
+                        projectStats.totalIssues) *
+                      100
+                    : 0
+                "
+              ></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-sm font-medium">Medium Priority</span>
+              <span class="text-xs font-medium text-gray-500"
+                >{{ projectStats.mediumPriorityIssues }} issues</span
+              >
+            </div>
+            <div class="w-full h-2 bg-gray-200 rounded-full">
+              <div
+                class="h-full bg-yellow-500 rounded-full"
+                [style.width.%]="
+                  projectStats.totalIssues
+                    ? (projectStats.mediumPriorityIssues /
+                        projectStats.totalIssues) *
+                      100
+                    : 0
+                "
+              ></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-sm font-medium">Low Priority</span>
+              <span class="text-xs font-medium text-gray-500"
+                >{{ projectStats.lowPriorityIssues }} issues</span
+              >
+            </div>
+            <div class="w-full h-2 bg-gray-200 rounded-full">
+              <div
+                class="h-full bg-green-500 rounded-full"
+                [style.width.%]="
+                  projectStats.totalIssues
+                    ? (projectStats.lowPriorityIssues /
+                        projectStats.totalIssues) *
+                      100
+                    : 0
+                "
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Issue Type Distribution -->
+      <div class="p-4 bg-white rounded-lg shadow">
+        <h4 class="mb-4 text-base font-medium text-gray-700">
+          Issue Type Distribution
+        </h4>
+        <div class="space-y-4">
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <span class="flex items-center text-sm font-medium">
+                <app-svg-icon
+                  name="story"
+                  [width]="16"
+                  [height]="16"
+                  class="mr-2"
+                ></app-svg-icon>
+                Story
+              </span>
+              <span class="text-xs font-medium text-gray-500"
+                >{{ projectStats.storyCount }} issues</span
+              >
+            </div>
+            <div class="w-full h-2 bg-gray-200 rounded-full">
+              <div
+                class="h-full bg-purple-500 rounded-full"
+                [style.width.%]="
+                  projectStats.totalIssues
+                    ? (projectStats.storyCount / projectStats.totalIssues) * 100
+                    : 0
+                "
+              ></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <span class="flex items-center text-sm font-medium">
+                <app-svg-icon
+                  name="blueCheck"
+                  [width]="16"
+                  [height]="16"
+                  class="mr-2"
+                ></app-svg-icon>
+                Task
+              </span>
+              <span class="text-xs font-medium text-gray-500"
+                >{{ projectStats.taskCount }} issues</span
+              >
+            </div>
+            <div class="w-full h-2 bg-gray-200 rounded-full">
+              <div
+                class="h-full bg-blue-500 rounded-full"
+                [style.width.%]="
+                  projectStats.totalIssues
+                    ? (projectStats.taskCount / projectStats.totalIssues) * 100
+                    : 0
+                "
+              ></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <span class="flex items-center text-sm font-medium">
+                <app-svg-icon
+                  name="bug"
+                  [width]="16"
+                  [height]="16"
+                  class="mr-2"
+                ></app-svg-icon>
+                Bug
+              </span>
+              <span class="text-xs font-medium text-gray-500"
+                >{{ projectStats.bugCount }} issues</span
+              >
+            </div>
+            <div class="w-full h-2 bg-gray-200 rounded-full">
+              <div
+                class="h-full bg-red-500 rounded-full"
+                [style.width.%]="
+                  projectStats.totalIssues
+                    ? (projectStats.bugCount / projectStats.totalIssues) * 100
+                    : 0
+                "
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Current Sprint Card (Detailed) -->
+      <div class="p-4 bg-white rounded-lg shadow">
+        <h4 class="mb-4 text-base font-medium text-gray-700">
+          Current Sprint Details
+        </h4>
+        <div *ngIf="currentSprint; else noDetailedSprint">
+          <div class="mb-3">
+            <span class="text-sm font-medium">{{ currentSprint.name }}</span>
+            <span
+              class="px-2 py-1 ml-2 text-xs text-blue-800 bg-blue-100 rounded-full"
+            >
+              {{ currentSprint.status }}
+            </span>
+          </div>
+
+          <div class="mb-3 text-sm text-gray-600" *ngIf="currentSprint.goal">
+            <span class="font-medium">Goal:</span> {{ currentSprint.goal }}
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 mb-3">
+            <div class="text-sm">
+              <div class="text-gray-500">Start Date:</div>
+              <div>{{ currentSprint.startDate | date : "mediumDate" }}</div>
+            </div>
+            <div class="text-sm">
+              <div class="text-gray-500">End Date:</div>
+              <div>{{ currentSprint.endDate | date : "mediumDate" }}</div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4 mb-3">
+            <div class="p-2 text-center rounded bg-gray-50">
+              <div class="text-xl font-semibold">
+                {{ currentSprint.totalIssues }}
+              </div>
+              <div class="text-xs text-gray-500">Total Issues</div>
+            </div>
+            <div class="p-2 text-center rounded bg-gray-50">
+              <div class="text-xl font-semibold">
+                {{ currentSprint.completedIssues }}
+              </div>
+              <div class="text-xs text-gray-500">Completed</div>
+            </div>
+          </div>
+
+          <div class="flex justify-between mb-1 text-sm">
+            <span>Sprint Progress</span>
+            <span>{{ currentSprint.progress }}%</span>
+          </div>
+          <div class="w-full h-2 bg-gray-200 rounded-full">
+            <div
+              class="h-full bg-purple-500 rounded-full"
+              [style.width.%]="currentSprint.progress"
+            ></div>
+          </div>
+        </div>
+        <ng-template #noDetailedSprint>
+          <div class="py-8 text-center text-gray-500">
+            <app-svg-icon
+              name="sprint"
+              [width]="32"
+              [height]="32"
+              class="mx-auto mb-2 opacity-50"
+            ></app-svg-icon>
+            <p>No active sprint</p>
+            <p class="mt-2 text-sm">Start a sprint from the Backlog page</p>
+          </div>
+        </ng-template>
+      </div>
+    </div>
 
 
     <!-- Team Performance -->
