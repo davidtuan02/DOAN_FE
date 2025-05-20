@@ -30,6 +30,11 @@ import { Router } from '@angular/router';
     SvgIconComponent,
   ],
   templateUrl: './summary.component.html',
+  styles: `
+    .h-screen-custom {
+      height: calc(100vh - 120px);
+    }
+  `,
 })
 export class SummaryComponent implements OnInit {
   private destroyRef = inject(DestroyRef);

@@ -7,6 +7,7 @@ import { UserService } from '../../core/services/user.service';
 import { ProjectService } from '../../core/services/project.service';
 import { SprintService, Sprint } from './sprint.service';
 import { Issue } from './issue.service';
+import { ProjectMembersService, ProjectMember } from '../../core/services/project-members.service';
 
 export interface ProjectStats {
   totalIssues: number;
@@ -56,6 +57,75 @@ export interface TeamMemberStats {
   bugCount: number;
 }
 
+// Mock data for team performance
+export const MOCK_TEAM_PERFORMANCE: TeamMemberStats[] = [
+  {
+    id: '1',
+    name: 'John Smith',
+    avatar: 'https://i.pravatar.cc/150?img=1',
+    role: 'Team Lead',
+    assignedIssues: 15,
+    completedIssues: 12,
+    inProgressIssues: 2,
+    reviewIssues: 1,
+    storyPoints: 45,
+    completedStoryPoints: 38,
+    bugCount: 2
+  },
+  {
+    id: '2',
+    name: 'Sarah Johnson',
+    avatar: 'https://i.pravatar.cc/150?img=2',
+    role: 'Senior Developer',
+    assignedIssues: 12,
+    completedIssues: 10,
+    inProgressIssues: 1,
+    reviewIssues: 1,
+    storyPoints: 35,
+    completedStoryPoints: 30,
+    bugCount: 1
+  },
+  {
+    id: '3',
+    name: 'Michael Chen',
+    avatar: 'https://i.pravatar.cc/150?img=3',
+    role: 'Developer',
+    assignedIssues: 10,
+    completedIssues: 8,
+    inProgressIssues: 1,
+    reviewIssues: 1,
+    storyPoints: 30,
+    completedStoryPoints: 25,
+    bugCount: 3
+  },
+  {
+    id: '4',
+    name: 'Emily Davis',
+    avatar: 'https://i.pravatar.cc/150?img=4',
+    role: 'Developer',
+    assignedIssues: 8,
+    completedIssues: 6,
+    inProgressIssues: 1,
+    reviewIssues: 1,
+    storyPoints: 25,
+    completedStoryPoints: 20,
+    bugCount: 2
+  },
+  {
+    id: '5',
+    name: 'David Wilson',
+    avatar: 'https://i.pravatar.cc/150?img=5',
+    role: 'Junior Developer',
+    assignedIssues: 6,
+    completedIssues: 4,
+    inProgressIssues: 1,
+    reviewIssues: 1,
+    storyPoints: 20,
+    completedStoryPoints: 15,
+    bugCount: 1
+  }
+];
+
 @Injectable({
   providedIn: 'root',
 })
@@ -67,7 +137,8 @@ export class ProjectStatsService {
     private userService: UserService,
     private issueService: IssueService,
     private projectService: ProjectService,
-    private sprintService: SprintService
+    private sprintService: SprintService,
+    private projectMembersService: ProjectMembersService
   ) {}
 
   /**
@@ -245,38 +316,39 @@ export class ProjectStatsService {
    * Gets team member performance
    */
   getTeamPerformance(projectId: string): Observable<TeamMemberStats[]> {
-    return forkJoin([
-      this.projectService.getProjectMembers(projectId),
-      this.issueService.getIssuesByProjectId(projectId),
-    ]).pipe(
-      map(([members, issues]) => {
-        // Create a map to track metrics for each team member
-        const memberStats = new Map<string, TeamMemberStats>();
+    return forkJoin({
+      members: this.projectMembersService.getProjectMembers(projectId),
+      issues: this.issueService.getIssuesByProjectId(projectId)
+    }).pipe(
+      map(({ members, issues }) => {
+        // Map userId -> ProjectMember
+        const memberMap = new Map<string, ProjectMember>();
+        members.forEach(m => memberMap.set(m.userId, m));
 
-        // Initialize stats for each team member
-        members.forEach((member) => {
-          memberStats.set(member.id, {
-            id: member.id,
-            name: `${member.firstName} ${member.lastName}`,
-            avatar: member.avatar,
-            role: member.role || 'Team Member',
+        // Chuẩn bị dữ liệu cho từng thành viên
+        const statsMap = new Map<string, TeamMemberStats>();
+        members.forEach(member => {
+          statsMap.set(member.userId, {
+            id: member.userId,
+            name: member.userName,
+            avatar: undefined, // Có thể lấy từ issue.assignee.avatar nếu có
+            role: member.accessLevel,
             assignedIssues: 0,
             completedIssues: 0,
             inProgressIssues: 0,
             reviewIssues: 0,
             storyPoints: 0,
             completedStoryPoints: 0,
-            bugCount: 0,
+            bugCount: 0
           });
         });
 
-        // Process issues to calculate member stats
-        issues.forEach((issue) => {
-          if (issue.assignee && memberStats.has(issue.assignee.id)) {
-            const stats = memberStats.get(issue.assignee.id)!;
+        // Tổng hợp dữ liệu từ issues
+        issues.forEach(issue => {
+          if (issue.assignee && statsMap.has(issue.assignee.id)) {
+            const stats = statsMap.get(issue.assignee.id)!;
             stats.assignedIssues++;
             stats.storyPoints += issue.storyPoints || 0;
-
             if (issue.status === 'Done') {
               stats.completedIssues++;
               stats.completedStoryPoints += issue.storyPoints || 0;
@@ -288,13 +360,15 @@ export class ProjectStatsService {
             if (issue.type === 'Bug') {
               stats.bugCount++;
             }
+            // Lấy avatar nếu có
+            if (issue.assignee.avatar) {
+              stats.avatar = issue.assignee.avatar;
+            }
           }
         });
 
-        // Convert map to array and sort by assignedIssues
-        return Array.from(memberStats.values())
-          .filter((member) => member.assignedIssues > 0)
-          .sort((a, b) => b.assignedIssues - a.assignedIssues);
+        // Trả về mảng TeamMemberStats
+        return Array.from(statsMap.values());
       }),
       catchError((error) => {
         console.error('Error fetching team performance', error);
