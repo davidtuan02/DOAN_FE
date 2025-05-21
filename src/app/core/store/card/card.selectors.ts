@@ -184,3 +184,9 @@ export const selectCardError = createSelector(
   selectCardState,
   (state) => state.error
 );
+
+export const selectCardById = (id: string) =>
+  createSelector(
+    allCardEntities,
+    (entities) => entities[id]
+  );

@@ -98,7 +98,11 @@ export class CardEffects {
         // Update the card using the boardService
         return this.boardService.updateCard(updateData).pipe(
           tap((response) => console.log('Card update API response:', response)),
-          map((_) => actions.updateCardSuccess({ partial })),
+          map((_) => {
+            // Dispatch getCards action to refresh the board
+            this.store.dispatch(actions.getCards());
+            return actions.updateCardSuccess({ partial });
+          }),
           catchError((error) => {
             console.error('Error updating card:', error);
             return of(

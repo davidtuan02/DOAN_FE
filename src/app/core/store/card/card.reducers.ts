@@ -58,6 +58,7 @@ const reducer = createReducer(
         changes: {
           ...card,
           ...partial,
+          updatedAt: new Date().toISOString(),
         },
       },
       { ...state, loading: true }
@@ -65,6 +66,14 @@ const reducer = createReducer(
   }),
   immerOn(actions.updateCardSuccess, (state, { partial }) => {
     state.loading = false;
+    const card = state.entities[partial.id];
+    if (card) {
+      state.entities[partial.id] = {
+        ...card,
+        ...partial,
+        updatedAt: new Date().toISOString(),
+      };
+    }
   }),
   immerOn(actions.updateCardError, (state, { error }) => {
     state.loading = false;

@@ -231,7 +231,11 @@ export class BoardComponent implements OnInit {
 
   // Add this method to handle card updates
   onCardUpdated(): void {
-    this.loadBoardData();
+    // Reload board data without refreshing the page
+    this.store.dispatch(fromStore.getCards());
+
+    // Get columns from store
+    this.columns$ = this.store.pipe(select(fromStore.allColumns));
   }
 
   openCardDetailsModal(id: string): void {

@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
 import { nanoid } from 'nanoid';
 import { Card, Column, PartialCard } from '../../../../../core/models';
 import { CommonModule } from '@angular/common';
@@ -20,7 +20,7 @@ import { CreateCardFormComponent } from '../../card/create-card-form/create-card
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { Store, select } from '@ngrx/store';
 import * as fromStore from '../../../../../core/store';
-import { filter, take } from 'rxjs/operators';
+import { filter, take, tap, switchMap } from 'rxjs/operators';
 import { Issue } from '../../../../../features/services/issue.service';
 import { CardTypesEnum } from '../../../../../core/enums';
 
@@ -44,6 +44,7 @@ export class BoardColumnComponent implements OnInit, OnChanges {
 
   cards$!: Observable<Array<Card>>;
   loadingCardIds$!: Observable<Array<string>>;
+  private cardsSubject = new BehaviorSubject<Card[]>([]);
 
   contextMenuVisible: boolean = false;
 
@@ -62,7 +63,10 @@ export class BoardColumnComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (this.column && changes['column']) {
       this.cards$ = this.store.pipe(
-        select(fromStore.selectCardsByColumnIdWithFilters(this.column.id))
+        select(fromStore.selectCardsByColumnIdWithFilters(this.column.id)),
+        tap(cards => {
+          this.cardsSubject.next(cards);
+        })
       );
     }
   }
@@ -80,11 +84,28 @@ export class BoardColumnComponent implements OnInit, OnChanges {
         columnId: event.container.id,
       };
 
+      // Dispatch update action
       this.store.dispatch(fromStore.updateCard({ partial }));
-    }
 
-    // Emit event when card is dropped
-    this.cardUpdated.emit();
+      // Subscribe to the updated card to ensure changes are reflected
+      this.store.pipe(
+        select(fromStore.selectCardById(partial.id)),
+        filter(card => card !== undefined),
+        take(1)
+      ).subscribe(card => {
+        if (card) {
+          // Update local state
+          const currentCards = this.cardsSubject.value;
+          const updatedCards = currentCards.map(c =>
+            c.id === partial.id ? { ...c, columnId: event.container.id } : c
+          );
+          this.cardsSubject.next(updatedCards);
+
+          // Emit event to notify parent component
+          this.cardUpdated.emit();
+        }
+      });
+    }
   }
 
   onCreateCard(issueData: Partial<Issue>): void {
