@@ -1,0 +1,184 @@
+<div class="report-container">
+  <!-- Bộ lọc (có thể bổ sung sau) -->
+  <div class="report-filters mb-4">
+    <!-- TODO: Thêm bộ lọc ngày, sprint, user nếu cần -->
+  </div>
+
+  <!-- Tổng quan dự án -->
+  <div class="report-section">
+    <h2 class="section-title">Tổng quan dự án</h2>
+    <div *ngIf="overview" class="grid-2">
+      <div class="stat-card">
+        <div class="stat-title">Tổng số task</div>
+        <div class="stat-value">{{ overview.totalTasks }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Đã hoàn thành</div>
+        <div class="stat-value">{{ overview.completedTasks }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Đang làm</div>
+        <div class="stat-value">{{ overview.inProgressTasks }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Tổng số user</div>
+        <div class="stat-value">{{ overview.totalUsers }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Thời gian hoàn thành TB</div>
+        <div class="stat-value">{{ overview.averageTaskCompletionTime }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Tiến độ dự án</div>
+        <div class="stat-value">{{ overview.projectProgress }}%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phân bố trạng thái công việc -->
+  <div class="report-section">
+    <h2 class="section-title">Phân bố trạng thái công việc</h2>
+    <div *ngIf="taskStatus" class="grid-3">
+      <div class="stat-card">
+        <div class="stat-title">TODO</div>
+        <div class="stat-value">{{ taskStatus.statusDistribution?.TODO }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">IN_PROGRESS</div>
+        <div class="stat-value">{{ taskStatus.statusDistribution?.IN_PROGRESS }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">IN_REVIEW</div>
+        <div class="stat-value">{{ taskStatus.statusDistribution?.IN_REVIEW }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">DONE</div>
+        <div class="stat-value">{{ taskStatus.statusDistribution?.DONE }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">HIGH</div>
+        <div class="stat-value">{{ taskStatus.priorityDistribution?.HIGH }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">MEDIUM</div>
+        <div class="stat-value">{{ taskStatus.priorityDistribution?.MEDIUM }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">LOW</div>
+        <div class="stat-value">{{ taskStatus.priorityDistribution?.LOW }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hiệu suất người dùng -->
+  <div class="report-section">
+    <h2 class="section-title">Hiệu suất người dùng</h2>
+    <div style="overflow-x:auto;">
+      <table *ngIf="userPerformance?.length" class="report-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Assigned</th>
+            <th>Completed</th>
+            <th>Avg Time</th>
+            <th>Time Spent</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let u of userPerformance">
+            <td>{{ u.userName }}</td>
+            <td>{{ u.tasksAssigned }}</td>
+            <td>{{ u.tasksCompleted }}</td>
+            <td>{{ u.averageTaskCompletionTime }}</td>
+            <td>{{ u.timeSpent }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div *ngIf="!userPerformance || userPerformance.length === 0" class="text-gray-400 italic py-3 text-center">
+        Không có dữ liệu
+      </div>
+    </div>
+  </div>
+
+  <!-- Tiến độ Sprint -->
+  <div class="report-section">
+    <h2 class="section-title">Tiến độ Sprint</h2>
+    <div style="overflow-x:auto;">
+      <table *ngIf="sprintProgress?.length" class="report-table">
+        <thead>
+          <tr>
+            <th>Sprint</th>
+            <th>Bắt đầu</th>
+            <th>Kết thúc</th>
+            <th>Tổng task</th>
+            <th>Hoàn thành</th>
+            <th>Còn lại</th>
+            <th>Tiến độ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of sprintProgress">
+            <td>{{ s.sprintName }}</td>
+            <td>{{ s.startDate | date }}</td>
+            <td>{{ s.endDate | date }}</td>
+            <td>{{ s.totalTasks }}</td>
+            <td>{{ s.completedTasks }}</td>
+            <td>{{ s.remainingTasks }}</td>
+            <td>{{ s.sprintProgress }}%</td>
+          </tr>
+        </tbody>
+      </table>
+      <div *ngIf="!sprintProgress || sprintProgress.length === 0" class="text-gray-400 italic py-3 text-center">
+        Không có dữ liệu
+      </div>
+    </div>
+  </div>
+
+  <!-- Thống kê thời gian -->
+  <div class="report-section">
+    <h2 class="section-title">Thống kê thời gian</h2>
+    <div *ngIf="timeTracking" class="grid-2">
+      <div class="stat-card">
+        <div class="stat-title">Tổng thời gian</div>
+        <div class="stat-value">{{ timeTracking.totalTimeSpent }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Thời gian TB/task</div>
+        <div class="stat-value">{{ timeTracking.averageTimePerTask }}</div>
+      </div>
+    </div>
+    <div class="grid-2 mt-4">
+      <div>
+        <strong>Theo user:</strong>
+        <ul *ngIf="timeTracking?.timeByUser?.length > 0">
+          <li *ngFor="let u of timeTracking.timeByUser">{{ u.userName }}: {{ u.timeSpent }}</li>
+        </ul>
+        <div *ngIf="!timeTracking?.timeByUser || timeTracking.timeByUser.length === 0" class="text-gray-400 italic py-2">Không có dữ liệu</div>
+      </div>
+      <div>
+        <strong>Theo task:</strong>
+        <ul *ngIf="timeTracking?.timeByTask?.length > 0">
+          <li *ngFor="let t of timeTracking.timeByTask">{{ t.taskName }}: {{ t.timeSpent }}</li>
+        </ul>
+        <div *ngIf="!timeTracking?.timeByTask || timeTracking.timeByTask.length === 0" class="text-gray-400 italic py-2">Không có dữ liệu</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Biểu đồ Burndown -->
+  <div class="report-section">
+    <h2 class="section-title">Biểu đồ Burndown</h2>
+    <div *ngIf="burndownChart && burndownChart.burndownData?.length > 0">
+      <p>Sprint: {{ burndownChart.sprintName }}</p>
+      <p>Tổng task: {{ burndownChart.totalTasks }}</p>
+      <ul>
+        <li *ngFor="let d of burndownChart.burndownData">
+          {{ d.date }}: Còn lại {{ d.remainingTasks }}, Lý tưởng: {{ d.idealBurndown }}
+        </li>
+      </ul>
+    </div>
+    <div *ngIf="!burndownChart || !burndownChart.burndownData || burndownChart.burndownData.length === 0" class="text-gray-400 italic py-3 text-center">
+      Không có dữ liệu
+    </div>
+  </div>
+</div>

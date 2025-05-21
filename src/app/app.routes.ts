@@ -22,6 +22,7 @@ import { FiltersComponent } from './features/components/filters/filters.componen
 import { FilterDetailComponent } from './features/components/filters/filter-detail/filter-detail.component';
 import { GoalsPageComponent } from './features/components/project/goals/goals-page/goals-page.component';
 import { FormsComponent } from './features/forms/forms.component';
+import { ProjectReportComponent } from './features/components/project/report/project-report.component';
 
 export const routes: Routes = [
   {
@@ -255,7 +256,7 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        component: FormsComponent,
+        component: ProjectReportComponent,
         title: 'Project Reports',
       },
     ],
