@@ -7,6 +7,8 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { Store, select } from '@ngrx/store';
+import * as fromStore from '../../../../../core/store';
 
 @Component({
   selector: 'app-complete-sprint',
@@ -240,7 +242,8 @@ export class CompleteSprintComponent implements OnChanges, AfterViewInit, OnDest
     private el: ElementRef,
     private sprintService: SprintService,
     private message: NzMessageService,
-    private modal: NzModalService
+    private modal: NzModalService,
+    private store: Store
   ) {}
 
   ngAfterViewInit(): void {
@@ -265,6 +268,10 @@ export class CompleteSprintComponent implements OnChanges, AfterViewInit, OnDest
     // Reset form fields when modal visibility changes
     if (changes['visible'] && changes['visible'].currentValue === true) {
       this.resetFormFields();
+      // Refresh sprint data when modal becomes visible
+      if (this.sprint?.id) {
+        this.refreshSprintData(this.sprint.id);
+      }
     }
   }
 
@@ -275,6 +282,16 @@ export class CompleteSprintComponent implements OnChanges, AfterViewInit, OnDest
     ).subscribe(updatedSprint => {
       if (updatedSprint?.id && updatedSprint.id === this.sprint?.id) {
         this.refreshSprintData(updatedSprint.id);
+      }
+    });
+
+    // Subscribe to card updates
+    this.store.pipe(
+      select(fromStore.selectCardState),
+      takeUntil(this.destroy$)
+    ).subscribe(cardState => {
+      if (this.sprint?.id && !cardState.loading) {
+        this.refreshSprintData(this.sprint.id);
       }
     });
   }
