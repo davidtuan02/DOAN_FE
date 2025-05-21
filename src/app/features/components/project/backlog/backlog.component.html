@@ -165,11 +165,6 @@
         class="flex items-center px-4 py-3 mb-3 bg-white border border-gray-200 rounded-sm hover:bg-gray-50"
       >
         <div class="flex items-center">
-          <input
-            type="checkbox"
-            class="w-4 h-4 mr-2 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-          />
-
           <button
             class="flex items-center text-sm font-medium text-gray-700"
             (click)="toggleSprintCollapse(sprint.id)"
@@ -300,12 +295,6 @@
           (click)="openIssueDetail(issue)"
         >
           <div class="flex-shrink-0 mr-3">
-            <input
-              type="checkbox"
-              class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              [checked]="issue.status === 'Done'"
-              (click)="$event.stopPropagation()"
-            />
           </div>
 
           <div class="flex-shrink-0 mr-3">
@@ -492,10 +481,7 @@
         class="flex items-center px-4 py-3 mb-3 bg-white border border-gray-200 rounded-sm hover:bg-gray-50"
       >
         <div class="flex items-center">
-          <input
-            type="checkbox"
-            class="w-4 h-4 mr-2 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-          />
+
 
           <button
             class="flex items-center text-sm font-medium text-gray-700"
@@ -602,12 +588,7 @@
           (click)="openIssueDetail(issue); closeAllDropdowns()"
         >
           <div class="flex-shrink-0 mr-3">
-            <input
-              type="checkbox"
-              class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              [checked]="issue.status === 'Done'"
-              (click)="$event.stopPropagation()"
-            />
+
           </div>
 
           <div class="flex-shrink-0 mr-3">
