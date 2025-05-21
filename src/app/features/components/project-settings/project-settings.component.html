@@ -137,34 +137,8 @@
     </form>
   </div>
 
-  <!-- Tab Content: Access -->
-  <div *ngIf="settingsTabs[1].active" class="tab-content">
-    <div class="p-4 mb-6 rounded bg-blue-50">
-      <h3 class="text-lg font-medium text-blue-800">Access Management</h3>
-      <p class="mt-1 text-blue-700">
-        Control who has access to this project and what they can do.
-      </p>
-    </div>
-
-    <!-- Access settings content here -->
-    <p class="italic text-gray-500">Access settings under development</p>
-  </div>
-
-  <!-- Tab Content: Notifications -->
-  <div *ngIf="settingsTabs[2].active" class="tab-content">
-    <div class="p-4 mb-6 rounded bg-blue-50">
-      <h3 class="text-lg font-medium text-blue-800">Notification Settings</h3>
-      <p class="mt-1 text-blue-700">
-        Configure how your team receives updates about this project.
-      </p>
-    </div>
-
-    <!-- Notification settings content here -->
-    <p class="italic text-gray-500">Notification settings under development</p>
-  </div>
-
   <!-- Tab Content: Columns and Statuses -->
-  <div *ngIf="settingsTabs[3].active" class="tab-content">
+  <div *ngIf="settingsTabs[1].active" class="tab-content">
     <div class="p-4 mb-6 rounded bg-blue-50">
       <h3 class="text-lg font-medium text-blue-800">
         Board Columns and Statuses
@@ -180,7 +154,7 @@
   </div>
 
   <!-- Tab Content: Custom Filters -->
-  <div *ngIf="settingsTabs[4].active" class="tab-content">
+  <div *ngIf="settingsTabs[2].active" class="tab-content">
     <div class="p-4 mb-6 rounded bg-blue-50">
       <h3 class="text-lg font-medium text-blue-800">Custom Filters</h3>
       <p class="mt-1 text-blue-700">

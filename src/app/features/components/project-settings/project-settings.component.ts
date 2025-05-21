@@ -77,18 +77,18 @@ export class ProjectSettingsComponent implements OnInit {
       icon: 'settings',
       active: true,
     },
-    {
-      id: 'access',
-      label: 'Access',
-      icon: 'lock',
-      active: false,
-    },
-    {
-      id: 'notifications',
-      label: 'Notifications',
-      icon: 'bell',
-      active: false,
-    },
+    // {
+    //   id: 'access',
+    //   label: 'Access',
+    //   icon: 'lock',
+    //   active: false,
+    // },
+    // {
+    //   id: 'notifications',
+    //   label: 'Notifications',
+    //   icon: 'bell',
+    //   active: false,
+    // },
     {
       id: 'columns',
       label: 'Columns and statuses',
