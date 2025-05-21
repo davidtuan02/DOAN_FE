@@ -1135,4 +1135,24 @@ export class IssuesPageComponent implements OnInit {
   showSaveFilterModal(): void {
     this.saveFilter();
   }
+
+  // Helper để lấy tên hiển thị của assignee
+  getAssigneeDisplayName(assignee: any): string {
+    console.log(assignee);
+    if (!assignee) return '';
+    if (assignee.username) return assignee.username;
+    if (assignee.email) return assignee.email;
+    return '';
+  }
+
+  // Helper để lấy ký tự avatar của assignee
+  getAssigneeInitials(assignee: any): string {
+    if (!assignee) return '';
+    if (assignee.firstName && assignee.lastName) {
+      return (assignee.firstName.charAt(0) + assignee.lastName.charAt(0)).toUpperCase();
+    }
+    if (assignee.username) return assignee.username.substring(0, 2).toUpperCase();
+    if (assignee.email) return assignee.email.substring(0, 2).toUpperCase();
+    return 'U';
+  }
 }

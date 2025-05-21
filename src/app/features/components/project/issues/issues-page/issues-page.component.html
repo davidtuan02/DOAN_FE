@@ -6,8 +6,7 @@
         View and manage all issues in the current project
       </p>
     </div>
-    <div class="flex items-center space-x-2">
-      <!-- View toggle buttons -->
+    <!-- <div class="flex items-center space-x-2">
       <div class="flex p-1 bg-gray-100 rounded-md">
         <button
           nz-button
@@ -40,7 +39,7 @@
         <span class="mr-1">Export</span>
         <span nz-icon nzType="down" nzTheme="outline"></span>
       </button>
-    </div>
+    </div> -->
   </div>
 
   <!-- Jira Filter Bar -->
@@ -389,26 +388,16 @@
             </td>
             <td>
               <div *ngIf="issue.assignee" class="flex items-center">
-                <div
-                  class="flex items-center justify-center w-8 h-8 mr-2 overflow-hidden bg-gray-200 rounded-full"
-                >
-                  <img
-                    *ngIf="issue.assignee.avatar"
-                    [src]="issue.assignee.avatar"
-                    alt="Avatar"
-                    class="object-cover w-full h-full"
-                  />
-                  <span *ngIf="!issue.assignee.avatar">{{
-                    issue.assignee.name.charAt(0)
-                  }}</span>
+                <div class="flex items-center justify-center w-8 h-8 mr-2 overflow-hidden rounded-full" style="background:#0052CC;">
+                  <span class="text-white font-bold text-base">
+                    {{ getAssigneeInitials(issue.assignee) }}
+                  </span>
                 </div>
-                <span class="truncate max-w-[100px]">{{
-                  issue.assignee.name
-                }}</span>
+                <!-- <span class="truncate max-w-[100px]">
+                  {{ getAssigneeDisplayName(issue.assignee) }}
+                </span> -->
               </div>
-              <span *ngIf="!issue.assignee" class="text-gray-400"
-                >Unassigned</span
-              >
+              <span *ngIf="!issue.assignee" class="text-gray-400">Unassigned</span>
             </td>
             <td>{{ issue.created | date : "MMM d, y" }}</td>
             <td>
@@ -479,18 +468,10 @@
                   }}</span>
                 </div>
                 <div *ngIf="issue.assignee" class="flex items-center">
-                  <div
-                    class="flex items-center justify-center w-6 h-6 overflow-hidden bg-gray-200 rounded-full"
-                  >
-                    <img
-                      *ngIf="issue.assignee.avatar"
-                      [src]="issue.assignee.avatar"
-                      alt="Avatar"
-                      class="object-cover w-full h-full"
-                    />
-                    <span *ngIf="!issue.assignee.avatar" class="text-xs">{{
-                      issue.assignee.name.charAt(0)
-                    }}</span>
+                  <div class="flex items-center justify-center w-6 h-6 overflow-hidden rounded-full" style="background:#0052CC;">
+                    <span class="text-white font-bold text-xs">
+                      {{ getAssigneeInitials(issue.assignee) }}
+                    </span>
                   </div>
                 </div>
               </div>
