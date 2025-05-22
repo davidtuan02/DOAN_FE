@@ -25,6 +25,11 @@ export interface Notification {
   metadata?: Record<string, any>;
   createdAt: Date;
   updatedAt: Date;
+  user?: {
+    id: string;
+    username: string;
+    email: string;
+  };
 }
 
 @Injectable({
@@ -91,6 +96,17 @@ export class NotificationService {
       .subscribe();
   }
 
+  private formatNotificationMessage(notification: Notification): string {
+    if (!notification.message) return '';
+
+    // Replace null with username if available
+    if (notification.user?.username) {
+      return notification.message.replace('null', notification.user.username);
+    }
+
+    return notification.message;
+  }
+
   getNotifications(): Observable<Notification[]> {
     console.log('Fetching notifications from:', this.apiUrl);
     this.isLoadingSubject.next(true);
@@ -99,7 +115,12 @@ export class NotificationService {
     return this.http.get<Notification[]>(this.apiUrl).pipe(
       tap((notifications) => {
         console.log('Received notifications:', notifications);
-        this.notificationsSubject.next(notifications);
+        // Format messages before updating the subject
+        const formattedNotifications = notifications.map(notification => ({
+          ...notification,
+          message: this.formatNotificationMessage(notification)
+        }));
+        this.notificationsSubject.next(formattedNotifications);
         this.updateUnreadCount();
         this.isLoadingSubject.next(false);
       }),

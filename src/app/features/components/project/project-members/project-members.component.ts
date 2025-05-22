@@ -25,6 +25,8 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzIconModule } from 'ng-zorro-antd/icon';
+import { PermissionService } from '../../../../core/services/permission.service';
+import { UserRole } from '../../../../core/models/user/user';
 
 @Component({
   selector: 'app-project-members',
@@ -67,12 +69,16 @@ export class ProjectMembersComponent implements OnInit {
   users: any[] = [];
   usersLoading = false;
 
+  // For permissions
+  canManageMembers = false;
+
   constructor(
     private projectMembersService: ProjectMembersService,
     private userService: UserService,
     private fb: FormBuilder,
     private message: NzMessageService,
-    private modal: NzModalService
+    private modal: NzModalService,
+    private permissionService: PermissionService
   ) {
     this.memberForm = this.fb.group({
       userId: ['', [Validators.required]],
@@ -83,6 +89,13 @@ export class ProjectMembersComponent implements OnInit {
   ngOnInit(): void {
     this.loadMembers();
     this.loadUsers();
+    this.checkPermissions();
+  }
+
+  private checkPermissions(): void {
+    this.permissionService.getCurrentUserRole().subscribe(role => {
+      this.canManageMembers = role === UserRole.ADMIN;
+    });
   }
 
   loadMembers(): void {
