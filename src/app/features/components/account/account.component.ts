@@ -175,6 +175,7 @@ export class AccountComponent implements OnInit, OnDestroy {
           password: this.accountForm.value.password,
           role: this.accountForm.value.role
         }
+        console.log(formData)
         // Handle Edit
         this.subscriptions.add(this.userService.updateUserById(this.currentUser.id, formData).pipe(
           finalize(() => this.submitting = false),

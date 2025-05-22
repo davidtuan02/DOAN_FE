@@ -187,7 +187,7 @@ export class LoginComponent implements OnInit {
             this.isLoading = false;
             this.notification.error(
               'Error',
-              'Email or password is wrong!',
+              err.message,
               { nzDuration: 3000 }
             );
           },

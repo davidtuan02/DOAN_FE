@@ -28,11 +28,13 @@ import {
 import { NzDropdownMenuComponent } from 'ng-zorro-antd/dropdown';
 import { NotificationService } from '../../../services/notification.service';
 import { NotificationListComponent } from '../../../shared/components/notification-list/notification-list.component';
+import { PermissionService } from '../../../core/services/permission.service';
 
 interface TopbarMenuItem {
   name: string;
   selected: boolean;
   route: string;
+  adminOnly?: boolean;
 }
 
 // Interface extending Project for display in dropdown
@@ -97,7 +99,7 @@ export class TopbarComponent implements OnInit, OnDestroy {
     { name: 'Projects', selected: false, route: '/projects' },
     { name: 'Filters', selected: false, route: '/filters' },
     { name: 'People', selected: false, route: '/teams' },
-    { name: 'Accounts', selected: false, route: '/accounts' },
+    { name: 'Accounts', selected: false, route: '/accounts', adminOnly: true },
   ];
 
   displayTopbarMenuItems: TopbarMenuItem[] = [];
@@ -113,7 +115,8 @@ export class TopbarComponent implements OnInit, OnDestroy {
     private userService: UserService,
     private issueService: IssueService,
     private projectService: ProjectService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private permissionService: PermissionService
   ) {}
 
   ngOnInit(): void {
@@ -135,8 +138,12 @@ export class TopbarComponent implements OnInit, OnDestroy {
     // Set initial selected state based on current URL
     this.updateSelectedMenuItem(this.router.url);
 
-    // Always show all menu items
-    this.displayTopbarMenuItems = this.topbarMenuItems;
+    // Filter menu items based on user role
+    this.permissionService.isAdmin().subscribe(isAdmin => {
+      this.displayTopbarMenuItems = this.topbarMenuItems.filter(item =>
+        !item.adminOnly || (item.adminOnly && isAdmin)
+      );
+    });
 
     // Load initial data for Your Work dropdown
     this.loadAssignedTasks();
