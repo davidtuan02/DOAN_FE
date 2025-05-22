@@ -23,6 +23,7 @@ import { FilterDetailComponent } from './features/components/filters/filter-deta
 import { GoalsPageComponent } from './features/components/project/goals/goals-page/goals-page.component';
 import { FormsComponent } from './features/forms/forms.component';
 import { ProjectReportComponent } from './features/components/project/report/project-report.component';
+import { AccountComponent } from './features/components/account/account.component';
 
 export const routes: Routes = [
   {
@@ -247,6 +248,18 @@ export const routes: Routes = [
           isEdit: true,
         },
       },
+    ],
+  },
+  {
+    path: 'accounts',
+    component: LayoutComponent,
+    canActivate: [AuthGuard],
+    children: [
+      {
+        path: '',
+        component: AccountComponent,
+        title: 'Accounts',
+      }
     ],
   },
   {

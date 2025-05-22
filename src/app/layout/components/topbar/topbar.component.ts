@@ -97,6 +97,7 @@ export class TopbarComponent implements OnInit, OnDestroy {
     { name: 'Projects', selected: false, route: '/projects' },
     { name: 'Filters', selected: false, route: '/filters' },
     { name: 'People', selected: false, route: '/teams' },
+    { name: 'Accounts', selected: false, route: '/accounts' },
   ];
 
   displayTopbarMenuItems: TopbarMenuItem[] = [];

@@ -1,0 +1,230 @@
+// Container styles
+:host {
+  display: block;
+  padding: 24px;
+  background: #f0f2f5;
+  min-height: 100vh;
+}
+
+// Search and Add Button section
+.mb-4 {
+  background: white;
+  padding: 16px 24px;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  margin-bottom: 24px;
+
+  .w-64 {
+    width: 300px;
+  }
+
+  button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 20px;
+    font-weight: 500;
+
+    span[nz-icon] {
+      font-size: 16px;
+    }
+  }
+}
+
+// Table styles
+nz-table {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+
+  ::ng-deep {
+    .ant-table-thead > tr > th {
+      background: #fafafa;
+      font-weight: 600;
+      color: #262626;
+      padding: 16px;
+    }
+
+    .ant-table-tbody > tr > td {
+      padding: 16px;
+      color: #595959;
+    }
+
+    .ant-table-tbody > tr:hover > td {
+      background: #f5f5f5;
+    }
+
+    // Action buttons
+    .ant-btn-link {
+      padding: 4px 8px;
+      height: auto;
+      font-size: 16px;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: #f5f5f5;
+        border-radius: 4px;
+        transform: scale(1.1);
+      }
+
+      span[nz-icon] {
+        transition: all 0.3s ease;
+      }
+
+      &.ant-btn-dangerous {
+        color: #ff4d4f;
+        &:hover {
+          color: #ff7875;
+          background: #fff1f0;
+        }
+      }
+    }
+  }
+}
+
+// Modal styles
+::ng-deep {
+  .ant-modal-content {
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .ant-modal-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 0;
+  }
+
+  .ant-modal-body {
+    padding: 24px;
+  }
+
+  .ant-modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid #f0f0f0;
+    margin-top: 0;
+  }
+
+  // Form styles
+  .ant-form-item {
+    margin-bottom: 24px;
+
+    &.has-error .ant-form-item-explain {
+        min-height: 22px;
+        line-height: 1.5;
+        margin-top: 4px;
+        color: #ff4d4f;
+    }
+
+    &:not(.has-error) .ant-form-item-explain {
+      min-height: 22px;
+    }
+
+    .ant-form-item-label {
+      padding-bottom: 8px;
+      label {
+        font-weight: 600;
+        color: #262626;
+      }
+    }
+
+    .ant-form-item-control-input {
+      min-height: 40px;
+    }
+
+    input[nz-input],
+    nz-select .ant-select-selector,
+    .ant-input-affix-wrapper {
+      height: 40px !important;
+      border-radius: 4px;
+      border-color: #d9d9d9;
+
+      &:hover {
+        border-color: #40a9ff;
+      }
+
+      &:focus,
+      &.ant-input-focused {
+        border-color: #40a9ff;
+        box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        outline: none;
+      }
+
+      &.ant-input-status-error {
+        border-color: #ff4d4f;
+      }
+    }
+
+    nz-select {
+      width: 100%;
+    }
+  }
+
+  // Grid layout specific adjustments if needed
+  .grid.grid-cols-2.gap-4 .ant-form-item {
+    margin-bottom: 0;
+  }
+
+  // Adjust spacing specifically within the modal footer buttons
+  .ant-modal-footer button.ant-btn {
+    margin-left: 8px;
+  }
+
+  // General button improvements within the form context
+  button[nz-button] {
+     border-radius: 4px;
+  }
+
+  // Button styles
+  .ant-btn {
+    height: 40px;
+    padding: 0 20px;
+    font-weight: 500;
+    border-radius: 6px;
+
+    &-primary {
+      box-shadow: 0 2px 0 rgba(0, 0, 0, 0.045);
+    }
+  }
+
+  // Popconfirm styles
+  .ant-popconfirm {
+    .ant-popconfirm-message {
+      padding: 12px 0;
+    }
+
+    .ant-popconfirm-buttons {
+      margin-top: 12px;
+
+      button {
+        min-width: 60px;
+      }
+    }
+  }
+}
+
+// Role badge styles
+.role-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+
+  &.admin {
+    background: #e6f7ff;
+    color: #1890ff;
+  }
+
+  &.basic {
+    background: #f6ffed;
+    color: #52c41a;
+  }
+
+  &.leader {
+    background: #fff7e6;
+    color: #fa8c16;
+  }
+}
