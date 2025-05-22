@@ -2,6 +2,16 @@
   <!-- Bộ lọc (có thể bổ sung sau) -->
   <div class="report-filters mb-4">
     <!-- TODO: Thêm bộ lọc ngày, sprint, user nếu cần -->
+    <div class="export-options">
+      <button class="export-btn" [disabled]="exportLoading" (click)="exportReport('json')">
+        <span *ngIf="!exportLoading">Xuất JSON</span>
+        <span *ngIf="exportLoading">Đang xuất...</span>
+      </button>
+      <button class="export-btn" [disabled]="exportLoading" (click)="exportReport('pdf')">
+        <span *ngIf="!exportLoading">Xuất PDF</span>
+        <span *ngIf="exportLoading">Đang xuất...</span>
+      </button>
+    </div>
   </div>
 
   <!-- Tổng quan dự án -->

@@ -5,6 +5,9 @@ import { ProjectService } from '../../../../core/services/project.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DestroyRef, inject } from '@angular/core';
 import { SprintService } from '../../../../features/services/sprint.service';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { environment } from '../../../../../environments/environment';
+import { BASE_URL } from '../../../../core/constants';
 
 @Component({
   selector: 'app-project-report',
@@ -32,11 +35,13 @@ export class ProjectReportComponent implements OnInit {
   endDate = '';
   error: string | null = null;
   loading = false;
+  exportLoading = false;
 
   constructor(
     private statisticsService: StatisticsService,
     private projectService: ProjectService,
-    private sprintService: SprintService
+    private sprintService: SprintService,
+    private http: HttpClient
   ) {}
 
   ngOnInit() {
@@ -147,5 +152,86 @@ export class ProjectReportComponent implements OnInit {
           this.error = 'Failed to load time tracking';
         }
       });
+  }
+
+  exportReport(format: string) {
+    if (!this.projectId) {
+      this.error = 'No project selected';
+      return;
+    }
+
+    this.exportLoading = true;
+    let url = `${BASE_URL}/statistics/project-report`;
+
+    // Add query parameters
+    let params = new HttpParams().set('projectId', this.projectId);
+    if (this.startDate) params = params.set('startDate', this.startDate);
+    if (this.endDate) params = params.set('endDate', this.endDate);
+
+    if (format === 'pdf') {
+      url += '/base64';
+      this.http.get(url, { params }).subscribe({
+        next: (response: any) => {
+          // Nếu response.data là chuỗi base64 có prefix, cần loại bỏ:
+          const base64Data = response.data.split(',').pop(); // an toàn trong mọi trường hợp
+
+          const byteCharacters = atob(base64Data);
+          const byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          const blob = new Blob([byteArray], { type: 'application/pdf' });
+
+          const blobUrl = window.URL.createObjectURL(blob);
+
+          const link = document.createElement('a');
+          link.href = blobUrl;
+          link.download = 'Report.pdf';
+          document.body.appendChild(link); // Bắt buộc với một số trình duyệt
+          link.click();
+          document.body.removeChild(link);
+
+          window.URL.revokeObjectURL(blobUrl); // Giải phóng bộ nhớ
+          this.exportLoading = false;
+
+        },
+        error: (err) => {
+          console.error('Lỗi tải file:', err);
+          this.exportLoading = false;
+
+        }
+      });
+    } else {
+      // For JSON format
+      this.http.get(url, {
+        params,
+        responseType: 'blob',
+        observe: 'response'
+      }).subscribe({
+        next: (response) => {
+          if (response.body) {
+            const blob = new Blob([response.body], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+
+            // Get filename from Content-Disposition header
+            const contentDisposition = response.headers.get('Content-Disposition');
+            const filename = contentDisposition
+            contentDisposition ? contentDisposition.split('filename=')[1].replace(/"/g, '') : `project-report-${this.projectId}.json`;
+
+            link.download = filename || 'Report.json';
+            link.click();
+           window.URL.revokeObjectURL(url);
+          }
+          this.exportLoading = false;
+        },
+        error: (err) => {
+          this.error = 'Failed to export report';
+          this.exportLoading = false;
+        }
+      });
+    }
   }
 }
