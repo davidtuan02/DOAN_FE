@@ -1,10 +1,10 @@
 import { Component, OnInit, ViewContainerRef, inject, DestroyRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, Subject } from 'rxjs';
+import { Observable, Subject, of } from 'rxjs';
 import { NzModalService } from 'ng-zorro-antd/modal';
-import { filter, map, takeUntil } from 'rxjs/operators';
+import { filter, map, takeUntil, take, switchMap } from 'rxjs/operators';
 import { NzModalRef } from 'ng-zorro-antd/modal/modal-ref';
-import { Column } from '../../../../../core/models';
+import { Column, Card, TeamRole } from '../../../../../core/models';
 import { CardDetailsComponent } from '../../card/card-details/card-details.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BoardColumnComponent } from '../board-column/board-column.component';
@@ -25,10 +25,8 @@ import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { CompleteSprintComponent } from '../../shared/complete-sprint/complete-sprint.component';
 import { HttpClient } from '@angular/common/http';
-import { of, switchMap, map as rxjsMap } from 'rxjs';
 import { BASE_URL } from '../../../../../core/constants/api.const';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
-import { TeamRole } from '../../../../../core/models/team-role.model';
 import { PermissionService } from '../../../../../core/services/permission.service';
 
 @Component({
@@ -181,8 +179,7 @@ export class BoardComponent implements OnInit {
               }
 
               // Get the current selected sprint from SprintService or use the first active sprint
-              const currentSelectedSprint =
-                this.sprintService.getCurrentSprint();
+              const currentSelectedSprint = this.sprintService.getCurrentSprint();
 
               if (
                 currentSelectedSprint &&
@@ -295,7 +292,6 @@ export class BoardComponent implements OnInit {
 
   startSprint(): void {
     if (!this.currentProject || !this.currentProject.id) {
-      // this.message.error('No project selected');
       this.notification.error(
         'Error',
         `No project selected!`,
@@ -317,8 +313,7 @@ export class BoardComponent implements OnInit {
           if (planningSprint && planningSprint.id) {
             // Start this sprint
             this.sprintService.startSprint(planningSprint.id).subscribe({
-              next: () => {
-                // this.message.success('Sprint started successfully');
+              next: (startedSprint) => {
                 this.notification.success(
                   'Success',
                   `Sprint started successfully!`,
@@ -327,42 +322,39 @@ export class BoardComponent implements OnInit {
                 this.initializeBoard(); // Reload board data
               },
               error: (err) => {
-                // this.message.error('Failed to start sprint');
                 this.notification.error(
                   'Error',
-                  `Failed to start sprint!`,
+                  `Failed to start sprint!`, // Changed error message for clarity
                   { nzDuration: 3000 }
                 );
                 console.error('Error starting sprint:', err);
               },
             });
           } else {
-            // Create and start a new sprint
+            // Create a new sprint with status 'planning'
             const newSprint = {
               name: `Sprint ${sprints.length + 1}`,
               goal: 'Complete sprint tasks',
-              status: 'active' as const,
-              startDate: new Date(),
-              endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 2 weeks later
+              status: 'planning' as const,
+              startDate: new Date(), // Changed to Date object
+              endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // Changed to Date object
             };
 
             this.sprintService
               .createSprint(this.currentProject.id, newSprint)
               .subscribe({
                 next: () => {
-                  // this.message.success('New sprint created and started');
-                  this.notification.success(
-                    'Success',
-                    `New sprint created and started!`,
-                    { nzDuration: 3000 }
-                  );
-                  this.initializeBoard(); // Reload board data
+                   this.notification.success(
+                     'Success',
+                     `New sprint created! Proceed to start it.`, // Changed success message
+                     { nzDuration: 3000 }
+                   );
+                  this.initializeBoard(); // Reload board data to show the new planning sprint
                 },
                 error: (err) => {
-                  // this.message.error('Failed to create sprint');
                   this.notification.error(
                     'Error',
-                    `Failed to create sprint!`,
+                    `Failed to create sprint!`, // Changed error message for clarity
                     { nzDuration: 3000 }
                   );
                   console.error('Error creating sprint:', err);
@@ -371,20 +363,18 @@ export class BoardComponent implements OnInit {
           }
         },
         error: (err) => {
-          // this.message.error('Failed to load sprints');
-          this.notification.error(
-            'Error',
-            `Failed to load sprints!`,
-            { nzDuration: 3000 }
-          );
-          console.error('Error loading sprints:', err);
+           this.notification.error(
+             'Error',
+             `Failed to load sprints!`,
+             { nzDuration: 3000 }
+           );
+           console.error('Error loading sprints:', err);
         },
       });
   }
 
   completeSprint(): void {
     if (!this.currentSprint || !this.currentSprint.id) {
-      // this.message.error('No active sprint to complete');
       this.notification.error(
         'Error',
         `No active sprint to complete!`,
@@ -401,85 +391,78 @@ export class BoardComponent implements OnInit {
     // First complete the sprint
     this.sprintService.completeSprint(this.currentSprint.id).subscribe({
       next: () => {
-        // Move open issues to backlog
-        if (this.currentSprint.issues) {
-          const openIssues = this.currentSprint.issues.filter((issue: any) => issue.status !== 'DONE');
-
-          // Create an array of observables for moving issues to backlog
-          const movePromises = openIssues.map((issue: any) => {
-            return this.http.put(`${BASE_URL}/tasks/${issue.id}/sprint`, {
-              sprintId: '' // Empty sprintId means move to backlog
-            });
+        // Get current columns and cards
+        this.columns$.pipe(
+          take(1),
+          switchMap(columns => {
+            return this.store.pipe(
+              select(fromStore.allCards),
+              take(1),
+              map(cards => ({ columns, cards }))
+            );
+          })
+        ).subscribe(({ columns, cards }) => {
+          // Filter out cards that are in DONE column
+          const openCards = cards.filter((card: Card) => {
+            const column = columns.find((col: Column) => col.id === card.columnId);
+            return column && column.name !== 'DONE';
           });
 
-          // Execute all moves in parallel
-          Promise.all(movePromises)
-            .then(() => {
-              this.notification.success(
-                'Success',
-                `Sprint completed and ${openIssues.length} issues moved to backlog!`,
-                { nzDuration: 3000 }
-              );
-
-              // Remove the completed sprint from active sprints
-              this.activeSprints = this.activeSprints.filter(
-                (sprint) => sprint.id !== this.currentSprint.id
-              );
-
-              // If there are still active sprints, select the first one
-              if (this.activeSprints.length > 0) {
-                this.currentSprint = this.activeSprints[0];
-                this.sprintService.setCurrentSprint(this.currentSprint);
-                this.loadBoardData();
-              } else {
-                // No more active sprints
-                this.currentSprint = null;
-                this.sprintService.setCurrentSprint(null);
-                this.error =
-                  'No active sprint found. Please start a sprint to see the board.';
-              }
-
-              this.isCompletingSprint = false;
-              this.showCompleteSprintModal = false;
-            })
-            .catch((error) => {
-              this.notification.error(
-                'Error',
-                'Failed to move some issues to backlog',
-                { nzDuration: 3000 }
-              );
-              console.error('Error moving issues:', error);
-              this.isCompletingSprint = false;
+          if (openCards.length > 0) {
+            // Create an array of promises for moving issues to backlog
+            const movePromises = openCards.map((card: Card) => {
+              return this.http.put(`${BASE_URL}/tasks/${card.id}/sprint`, {
+                sprintId: '' // Empty sprintId means move to backlog
+              }).toPromise(); // Convert Observable to Promise
             });
-        } else {
-          // No issues to move
-          this.notification.success(
-            'Success',
-            `Sprint completed successfully!`,
-            { nzDuration: 3000 }
-          );
 
-          // Remove the completed sprint from active sprints
-          this.activeSprints = this.activeSprints.filter(
-            (sprint) => sprint.id !== this.currentSprint.id
-          );
+            // Execute all moves in parallel
+            Promise.all(movePromises)
+              .then(() => {
+                this.notification.success(
+                  'Success',
+                  `Sprint completed and ${openCards.length} issues moved to backlog!`,
+                  { nzDuration: 3000 }
+                );
 
-          // If there are still active sprints, select the first one
-          if (this.activeSprints.length > 0) {
-            this.currentSprint = this.activeSprints[0];
-            this.sprintService.setCurrentSprint(this.currentSprint);
-            this.loadBoardData();
+                // Remove the completed sprint from active sprints and update state
+                this.updateSprintStateAfterCompletion();
+
+                this.isCompletingSprint = false;
+                this.showCompleteSprintModal = false;
+              })
+              .catch((error) => {
+                this.notification.error(
+                  'Error',
+                  'Failed to move some issues to backlog',
+                  { nzDuration: 3000 }
+                );
+                console.error('Error moving issues:', error);
+                this.isCompletingSprint = false;
+              });
           } else {
-            // No more active sprints
-            this.currentSprint = null;
-            this.sprintService.setCurrentSprint(null);
-            this.error =
-              'No active sprint found. Please start a sprint to see the board.';
-          }
+            // No issues to move
+            this.notification.success(
+              'Success',
+              `Sprint completed successfully!`,
+              { nzDuration: 3000 }
+            );
 
-          this.isCompletingSprint = false;
-          this.showCompleteSprintModal = false;
-        }
+            // Remove the completed sprint from active sprints and update state
+            this.updateSprintStateAfterCompletion();
+
+            this.isCompletingSprint = false;
+            this.showCompleteSprintModal = false;
+          }
+        }, (error) => { // Error from getting columns/cards or filtering
+           this.notification.error(
+             'Error',
+             'Failed to process issues after sprint completion',
+             { nzDuration: 3000 }
+           );
+           console.error('Error processing issues:', error);
+           this.isCompletingSprint = false;
+        });
       },
       error: (err) => {
         this.notification.error(
@@ -491,6 +474,26 @@ export class BoardComponent implements OnInit {
         this.isCompletingSprint = false;
       }
     });
+  }
+
+  private updateSprintStateAfterCompletion(): void {
+     // Remove the completed sprint from active sprints
+     this.activeSprints = this.activeSprints.filter(
+       (sprint) => sprint.id !== this.currentSprint.id
+     );
+
+     // If there are still active sprints, select the first one
+     if (this.activeSprints.length > 0) {
+       this.currentSprint = this.activeSprints[0];
+       this.sprintService.setCurrentSprint(this.currentSprint);
+       this.loadBoardData();
+     } else {
+       // No more active sprints
+       this.currentSprint = null;
+       this.sprintService.setCurrentSprint(null);
+       this.error =
+         'No active sprint found. Please start a sprint to see the board.';
+     }
   }
 
   handleCompleteSprintCancel(): void {
@@ -547,7 +550,7 @@ export class BoardComponent implements OnInit {
               `${BASE_URL}/projects/${this.currentProject.id}/create-default-board`,
               {}
             ).pipe(
-              rxjsMap(board => {
+              map(board => {
                 console.log('Created default board:', board);
                 return board?.id;
               })
