@@ -59,6 +59,11 @@ export class SidebarComponent implements OnInit {
       link: '/summary',
     },
     {
+      label: 'Báo cáo',
+      icon: 'summary',
+      link: '/reports',
+    },
+    {
       label: 'Forms',
       icon: 'form',
       link: '/forms',

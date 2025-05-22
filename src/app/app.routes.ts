@@ -22,6 +22,7 @@ import { FiltersComponent } from './features/components/filters/filters.componen
 import { FilterDetailComponent } from './features/components/filters/filter-detail/filter-detail.component';
 import { GoalsPageComponent } from './features/components/project/goals/goals-page/goals-page.component';
 import { FormsComponent } from './features/forms/forms.component';
+import { ReportsComponent } from './features/components/project/reports.component';
 
 export const routes: Routes = [
   {
@@ -257,6 +258,18 @@ export const routes: Routes = [
         path: '',
         component: FormsComponent,
         title: 'Project Reports',
+      },
+    ],
+  },
+  {
+    path: 'reports',
+    component: LayoutComponent,
+    canActivate: [AuthGuard],
+    children: [
+      {
+        path: '',
+        component: ReportsComponent,
+        title: 'Báo cáo Sprint',
       },
     ],
   },
