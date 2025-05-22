@@ -4,6 +4,8 @@ import { Team, TeamService } from '../../../../core/services/team.service';
 import { finalize } from 'rxjs/operators';
 import { DatePipe } from '@angular/common';
 import { NzMessageService } from 'ng-zorro-antd/message';
+import { PermissionService } from '../../../../core/services/permission.service';
+import { UserRole } from '../../../../core/models/user/user';
 
 @Component({
   selector: 'app-team-list',
@@ -26,11 +28,15 @@ export class TeamListComponent implements OnInit {
   deleteLoading = false;
   teamToDelete: Team | null = null;
 
+  // For permissions
+  canCreateTeam = false;
+
   constructor(
     private teamService: TeamService,
     private router: Router,
     private route: ActivatedRoute,
-    private message: NzMessageService
+    private message: NzMessageService,
+    private permissionService: PermissionService
   ) {}
 
   ngOnInit(): void {
@@ -45,6 +51,13 @@ export class TeamListComponent implements OnInit {
 
     this.loadTeams();
     this.loadMyTeams();
+    this.checkPermissions();
+  }
+
+  private checkPermissions(): void {
+    this.permissionService.getCurrentUserRole().subscribe(role => {
+      this.canCreateTeam = role === UserRole.ADMIN;
+    });
   }
 
   loadTeams(): void {

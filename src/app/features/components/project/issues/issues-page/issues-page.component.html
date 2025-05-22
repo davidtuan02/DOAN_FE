@@ -349,14 +349,14 @@
       >
         <thead>
           <tr>
-            <th>Key</th>
-            <th>Type</th>
-            <th>Summary</th>
-            <th>Status</th>
-            <th>Priority</th>
-            <th>Assignee</th>
-            <th>Created</th>
-            <th>Actions</th>
+            <th class="col-key">Key</th>
+            <th class="col-type">Type</th>
+            <th class="col-summary">Summary</th>
+            <th class="col-status">Status</th>
+            <th class="col-priority">Priority</th>
+            <th class="col-assignee">Assignee</th>
+            <th class="col-created">Created</th>
+            <th class="col-actions">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -365,8 +365,8 @@
             class="cursor-pointer hover:bg-gray-50"
             (click)="viewIssueDetail(issue.id)"
           >
-            <td>{{ issue.key }}</td>
-            <td>
+            <td class="col-key">{{ issue.key }}</td>
+            <td class="col-type">
               <i
                 class="fa {{ getTypeIcon(issue.type) }}"
                 aria-hidden="true"
@@ -374,33 +374,34 @@
                 [nzTooltipTitle]="issue.type"
               ></i>
             </td>
-            <td class="max-w-xs truncate">{{ issue.title }}</td>
-            <td>
+            <td class="col-summary ellipsis">{{ issue.title }}</td>
+            <td class="col-status">
               <nz-tag
                 [nzColor]="getStatusColor(mapStatusForDisplay(issue.status))"
-                >{{ mapStatusForDisplay(issue.status) }}</nz-tag
               >
+                {{ mapStatusForDisplay(issue.status) }}
+              </nz-tag>
             </td>
-            <td>
+            <td class="col-priority">
               <nz-tag [nzColor]="getPriorityColor(issue.priority)">{{
                 issue.priority
               }}</nz-tag>
             </td>
-            <td>
+            <td class="col-assignee">
               <div *ngIf="issue.assignee" class="flex items-center">
                 <div class="flex items-center justify-center w-8 h-8 mr-2 overflow-hidden rounded-full" style="background:#0052CC;">
                   <span class="text-white font-bold text-base">
                     {{ getAssigneeInitials(issue.assignee) }}
                   </span>
                 </div>
-                <!-- <span class="truncate max-w-[100px]">
+                <span class="truncate max-w-[100px] ellipsis">
                   {{ getAssigneeDisplayName(issue.assignee) }}
-                </span> -->
+                </span>
               </div>
               <span *ngIf="!issue.assignee" class="text-gray-400">Unassigned</span>
             </td>
-            <td>{{ issue.created | date : "MMM d, y" }}</td>
-            <td>
+            <td class="col-created">{{ issue.created | date : "MMM d, y" }}</td>
+            <td class="col-actions">
               <button
                 nz-button
                 nzType="text"

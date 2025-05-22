@@ -94,19 +94,21 @@
     </div>
 
     <div class="sidebar-nav">
-      <a
-        *ngFor="let item of navItems"
-        class="nav-item"
-        [routerLink]="item.link"
-        routerLinkActive="active"
-      >
-        <app-svg-icon
-          [name]="item.icon"
-          [width]="24"
-          [height]="24"
-        ></app-svg-icon>
-        <div>{{ item.label }}</div>
-      </a>
+      <ng-container *ngFor="let item of navItems">
+        <a
+          *ngIf="!item.adminOnly || isAdmin"
+          class="nav-item"
+          [routerLink]="item.link"
+          routerLinkActive="active"
+        >
+          <app-svg-icon
+            [name]="item.icon"
+            [width]="24"
+            [height]="24"
+          ></app-svg-icon>
+          <div>{{ item.label }}</div>
+        </a>
+      </ng-container>
     </div>
 
     <div class="sidebar-footer">

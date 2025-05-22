@@ -355,6 +355,15 @@
 }
 
 .issues-table {
+  overflow-x: auto !important;
+  width: 100%;
+  -webkit-overflow-scrolling: touch;
+
+  ::ng-deep .ant-table {
+    min-width: 900px;
+    display: block;
+  }
+
   overflow: hidden;
   border: 1px solid #e5e7eb;
 
@@ -625,4 +634,125 @@
     justify-content: space-between;
     text-align: left;
   }
+}
+
+// Responsive for filter bar and table
+@media (max-width: 1024px) {
+  .jira-filter-bar {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 4px;
+    .search-container,
+    .filter-dropdown,
+    form,
+    button,
+    .ai-button {
+      min-width: 120px;
+      width: 100%;
+      margin-bottom: 6px;
+    }
+    form {
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+  }
+  .issues-table {
+    overflow-x: auto;
+    width: 100%;
+    .ant-table {
+      min-width: 800px;
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .jira-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    .search-container,
+    .filter-dropdown,
+    form,
+    button,
+    .ai-button {
+      width: 100%;
+      min-width: unset;
+      margin-bottom: 4px;
+    }
+    form {
+      flex-direction: column;
+      gap: 6px;
+    }
+  }
+  .issues-table {
+    overflow-x: auto;
+    width: 100%;
+    .ant-table {
+      min-width: 600px;
+    }
+  }
+}
+
+// Table column width & ellipsis
+.col-key {
+  min-width: 80px;
+  max-width: 100px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.col-type {
+  min-width: 60px;
+  max-width: 80px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.col-summary {
+  min-width: 180px;
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.col-status {
+  min-width: 90px;
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.col-priority {
+  min-width: 80px;
+  max-width: 100px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.col-assignee {
+  min-width: 120px;
+  max-width: 160px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.col-created {
+  min-width: 110px;
+  max-width: 130px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.col-actions {
+  min-width: 70px;
+  max-width: 80px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

@@ -6,9 +6,10 @@ import {
   tap,
   shareReplay,
   catchError,
+  finalize
 } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
-import { User, AuthResponse } from '../models';
+import { User, AuthResponse, UserRole } from '../models';
 import { Router } from '@angular/router';
 import { JwtService } from './jwt.service';
 import { BASE_URL } from '../constants';
@@ -194,7 +195,23 @@ export class UserService {
 
   // Add the getUsers method that's called from goal-form component
   getUsers(): Observable<User[]> {
-    return this.getAllUsers();
+    console.log('UserService: Calling GET /users/all');
+    return this.http.get<User[]>(`${BASE_URL}/users/all`);
+  }
+
+  createUser(userData: any): Observable<User> {
+    console.log('UserService: Calling POST /users/create', userData);
+    return this.http.post<User>(`${BASE_URL}/users/create`, userData);
+  }
+
+  updateUserById(userId: string, userData: any): Observable<User> {
+    console.log('UserService: Calling PUT /users/edit/:id', userId, userData);
+    return this.http.put<User>(`${BASE_URL}/users/edit/${userId}`, userData);
+  }
+
+  deleteUser(userId: string): Observable<void> {
+    console.log('UserService: Calling DELETE /users/delete/:id', userId);
+    return this.http.delete<void>(`${BASE_URL}/users/delete/${userId}`);
   }
 
   /**

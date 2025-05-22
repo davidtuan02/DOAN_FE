@@ -23,6 +23,7 @@ import { NzModalService } from 'ng-zorro-antd/modal';
 import { IssueService } from '../../../../../features/services/issue.service';
 import { FormsModule } from '@angular/forms';
 import { NzSelectModule, NzFilterOptionType } from 'ng-zorro-antd/select';
+import { PermissionService } from '../../../../../core/services/permission.service';
 
 interface ModalData {
   onClose?: () => void;
@@ -64,6 +65,8 @@ export class CardDetailsComponent implements OnInit {
   isAddingParent: boolean = false;
   selectedParentId: string = '';
 
+  canDeleteCard = false;
+
   constructor(
     private store: Store<fromStore.AppState>,
     private projectService: ProjectService,
@@ -71,7 +74,8 @@ export class CardDetailsComponent implements OnInit {
     @Optional() @Inject(NZ_MODAL_DATA) private modalData: ModalData,
     private notification: NzNotificationService,
     private modalService: NzModalService,
-    private issueService: IssueService
+    private issueService: IssueService,
+    private permissionService: PermissionService
   ) {}
 
   ngOnInit(): void {
@@ -98,6 +102,14 @@ export class CardDetailsComponent implements OnInit {
         })
       )
       .subscribe();
+
+    // Check admin permission
+    this.permissionService.isAdmin().pipe(
+      takeUntilDestroyed(this)
+    ).subscribe(isAdmin => {
+      console.log(isAdmin)
+      this.canDeleteCard = isAdmin;
+    });
   }
 
   // Get the type of the parent task

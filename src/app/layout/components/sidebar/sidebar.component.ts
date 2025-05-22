@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject } from '@angular/core';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { tap } from 'rxjs/operators';
 import { Destroyable, takeUntilDestroyed } from '../../../shared/utils';
@@ -14,6 +14,7 @@ import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzSkeletonModule } from 'ng-zorro-antd/skeleton';
 import { FormsModule } from '@angular/forms';
 import { NzMessageService } from 'ng-zorro-antd/message';
+import { PermissionService } from '../../../core/services/permission.service';
 
 @Destroyable()
 @Component({
@@ -32,6 +33,9 @@ import { NzMessageService } from 'ng-zorro-antd/message';
   styleUrls: ['./sidebar.component.scss'],
 })
 export class SidebarComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
+  isAdmin = false;
+
   navItems = [
     {
       label: 'Backlog',
@@ -67,9 +71,10 @@ export class SidebarComponent implements OnInit {
       label: 'Forms',
       icon: 'form',
       link: '/forms',
+      adminOnly: true
     },
     {
-      label: 'Project settings',
+      label: 'Settings',
       icon: 'settings',
       link: '/project-settings',
     },
@@ -87,14 +92,15 @@ export class SidebarComponent implements OnInit {
     private breakpointObserver: BreakpointObserver,
     private projectService: ProjectService,
     private router: Router,
-    private message: NzMessageService
+    private message: NzMessageService,
+    private permissionService: PermissionService
   ) {}
 
   ngOnInit(): void {
     this.breakpointObserver
       .observe(['(max-width: 959.98px)'])
       .pipe(
-        takeUntilDestroyed(this),
+        takeUntilDestroyed(this.destroyRef),
         tap((state) => {
           this.collapsed = state.matches;
         })
@@ -102,10 +108,11 @@ export class SidebarComponent implements OnInit {
       .subscribe();
 
     this.loadUserProjects();
+    this.loadUserPermissions();
 
     // Subscribe to selected project changes
     this.projectService.selectedProject$
-      .pipe(takeUntilDestroyed(this))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((project) => {
         this.selectedProject = project;
       });
@@ -115,7 +122,7 @@ export class SidebarComponent implements OnInit {
     this.loading = true;
     this.projectService
       .getCurrentUserProjects()
-      .pipe(takeUntilDestroyed(this))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (projects) => {
           this.projects = projects;
@@ -136,6 +143,14 @@ export class SidebarComponent implements OnInit {
           this.loading = false;
         },
       });
+  }
+
+  loadUserPermissions(): void {
+    this.permissionService.isAdmin().pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(isAdmin => {
+      this.isAdmin = isAdmin;
+    });
   }
 
   selectProject(project: Project): void {

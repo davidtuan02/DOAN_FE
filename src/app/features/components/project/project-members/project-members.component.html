@@ -11,7 +11,7 @@
         class="mr-3 w-64"
       />
 
-      <button class="button-add" nz-button nzType="primary" (click)="showAddModal()">
+      <button *ngIf="canManageMembers" class="button-add" nz-button nzType="primary" (click)="showAddModal()">
         <i nz-icon nzType="user-add"></i>
         Add Member
       </button>
@@ -32,7 +32,7 @@
         <th>Email</th>
         <th>Access Level</th>
         <th>Added Date</th>
-        <th>Actions</th>
+        <th *ngIf="canManageMembers">Actions</th>
       </tr>
     </thead>
     <tbody>
@@ -45,7 +45,7 @@
           </nz-tag>
         </td>
         <td>{{ member.createdAt | date }}</td>
-        <td>
+        <td *ngIf="canManageMembers">
           <button
             nz-button
             nzType="default"

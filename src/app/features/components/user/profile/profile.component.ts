@@ -117,6 +117,7 @@ export class ProfileComponent implements OnInit {
       )
       .subscribe((user) => {
         if (user) {
+          console.log(user)
           this.user = user;
           this.formData = { ...user };
 

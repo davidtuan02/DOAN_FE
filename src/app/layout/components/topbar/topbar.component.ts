@@ -97,6 +97,7 @@ export class TopbarComponent implements OnInit, OnDestroy {
     { name: 'Projects', selected: false, route: '/projects' },
     { name: 'Filters', selected: false, route: '/filters' },
     { name: 'People', selected: false, route: '/teams' },
+    { name: 'Accounts', selected: false, route: '/accounts' },
   ];
 
   displayTopbarMenuItems: TopbarMenuItem[] = [];
@@ -134,31 +135,8 @@ export class TopbarComponent implements OnInit, OnDestroy {
     // Set initial selected state based on current URL
     this.updateSelectedMenuItem(this.router.url);
 
-    this.breakpointObserver
-      .observe([
-        Breakpoints.XSmall,
-        Breakpoints.Small,
-        Breakpoints.Medium,
-        Breakpoints.Large,
-      ])
-      .pipe(
-        takeUntilDestroyed(this),
-        tap((state) => {
-          if (state.breakpoints[Breakpoints.XSmall]) {
-            this.displayTopbarMenuItems = this.topbarMenuItems.slice(0, 1);
-          }
-          if (state.breakpoints[Breakpoints.Small]) {
-            this.displayTopbarMenuItems = this.topbarMenuItems.slice(0, 3);
-          }
-          if (state.breakpoints[Breakpoints.Medium]) {
-            this.displayTopbarMenuItems = this.topbarMenuItems.slice(0, 5);
-          }
-          if (state.breakpoints[Breakpoints.Large]) {
-            this.displayTopbarMenuItems = this.topbarMenuItems.slice(0, 7);
-          }
-        })
-      )
-      .subscribe();
+    // Always show all menu items
+    this.displayTopbarMenuItems = this.topbarMenuItems;
 
     // Load initial data for Your Work dropdown
     this.loadAssignedTasks();

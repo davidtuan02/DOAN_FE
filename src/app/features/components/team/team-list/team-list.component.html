@@ -6,6 +6,7 @@
         <p class="text-gray-600 mt-1">Manage teams and team members</p>
       </div>
       <button
+        *ngIf="canCreateTeam"
         class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center"
         (click)="createTeam()"
       >
@@ -162,7 +163,7 @@
             <div class="flex justify-between items-start">
               <h3
                 class="font-semibold text-lg text-blue-800 cursor-pointer hover:underline"
-                (click)="viewTeam(team.id)"
+
               >
                 {{ team.name }}
               </h3>

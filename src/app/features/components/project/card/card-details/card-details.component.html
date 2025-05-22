@@ -101,14 +101,14 @@
         <span class="pr-1.5">1</span>
       </button>
 
-      <button class="square-button" nz-tooltip nzTooltipTitle="Vote options">
+      <!-- <button class="square-button" nz-tooltip nzTooltipTitle="Vote options">
         <app-svg-icon
           name="thumbup"
           [width]="32"
           [height]="24"
           fill="#fff"
         ></app-svg-icon>
-      </button>
+      </button> -->
 
       <button
         class="square-button"
@@ -185,6 +185,7 @@
       Clone
     </button>
     <button
+      *ngIf="canDeleteCard"
       (click)="deleteCard()"
       class="w-full px-3 py-1 text-left hover:bg-backgroundDark"
     >
