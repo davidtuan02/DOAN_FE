@@ -69,7 +69,14 @@
     <div class="flex items-center justify-between mt-2">
       <h1 class="text-2xl font-semibold text-gray-900">Backlog</h1>
       <div class="flex gap-2">
-        <!-- Buttons removed -->
+        <!-- Add Create Issue button with condition -->
+        <button
+          *ngIf="canCreateIssues"
+          class="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
+          (click)="showCreateIssueModal = true"
+        >
+          Create issue
+        </button>
       </div>
     </div>
   </div>

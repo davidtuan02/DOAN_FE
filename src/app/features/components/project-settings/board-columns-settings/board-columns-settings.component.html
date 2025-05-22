@@ -2,6 +2,7 @@
   <div class="header">
     <h2>Board Columns Settings</h2>
     <button
+      *ngIf="isAdmin"
       nz-button
       nzType="primary"
       (click)="showAddColumnModal()"
@@ -35,7 +36,7 @@
         <div class="column-name">Name</div>
         <div class="column-color">Color</div>
         <div class="column-default">Default</div>
-        <div class="column-actions">Actions</div>
+        <div class="column-actions" *ngIf="isAdmin">Actions</div>
       </div>
 
       <div *ngFor="let column of columns" cdkDrag class="column-item">
@@ -57,7 +58,7 @@
             nzTheme="outline"
           ></i>
         </div>
-        <div class="column-actions">
+        <div class="column-actions" *ngIf="isAdmin">
           <button nz-button nzType="text" (click)="showEditColumnModal(column)">
             <i nz-icon nzType="edit" nzTheme="outline"></i>
           </button>

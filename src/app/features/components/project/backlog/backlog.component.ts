@@ -188,6 +188,7 @@ export class BacklogComponent implements OnInit {
   // Add permission related properties
   userTeamRole: TeamRole = TeamRole.MEMBER;
   canManageSprints = false;
+  canCreateIssues = false; // Add this property
 
   constructor(
     private backlogService: BacklogService,
@@ -2321,14 +2322,21 @@ export class BacklogComponent implements OnInit {
 
   // Add method to load user permissions
   private loadUserPermissions(): void {
-    this.permissionService.getCurrentTeamRole().subscribe(role => {
+    // Check if user is admin
+    this.permissionService.isAdmin().pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(isAdmin => {
+      console.log(isAdmin)
+      this.canCreateIssues = isAdmin;
+      this.canManageSprints = isAdmin;
+    });
+
+    // Get user's team role
+    this.permissionService.getCurrentTeamRole().pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(role => {
       if (role) {
         this.userTeamRole = role;
-
-        // Check if user can manage sprints
-        this.permissionService.canManageSprint(role).subscribe(can => {
-          this.canManageSprints = can;
-        });
       }
     });
   }

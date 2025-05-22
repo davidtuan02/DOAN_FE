@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -34,6 +34,7 @@ import { ProjectService } from '../../../../core/services/project.service';
 import { SvgIconComponent } from '../../../../shared/components';
 import { TeamRole } from '../../../../core/models/team-role.model';
 import { PermissionService } from '../../../../core/services/permission.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-board-columns-settings',
@@ -60,6 +61,7 @@ import { PermissionService } from '../../../../core/services/permission.service'
   styleUrls: ['./board-columns-settings.component.scss'],
 })
 export class BoardColumnsSettingsComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   columns: BoardColumn[] = [];
   isLoading = false;
   isModalVisible = false;
@@ -71,6 +73,7 @@ export class BoardColumnsSettingsComponent implements OnInit {
   currentBoardId: string | null = null;
   userTeamRole: TeamRole = TeamRole.MEMBER;
   canManageProject = false;
+  isAdmin = false;
 
   constructor(
     private fb: FormBuilder,
@@ -99,13 +102,23 @@ export class BoardColumnsSettingsComponent implements OnInit {
   }
 
   loadUserPermissions(): void {
+    this.permissionService.isAdmin().pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(isAdmin => {
+      this.isAdmin = isAdmin;
+      if (isAdmin) {
+        this.canManageProject = true;
+      }
+    });
+
     this.permissionService.getCurrentTeamRole().subscribe(role => {
       if (role) {
         this.userTeamRole = role;
-
-        this.permissionService.canManageProject(role).subscribe(can => {
-          this.canManageProject = can;
-        });
+        if (!this.isAdmin) {
+          this.permissionService.canManageProject(role).subscribe(can => {
+            this.canManageProject = can;
+          });
+        }
       }
     });
   }
