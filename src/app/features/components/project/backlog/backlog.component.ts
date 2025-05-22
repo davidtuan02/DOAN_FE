@@ -1507,17 +1507,17 @@ export class BacklogComponent implements OnInit {
     const moveOperations: Observable<any>[] = [];
 
     issues.forEach((issue) => {
-      if (targetSprintId === 'backlog') {
-        // Move to backlog - update the issue to remove sprint association
-        moveOperations.push(
-          this.issueService.moveIssueToSprint(issue.id, undefined)
-        );
-      } else {
-        // Move to another sprint
-        moveOperations.push(
-          this.issueService.moveIssueToSprint(issue.id, targetSprintId)
-        );
-      }
+      moveOperations.push(
+        this.issueService.moveIssueToSprint(issue.id, undefined)
+      );
+      // if (targetSprintId === 'backlog') {
+      //   // Move to backlog - update the issue to remove sprint association
+      // } else {
+      //   // Move to another sprint
+      //   moveOperations.push(
+      //     this.issueService.moveIssueToSprint(issue.id, targetSprintId)
+      //   );
+      // }
     });
 
     // Execute all move operations

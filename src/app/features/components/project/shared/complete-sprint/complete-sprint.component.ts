@@ -41,7 +41,7 @@ import * as fromStore from '../../../../../core/store';
             </div>
           </div>
           <h2 class="mb-1 text-xl font-semibold text-center text-gray-800">
-            Complete {{ sprint?.name }}
+            Complete "{{ sprint?.name }}""
           </h2>
         </div>
 
@@ -68,11 +68,33 @@ import * as fromStore from '../../../../../core/store';
               Completed work items includes everything in the last column on the
               board, <strong>DONE</strong>.
             </li>
-            <li>
+            <!-- <li>
               Open work items will be moved to the backlog.
-            </li>
+            </li> -->
           </ul>
         </div>
+
+        <div class="mb-6" *ngIf="getOpenIssuesCount() > 0">
+        <label
+          for="move-to-sprint"
+          class="block mb-2 text-sm font-medium text-gray-700"
+        >
+          Open work items will be moved to backlog
+        </label>
+        <!-- <select
+          id="move-to-sprint"
+          [(ngModel)]="moveToSprintId"
+          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="backlog">Backlog</option>
+          <option
+            *ngFor="let sprint of getPlanningAndActiveSprints()"
+            [value]="sprint.id"
+          >
+            {{ sprint.name }}
+          </option>
+        </select> -->
+      </div>
 
         <!-- Planning Sprints Section - Only visible for users with permission -->
         <div class="mb-6 border-t pt-4" *ngIf="canCreateSprint">
@@ -244,7 +266,9 @@ export class CompleteSprintComponent implements OnChanges, AfterViewInit, OnDest
     private message: NzMessageService,
     private modal: NzModalService,
     private store: Store
-  ) {}
+  ) {
+    console.log('he')
+  }
 
   ngAfterViewInit(): void {
     // Listen for custom events to reset the form
