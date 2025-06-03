@@ -4,42 +4,42 @@
     <!-- TODO: Thêm bộ lọc ngày, sprint, user nếu cần -->
     <div class="export-options d-flex" style="justify-content: flex-end;">
       <button class="export-btn" [disabled]="exportLoading" (click)="exportReport('json')">
-        <span *ngIf="!exportLoading">Xuất JSON</span>
-        <span *ngIf="exportLoading">Đang xuất...</span>
+        <span *ngIf="!exportLoading">Export JSON</span>
+        <span *ngIf="exportLoading">Exporting...</span>
       </button>
       <button class="export-btn" [disabled]="exportLoading" (click)="exportReport('pdf')">
-        <span *ngIf="!exportLoading">Xuất PDF</span>
-        <span *ngIf="exportLoading">Đang xuất...</span>
+        <span *ngIf="!exportLoading">Export PDF</span>
+        <span *ngIf="exportLoading">Exporting...</span>
       </button>
     </div>
   </div>
 
   <!-- Tổng quan dự án -->
   <div class="report-section">
-    <h2 class="section-title">Tổng quan dự án</h2>
+    <h2 class="section-title">Project Overview</h2>
     <div *ngIf="overview" class="grid-2">
       <div class="stat-card">
-        <div class="stat-title">Tổng số task</div>
+        <div class="stat-title">Total Tasks</div>
         <div class="stat-value">{{ overview.totalTasks }}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-title">Đã hoàn thành</div>
+        <div class="stat-title">Completed</div>
         <div class="stat-value">{{ overview.completedTasks }}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-title">Đang làm</div>
+        <div class="stat-title">In Progress</div>
         <div class="stat-value">{{ overview.inProgressTasks }}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-title">Tổng số user</div>
+        <div class="stat-title">Total Users</div>
         <div class="stat-value">{{ overview.totalUsers }}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-title">Thời gian hoàn thành TB</div>
+        <div class="stat-title">Average Completion Time</div>
         <div class="stat-value">{{ overview.averageTaskCompletionTime }}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-title">Tiến độ dự án</div>
+        <div class="stat-title">Project Progress</div>
         <div class="stat-value">{{ overview.projectProgress }}%</div>
       </div>
     </div>
@@ -47,7 +47,7 @@
 
   <!-- Phân bố trạng thái công việc -->
   <div class="report-section">
-    <h2 class="section-title">Phân bố trạng thái công việc</h2>
+    <h2 class="section-title">Task Status Distribution</h2>
     <div *ngIf="taskStatus" class="grid-3">
       <div class="stat-card">
         <div class="stat-title">TODO</div>
@@ -82,7 +82,7 @@
 
   <!-- Hiệu suất người dùng -->
   <div class="report-section">
-    <h2 class="section-title">Hiệu suất người dùng</h2>
+    <h2 class="section-title">User Performance</h2>
     <div style="overflow-x:auto;">
       <table *ngIf="userPerformance?.length" class="report-table">
         <thead>
@@ -105,25 +105,25 @@
         </tbody>
       </table>
       <div *ngIf="!userPerformance || userPerformance.length === 0" class="text-gray-400 italic py-3 text-center">
-        Không có dữ liệu
+        No data available
       </div>
     </div>
   </div>
 
-  <!-- Tiến độ Sprint -->
+  <!-- Sprint Progress -->
   <div class="report-section">
-    <h2 class="section-title">Tiến độ Sprint</h2>
+    <h2 class="section-title">Sprint Progress</h2>
     <div style="overflow-x:auto;">
       <table *ngIf="sprintProgress?.length" class="report-table">
         <thead>
           <tr>
             <th>Sprint</th>
-            <th>Bắt đầu</th>
-            <th>Kết thúc</th>
-            <th>Tổng task</th>
-            <th>Hoàn thành</th>
-            <th>Còn lại</th>
-            <th>Tiến độ</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Total Tasks</th>
+            <th>Completed</th>
+            <th>Remaining</th>
+            <th>Progress</th>
           </tr>
         </thead>
         <tbody>
@@ -139,56 +139,56 @@
         </tbody>
       </table>
       <div *ngIf="!sprintProgress || sprintProgress.length === 0" class="text-gray-400 italic py-3 text-center">
-        Không có dữ liệu
+        No data available
       </div>
     </div>
   </div>
 
   <!-- Thống kê thời gian -->
   <div class="report-section">
-    <h2 class="section-title">Thống kê thời gian</h2>
+    <h2 class="section-title">Time Statistics</h2>
     <div *ngIf="timeTracking" class="grid-2">
       <div class="stat-card">
-        <div class="stat-title">Tổng thời gian</div>
+        <div class="stat-title">Total Time</div>
         <div class="stat-value">{{ timeTracking.totalTimeSpent }}</div>
       </div>
       <div class="stat-card">
-        <div class="stat-title">Thời gian TB/task</div>
+        <div class="stat-title">Average Time/Task</div>
         <div class="stat-value">{{ timeTracking.averageTimePerTask }}</div>
       </div>
     </div>
     <div class="grid-2 mt-4">
       <div>
-        <strong>Theo user:</strong>
+        <strong>By User:</strong>
         <ul *ngIf="timeTracking?.timeByUser?.length > 0">
           <li *ngFor="let u of timeTracking.timeByUser">{{ u.userName }}: {{ u.timeSpent }}</li>
         </ul>
-        <div *ngIf="!timeTracking?.timeByUser || timeTracking.timeByUser.length === 0" class="text-gray-400 italic py-2">Không có dữ liệu</div>
+        <div *ngIf="!timeTracking?.timeByUser || timeTracking.timeByUser.length === 0" class="text-gray-400 italic py-2">No data available</div>
       </div>
       <div>
-        <strong>Theo task:</strong>
+        <strong>By Task:</strong>
         <ul *ngIf="timeTracking?.timeByTask?.length > 0">
           <li *ngFor="let t of timeTracking.timeByTask">{{ t.taskName }}: {{ t.timeSpent }}</li>
         </ul>
-        <div *ngIf="!timeTracking?.timeByTask || timeTracking.timeByTask.length === 0" class="text-gray-400 italic py-2">Không có dữ liệu</div>
+        <div *ngIf="!timeTracking?.timeByTask || timeTracking.timeByTask.length === 0" class="text-gray-400 italic py-2">No data available</div>
       </div>
     </div>
   </div>
 
-  <!-- Biểu đồ Burndown -->
+  <!-- Burndown Chart -->
   <div class="report-section">
-    <h2 class="section-title">Biểu đồ Burndown</h2>
+    <h2 class="section-title">Burndown Chart</h2>
     <div *ngIf="burndownChart && burndownChart.burndownData?.length > 0">
       <p>Sprint: {{ burndownChart.sprintName }}</p>
-      <p>Tổng task: {{ burndownChart.totalTasks }}</p>
+      <p>Total Tasks: {{ burndownChart.totalTasks }}</p>
       <ul>
         <li *ngFor="let d of burndownChart.burndownData">
-          {{ d.date }}: Còn lại {{ d.remainingTasks }}, Lý tưởng: {{ d.idealBurndown }}
+          {{ d.date }}: Remaining {{ d.remainingTasks }}, Ideal: {{ d.idealBurndown }}
         </li>
       </ul>
     </div>
     <div *ngIf="!burndownChart || !burndownChart.burndownData || burndownChart.burndownData.length === 0" class="text-gray-400 italic py-3 text-center">
-      Không có dữ liệu
+      No data available
     </div>
   </div>
 </div>

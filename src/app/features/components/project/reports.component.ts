@@ -10,50 +10,96 @@ Chart.register(...registerables);
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="container mx-auto px-4 py-6">
-      <h1 class="text-2xl font-bold mb-6">Báo cáo Sprint Performance</h1>
-      <div *ngIf="sprints.length === 0" class="text-gray-500">Không có sprint nào trong dự án này.</div>
-      
-      <!-- Charts Section -->
-      <div *ngIf="sprints.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <!-- Story Points Chart -->
-        <div class="bg-white p-4 rounded shadow">
-          <h2 class="text-lg font-semibold mb-4">Story Points theo Sprint</h2>
-          <canvas #storyPointsChart></canvas>
+    <div class="container-fluid p-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Sprint Performance Report</h5>
         </div>
-        
-        <!-- Issue Types Chart -->
-        <div class="bg-white p-4 rounded shadow">
-          <h2 class="text-lg font-semibold mb-4">Phân bố loại Issue</h2>
-          <canvas #issueTypesChart></canvas>
+        <div class="card-body">
+          <div *ngIf="sprints.length === 0" class="alert alert-info">No sprints found in this project.</div>
+          
+          <!-- Charts Section -->
+          <div *ngIf="sprints.length > 0" class="row mb-4">
+            <!-- Story Points Chart -->
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-body">
+                  <h6 class="card-subtitle mb-3">Story Points by Sprint</h6>
+                  <canvas #storyPointsChart></canvas>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Issue Types Chart -->
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-body">
+                  <h6 class="card-subtitle mb-3">Issue Type Distribution</h6>
+                  <canvas #issueTypesChart></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Table Section -->
+          <div *ngIf="sprints.length > 0" class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Sprint</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th>Story Points</th>
+                  <th>Bug Count</th>
+                  <th>Total Issues</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let sprint of sprints">
+                  <td>{{ sprint.name }}</td>
+                  <td>{{ sprint.startDate | date:'shortDate' }}</td>
+                  <td>{{ sprint.endDate | date:'shortDate' }}</td>
+                  <td>{{ getCompletedStoryPoints(sprint) }}/{{ getTotalStoryPoints(sprint) }}</td>
+                  <td>{{ getBugCount(sprint) }}</td>
+                  <td>{{ sprint.issues?.length || 0 }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-
-      <!-- Table Section -->
-      <table *ngIf="sprints.length > 0" class="min-w-full bg-white border rounded">
-        <thead>
-          <tr>
-            <th class="px-4 py-2 border">Sprint</th>
-            <th class="px-4 py-2 border">Ngày bắt đầu</th>
-            <th class="px-4 py-2 border">Ngày kết thúc</th>
-            <th class="px-4 py-2 border">Story Points (hoàn thành/tổng)</th>
-            <th class="px-4 py-2 border">Số lượng Bug</th>
-            <th class="px-4 py-2 border">Tổng số Issue</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let sprint of sprints">
-            <td class="px-4 py-2 border">{{ sprint.name }}</td>
-            <td class="px-4 py-2 border">{{ sprint.startDate | date:'shortDate' }}</td>
-            <td class="px-4 py-2 border">{{ sprint.endDate | date:'shortDate' }}</td>
-            <td class="px-4 py-2 border">{{ getCompletedStoryPoints(sprint) }}/{{ getTotalStoryPoints(sprint) }}</td>
-            <td class="px-4 py-2 border">{{ getBugCount(sprint) }}</td>
-            <td class="px-4 py-2 border">{{ sprint.issues?.length || 0 }}</td>
-          </tr>
-        </tbody>
-      </table>
     </div>
-  `
+  `,
+  styles: [`
+    .card {
+      box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+      margin-bottom: 1rem;
+    }
+    .card-header {
+      background-color: #f8f9fa;
+      border-bottom: 1px solid rgba(0,0,0,.125);
+    }
+    .card-title {
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    .card-subtitle {
+      font-size: 0.8rem;
+      color: #6c757d;
+    }
+    .table th {
+      font-weight: 500;
+      background-color: #f8f9fa;
+      font-size: 0.8rem;
+    }
+    .table td {
+      font-size: 0.8rem;
+    }
+    .alert {
+      margin-bottom: 1rem;
+      font-size: 0.8rem;
+    }
+  `]
 })
 export class ReportsComponent implements OnInit, AfterViewInit {
   @ViewChild('storyPointsChart') storyPointsChartRef!: ElementRef<HTMLCanvasElement>;
@@ -151,14 +197,14 @@ export class ReportsComponent implements OnInit, AfterViewInit {
         labels: this.sprints.map(s => s.name),
         datasets: [
           {
-            label: 'Story Points hoàn thành',
+            label: 'Story Points completed',
             data: this.sprints.map(s => this.getCompletedStoryPoints(s)),
             backgroundColor: 'rgba(75, 192, 192, 0.5)',
             borderColor: 'rgba(75, 192, 192, 1)',
             borderWidth: 1
           },
           {
-            label: 'Tổng Story Points',
+            label: 'Total Story Points',
             data: this.sprints.map(s => this.getTotalStoryPoints(s)),
             backgroundColor: 'rgba(54, 162, 235, 0.5)',
             borderColor: 'rgba(54, 162, 235, 1)',
@@ -174,7 +220,7 @@ export class ReportsComponent implements OnInit, AfterViewInit {
           },
           title: {
             display: true,
-            text: 'Story Points theo Sprint'
+            text: 'Story Points by Sprint'
           }
         },
         scales: {
@@ -216,7 +262,7 @@ export class ReportsComponent implements OnInit, AfterViewInit {
           },
           title: {
             display: true,
-            text: 'Phân bố loại Issue'
+            text: 'Issue Type Distribution'
           }
         }
       }
