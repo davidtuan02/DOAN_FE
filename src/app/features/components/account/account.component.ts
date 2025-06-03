@@ -60,10 +60,13 @@ export class AccountComponent implements OnInit, OnDestroy {
 
   userRoles = Object.values(UserRole);
 
-
-
   ngOnInit(): void {
     this.loadUsers();
+    this.accountForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      name: ['', Validators.required],
+      role: [UserRole.MEMBER, Validators.required],
+    });
   }
 
   ngOnDestroy(): void {
@@ -81,8 +84,8 @@ export class AccountComponent implements OnInit, OnDestroy {
         return throwError(error);
       })
     ).subscribe(users => {
-      // Filter out ADMIN users
-      // this.users = users.filter(user => user.role !== UserRole.ADMIN);
+      // Filter out MANAGER users
+      // this.users = users.filter(user => user.role !== UserRole.MANAGER);
       this.displayUsers = [...users]; // Initialize display list
     }));
   }
@@ -94,8 +97,8 @@ export class AccountComponent implements OnInit, OnDestroy {
     }
     const lowerCaseSearchValue = this.searchValue.toLowerCase();
     this.displayUsers = this.users.filter(user =>
-      // Filter out ADMIN users and apply search filter
-      user.role !== UserRole.ADMIN &&
+      // Filter out MANAGER users and apply search filter
+      user.role !== UserRole.MANAGER &&
       (user.firstName?.toLowerCase().includes(lowerCaseSearchValue) ||
       user.lastName?.toLowerCase().includes(lowerCaseSearchValue) ||
       user.email?.toLowerCase().includes(lowerCaseSearchValue) ||
@@ -118,8 +121,6 @@ export class AccountComponent implements OnInit, OnDestroy {
 
   }
 
-
-
   constructor(private notification: NzNotificationService, private message: NzMessageService, private modalService: NzModalService, private fb: FormBuilder, private userService: UserService) {
     this.accountForm = this.fb.group({
     //  firstName: ['', Validators.required],
@@ -128,7 +129,7 @@ export class AccountComponent implements OnInit, OnDestroy {
      age: [null, [Validators.required, Validators.min(0)]],
      email: ['', [Validators.required, Validators.email]],
      username: ['', Validators.required],
-     role: [UserRole.BASIC, Validators.required],
+     role: [UserRole.MEMBER, Validators.required],
      // Password fields might be needed for create, but not edit usually
      password: [''], // Add password field
      confirmPassword: [''] // Add confirm password field

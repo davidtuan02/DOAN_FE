@@ -94,7 +94,7 @@ export class ProjectMembersComponent implements OnInit {
 
   private checkPermissions(): void {
     this.permissionService.getCurrentUserRole().subscribe(role => {
-      this.canManageMembers = role === UserRole.ADMIN;
+      this.canManageMembers = role === UserRole.MANAGER;
     });
   }
 

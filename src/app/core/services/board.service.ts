@@ -10,7 +10,7 @@ import {
   switchMap,
 } from 'rxjs';
 import { catchError, tap, map, shareReplay } from 'rxjs/operators';
-import { Card, Column, Comment, PartialCard, User } from '../models';
+import { Card, Column, Comment, PartialCard, User, Board } from '../models';
 import { SprintService, Sprint } from '../../features/services/sprint.service';
 import { IssueService, Issue } from '../../features/services/issue.service';
 import { ProjectService } from './project.service';
@@ -296,7 +296,7 @@ export class BoardService {
           lastName: user.lastName || '',
           username: user.username || user.email || '',
           age: user.age || 0,
-          role: user.role || 'BASIC',
+          role: user.role || 'MEMBER',
           createdAt: user.createdAt || new Date().toISOString(),
           updatedAt: user.updatedAt || new Date().toISOString(),
           avatar: `https://ui-avatars.com/api/?name=${
@@ -718,5 +718,14 @@ export class BoardService {
       default:
         return 'Medium';
     }
+  }
+
+  createBoard(board: Board): Observable<Board> {
+    return this.userService.getCurrentUser().pipe(
+      switchMap(user => this.http.post<Board>(`${this.apiUrl}/boards`, {
+        ...board,
+        role: user?.role || 'MEMBER',
+      }))
+    );
   }
 }

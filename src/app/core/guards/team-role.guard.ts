@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
 import {
   ActivatedRouteSnapshot,
   CanActivate,
@@ -10,7 +10,8 @@ import { map, switchMap, take, catchError } from 'rxjs/operators';
 import { UserService } from '../services/user.service';
 import { TeamService } from '../services/team.service';
 import { UserRole } from '../models/user/user';
-import { TeamRole, teamRolePermissions } from '../models/team-role.model';
+import { TeamRole, TeamRolePermissions } from '../models/team-role.model';
+import { AuthService } from '../services/auth.service';
 
 @Injectable({
   providedIn: 'root',
@@ -19,25 +20,37 @@ export class TeamRoleGuard implements CanActivate {
   constructor(
     private userService: UserService,
     private teamService: TeamService,
-    private router: Router
+    private router: Router,
+    @Inject(AuthService) private authService: AuthService
   ) {}
 
   canActivate(route: ActivatedRouteSnapshot): Observable<boolean | UrlTree> {
     const requiredPermission = route.data[
       'teamPermission'
-    ] as keyof (typeof teamRolePermissions)[TeamRole];
+    ] as keyof (typeof TeamRolePermissions)[TeamRole];
     const teamId = route.paramMap.get('teamId') || route.paramMap.get('id');
 
     if (!teamId) {
       return of(true); // No team ID to check against
     }
 
-    return this.userService.getCurrentUser().pipe(
-      take(1),
-      switchMap((user) => {
-        // Admin users have access to everything
-        if (user.role === UserRole.ADMIN) {
-          return of(true);
+    return this.authService.currentUser$.pipe(
+      map(user => {
+        if (!user) return false;
+
+        // Manager users have access to everything
+        if (user.role === UserRole.MANAGER) {
+          return true;
+        }
+
+        const requiredRole = route.data['role'] as TeamRole;
+        return this.teamService.validateTeamAccess(teamId).pipe(
+          map(access => access.role === requiredRole)
+        );
+      }),
+      switchMap((access) => {
+        if (!access) {
+          return of(false);
         }
 
         // Check team access for other users
@@ -55,7 +68,7 @@ export class TeamRoleGuard implements CanActivate {
             }
 
             const userTeamRole = access.role;
-            const permissions = teamRolePermissions[userTeamRole];
+            const permissions = TeamRolePermissions[userTeamRole];
 
             // Check if user has the required permission
             if (permissions && permissions[requiredPermission]) {

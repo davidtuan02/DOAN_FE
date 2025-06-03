@@ -9,3 +9,4 @@ export * from './card/card';
 export * from './column/column';
 export * from './team-role.model';
 export * from './attachment/attachment';
+export * from './board.model';

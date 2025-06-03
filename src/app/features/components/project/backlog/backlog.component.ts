@@ -2291,7 +2291,7 @@ export class BacklogComponent implements OnInit {
       email: '',
       age: 0,
       username: user.name || '',
-      role: 'BASIC' as any,
+      role: 'MEMBER' as any,
       avatar: user.avatar || '',
     };
   }

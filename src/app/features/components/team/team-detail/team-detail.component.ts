@@ -187,7 +187,7 @@ export class TeamDetailComponent implements OnInit {
 
   canManageTeam(): boolean {
     return (
-      this.teamAccess?.role === 'leader' || this.teamAccess?.role === 'admin'
+      this.teamAccess?.role === 'leader' || this.teamAccess?.role === 'manager'
     );
   }
 }

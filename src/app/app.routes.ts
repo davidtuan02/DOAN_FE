@@ -166,7 +166,7 @@ export const routes: Routes = [
         canActivate: [RoleGuard],
         data: {
           isStandalone: true,
-          role: UserRole.ADMIN,
+          role: UserRole.MANAGER,
         },
       },
       {

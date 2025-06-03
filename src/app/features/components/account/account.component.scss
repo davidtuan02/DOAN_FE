@@ -213,13 +213,13 @@ nz-table {
   font-size: 12px;
   font-weight: 500;
 
-  &.admin {
-    background: #e6f7ff;
+  &.manager {
+    background-color: #e6f7ff;
     color: #1890ff;
   }
 
-  &.basic {
-    background: #f6ffed;
+  &.member {
+    background-color: #f6ffed;
     color: #52c41a;
   }
 

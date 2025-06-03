@@ -47,7 +47,7 @@ export class TeamMembersComponent implements OnInit {
 
   // For search and filter
   searchTerm = '';
-  filterRole: 'all' | 'admin' | 'leader' | 'member' = 'all';
+  filterRole: 'all' | 'manager' | 'leader' | 'member' = 'all';
   searchTimeout: any;
 
   constructor(
@@ -327,9 +327,9 @@ export class TeamMembersComponent implements OnInit {
     }, 300);
   }
 
-  onFilterChange(event: Event): void {
+  onRoleFilterChange(event: Event): void {
     const select = event.target as HTMLSelectElement;
-    this.filterRole = select.value as 'all' | 'admin' | 'leader' | 'member';
+    this.filterRole = select.value as 'all' | 'manager' | 'leader' | 'member';
     this.applyFilters();
   }
 
@@ -376,9 +376,7 @@ export class TeamMembersComponent implements OnInit {
     );
   }
 
-  canManageTeam(): boolean {
-    return (
-      this.teamAccess?.role === 'leader' || this.teamAccess?.role === 'admin'
-    );
+  canManageMembers(): boolean {
+    return this.teamAccess?.role === 'leader' || this.teamAccess?.role === 'manager';
   }
 }

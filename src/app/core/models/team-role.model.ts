@@ -1,7 +1,7 @@
 export enum TeamRole {
-  ADMIN = 'admin',
+  MANAGER = 'manager',
   LEADER = 'leader',
-  MEMBER = 'member',
+  MEMBER = 'member'
 }
 
 export interface TeamMember {
@@ -19,28 +19,36 @@ export interface TeamMember {
 
 export interface TeamRolePermission {
   canManageTeam: boolean;
-  canManageProject: boolean;
-  canManageTask: boolean;
-  canEditTask: boolean;
+  canManageMembers: boolean;
+  canManageProjects: boolean;
+  canViewTeam: boolean;
+  canViewMembers: boolean;
+  canViewProjects: boolean;
 }
 
-export const teamRolePermissions: Record<TeamRole, TeamRolePermission> = {
-  [TeamRole.ADMIN]: {
+export const TeamRolePermissions = {
+  [TeamRole.MANAGER]: {
     canManageTeam: true,
-    canManageProject: true,
-    canManageTask: true,
-    canEditTask: true,
+    canManageMembers: true,
+    canManageProjects: true,
+    canViewTeam: true,
+    canViewMembers: true,
+    canViewProjects: true
   },
   [TeamRole.LEADER]: {
     canManageTeam: false,
-    canManageProject: true,
-    canManageTask: true,
-    canEditTask: true,
+    canManageMembers: true,
+    canManageProjects: true,
+    canViewTeam: true,
+    canViewMembers: true,
+    canViewProjects: true
   },
   [TeamRole.MEMBER]: {
     canManageTeam: false,
-    canManageProject: false,
-    canManageTask: false,
-    canEditTask: true,
-  },
+    canManageMembers: false,
+    canManageProjects: false,
+    canViewTeam: true,
+    canViewMembers: true,
+    canViewProjects: true
+  }
 };

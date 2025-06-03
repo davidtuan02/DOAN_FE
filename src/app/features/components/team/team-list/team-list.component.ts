@@ -56,7 +56,7 @@ export class TeamListComponent implements OnInit {
 
   private checkPermissions(): void {
     this.permissionService.getCurrentUserRole().subscribe(role => {
-      this.canCreateTeam = role === UserRole.ADMIN;
+      this.canCreateTeam = role === UserRole.MANAGER;
     });
   }
 
@@ -142,7 +142,7 @@ export class TeamListComponent implements OnInit {
 
   canManageTeam(team: Team): boolean {
     const userRole = this.getTeamRole(team);
-    return userRole === 'leader' || userRole === 'admin';
+    return userRole === 'leader' || userRole === 'manager';
   }
 
   getTeamRole(team: Team): string | null {
@@ -150,7 +150,7 @@ export class TeamListComponent implements OnInit {
       (m) =>
         // In a real app, you'd compare with the current user's ID
         // For now, we're assuming any role indicates the current user
-        m.role === 'leader' || m.role === 'admin' || m.role === 'member'
+        m.role === 'leader' || m.role === 'manager' || m.role === 'member'
     );
     return member?.role || null;
   }

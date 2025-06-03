@@ -45,13 +45,17 @@
       <td>{{ user.lastName }}</td>
       <td>{{ user.email }}</td>
       <td>
-        <span class="role-badge" [ngClass]="(user.role || '').toLowerCase()">
+        <div [ngClass]="{
+          'manager': user.role === 'MANAGER',
+          'leader': user.role === 'LEADER',
+          'member': user.role === 'MEMBER'
+        }">
           {{ user.role }}
-        </span>
+        </div>
       </td>
       <td>{{ user.age }}</td>
       <td>
-        <div class="flex gap-2" *ngIf="user.role !== 'ADMIN'">
+        <div class="flex gap-2" *ngIf="user.role !== 'MANAGER'">
           <button nz-button nzType="link" (click)="showEditModal(user)" nzTooltipTitle="Edit">
             <span nz-icon nzType="edit" nzTheme="outline" class="text-blue-500 hover:text-blue-600"></span>
           </button>

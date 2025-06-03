@@ -175,7 +175,7 @@ export class TeamProjectsComponent implements OnInit {
       next: (access) => {
         this.teamAccess = access;
         this.canManageTeam =
-          access.role === 'leader' || access.role === 'admin';
+          access.role === 'leader' || access.role === 'manager';
       },
       error: (err) => {
         console.error('Failed to validate team access', err);

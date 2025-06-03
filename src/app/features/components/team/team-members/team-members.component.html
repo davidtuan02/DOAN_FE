@@ -78,11 +78,11 @@
           <select
             class="w-full px-4 py-2 border rounded-md"
             [value]="filterRole"
-            (change)="onFilterChange($event)"
+            (change)="onRoleFilterChange($event)"
           >
             <option value="all">All Roles</option>
-            <option value="admin">Admin</option>
-            <option value="leader">Team Leader</option>
+            <option value="manager">Manager</option>
+            <option value="leader">Leader</option>
             <option value="member">Member</option>
           </select>
         </div>
@@ -97,7 +97,7 @@
       </div>
 
       <button
-        *ngIf="canManageTeam() && !showAddForm"
+        *ngIf="canManageMembers() && !showAddForm"
         class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center text-sm w-full sm:w-auto"
         (click)="toggleAddMemberForm()"
       >
@@ -159,7 +159,7 @@
         >
           <option value="member">Member</option>
           <option value="leader">Team Leader</option>
-          <option value="admin">Admin</option>
+          <option value="manager">Manager</option>
         </select>
       </div>
 
@@ -220,7 +220,7 @@
       <h3 class="text-lg font-medium text-gray-700">No team members yet</h3>
       <p class="text-gray-500 mt-1">This team doesn't have any members yet.</p>
       <button
-        *ngIf="canManageTeam() && !showAddForm"
+        *ngIf="canManageMembers() && !showAddForm"
         class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 inline-flex items-center"
         (click)="toggleAddMemberForm()"
       >
@@ -310,7 +310,7 @@
             </div>
 
             <!-- Actions dropdown -->
-            <div *ngIf="canManageTeam()">
+            <div *ngIf="canManageMembers()">
               <button
                 class="text-gray-500 hover:text-gray-700"
                 [nzDropdownMenu]="menu"
@@ -354,9 +354,9 @@
                 *ngIf="editingMember?.id !== member.id"
                 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                 [ngClass]="{
-                  'bg-green-100 text-green-800': member.role === 'admin',
-                  'bg-blue-100 text-blue-800': member.role === 'leader',
-                  'bg-gray-100 text-gray-800': member.role === 'member'
+                  'bg-red-100 text-red-800': member.role === 'member',
+                  'bg-yellow-100 text-yellow-800': member.role === 'leader',
+                  'bg-green-100 text-green-800': member.role === 'manager'
                 }"
               >
                 {{ member.role | titlecase }}
@@ -375,7 +375,7 @@
                 >
                   <option value="member">Member</option>
                   <option value="leader">Leader</option>
-                  <option value="admin">Admin</option>
+                  <option value="manager">Manager</option>
                 </select>
                 <button
                   type="submit"

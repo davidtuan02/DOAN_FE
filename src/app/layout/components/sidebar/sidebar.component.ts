@@ -68,7 +68,7 @@ export class SidebarComponent implements OnInit {
     //   link: '/reports',
     // },
     {
-      label: 'Reports',
+      label: 'Report',
       icon: 'form',
       link: '/forms',
       adminOnly: true
