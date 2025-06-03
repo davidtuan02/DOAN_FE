@@ -103,12 +103,12 @@ export class CardDetailsComponent implements OnInit {
       )
       .subscribe();
 
-    // Check admin permission
-    this.permissionService.isAdmin().pipe(
+    // Check manager permission
+    this.permissionService.isManager().pipe(
       takeUntilDestroyed(this)
-    ).subscribe(isAdmin => {
-      console.log(isAdmin)
-      this.canDeleteCard = isAdmin;
+    ).subscribe(isManager => {
+      console.log(isManager)
+      this.canDeleteCard = isManager;
     });
   }
 

@@ -2322,13 +2322,13 @@ export class BacklogComponent implements OnInit {
 
   // Add method to load user permissions
   private loadUserPermissions(): void {
-    // Check if user is admin
-    this.permissionService.isAdmin().pipe(
+    // Check if user is manager
+    this.permissionService.isManager().pipe(
       takeUntilDestroyed(this.destroyRef)
-    ).subscribe(isAdmin => {
-      console.log(isAdmin)
-      this.canCreateIssues = isAdmin;
-      this.canManageSprints = isAdmin;
+    ).subscribe(isManager => {
+      console.log(isManager)
+      this.canCreateIssues = isManager;
+      this.canManageSprints = isManager;
     });
 
     // Get user's team role
@@ -2338,6 +2338,15 @@ export class BacklogComponent implements OnInit {
       if (role) {
         this.userTeamRole = role;
       }
+    });
+
+    // Check if user is manager
+    this.permissionService.isManager().pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(isManager => {
+      console.log(isManager)
+      this.canCreateIssues = isManager;
+      this.canManageSprints = isManager;
     });
   }
 }

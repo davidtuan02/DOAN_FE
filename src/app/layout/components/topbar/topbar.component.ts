@@ -34,7 +34,7 @@ interface TopbarMenuItem {
   name: string;
   selected: boolean;
   route: string;
-  adminOnly?: boolean;
+  managerOnly?: boolean;
 }
 
 // Interface extending Project for display in dropdown
@@ -99,7 +99,7 @@ export class TopbarComponent implements OnInit, OnDestroy {
     { name: 'Projects', selected: false, route: '/projects' },
     { name: 'Filters', selected: false, route: '/filters' },
     { name: 'People', selected: false, route: '/teams' },
-    { name: 'Accounts', selected: false, route: '/accounts', adminOnly: true },
+    { name: 'Accounts', selected: false, route: '/accounts', managerOnly: true },
   ];
 
   displayTopbarMenuItems: TopbarMenuItem[] = [];
@@ -139,9 +139,9 @@ export class TopbarComponent implements OnInit, OnDestroy {
     this.updateSelectedMenuItem(this.router.url);
 
     // Filter menu items based on user role
-    this.permissionService.isAdmin().subscribe(isAdmin => {
+    this.permissionService.isManager().subscribe(isManager => {
       this.displayTopbarMenuItems = this.topbarMenuItems.filter(item =>
-        !item.adminOnly || (item.adminOnly && isAdmin)
+        !item.managerOnly || (item.managerOnly && isManager)
       );
     });
 

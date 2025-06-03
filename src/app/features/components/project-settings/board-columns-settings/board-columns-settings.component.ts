@@ -73,7 +73,7 @@ export class BoardColumnsSettingsComponent implements OnInit {
   currentBoardId: string | null = null;
   userTeamRole: TeamRole = TeamRole.MEMBER;
   canManageProject = false;
-  isAdmin = false;
+  isManager = false;
 
   constructor(
     private fb: FormBuilder,
@@ -102,11 +102,11 @@ export class BoardColumnsSettingsComponent implements OnInit {
   }
 
   loadUserPermissions(): void {
-    this.permissionService.isAdmin().pipe(
+    this.permissionService.isManager().pipe(
       takeUntilDestroyed(this.destroyRef)
-    ).subscribe(isAdmin => {
-      this.isAdmin = isAdmin;
-      if (isAdmin) {
+    ).subscribe(isManager => {
+      this.isManager = isManager;
+      if (isManager) {
         this.canManageProject = true;
       }
     });
@@ -114,7 +114,7 @@ export class BoardColumnsSettingsComponent implements OnInit {
     this.permissionService.getCurrentTeamRole().subscribe(role => {
       if (role) {
         this.userTeamRole = role;
-        if (!this.isAdmin) {
+        if (!this.isManager) {
           this.permissionService.canManageProject(role).subscribe(can => {
             this.canManageProject = can;
           });

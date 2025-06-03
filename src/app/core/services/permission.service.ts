@@ -21,9 +21,9 @@ export class PermissionService {
   }
 
   /**
-   * Checks if the current user has admin privileges
+   * Checks if the current user has manager privileges
    */
-  isAdmin(): Observable<boolean> {
+  isManager(): Observable<boolean> {
     return this.authService.currentUser$.pipe(
       map(user => user?.role === UserRole.MANAGER)
     );

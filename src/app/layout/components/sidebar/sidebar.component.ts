@@ -34,7 +34,7 @@ import { PermissionService } from '../../../core/services/permission.service';
 })
 export class SidebarComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
-  isAdmin = false;
+  isManager = false;
 
   navItems = [
     {
@@ -71,7 +71,7 @@ export class SidebarComponent implements OnInit {
       label: 'Report',
       icon: 'form',
       link: '/forms',
-      adminOnly: true
+      managerOnly: true
     },
     {
       label: 'Settings',
@@ -146,10 +146,10 @@ export class SidebarComponent implements OnInit {
   }
 
   loadUserPermissions(): void {
-    this.permissionService.isAdmin().pipe(
+    this.permissionService.isManager().pipe(
       takeUntilDestroyed(this.destroyRef)
-    ).subscribe(isAdmin => {
-      this.isAdmin = isAdmin;
+    ).subscribe(isManager => {
+      this.isManager = isManager;
     });
   }
 

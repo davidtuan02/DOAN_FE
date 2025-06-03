@@ -96,7 +96,7 @@
     <div class="sidebar-nav">
       <ng-container *ngFor="let item of navItems">
         <a
-          *ngIf="!item.adminOnly || isAdmin"
+          *ngIf="!item.managerOnly || isManager"
           class="nav-item"
           [routerLink]="item.link"
           routerLinkActive="active"
