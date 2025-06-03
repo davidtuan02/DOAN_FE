@@ -11,20 +11,20 @@ Chart.register(...registerables);
   imports: [CommonModule],
   template: `
     <div class="container mx-auto px-4 py-6">
-      <h1 class="text-2xl font-bold mb-6">Báo cáo Sprint Performance</h1>
-      <div *ngIf="sprints.length === 0" class="text-gray-500">Không có sprint nào trong dự án này.</div>
+      <h1 class="text-2xl font-bold mb-6">Sprint Performance Report</h1>
+      <div *ngIf="sprints.length === 0" class="text-gray-500">No sprints found in this project.</div>
       
       <!-- Charts Section -->
       <div *ngIf="sprints.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <!-- Story Points Chart -->
         <div class="bg-white p-4 rounded shadow">
-          <h2 class="text-lg font-semibold mb-4">Story Points theo Sprint</h2>
+          <h2 class="text-lg font-semibold mb-4">Story Points by Sprint</h2>
           <canvas #storyPointsChart></canvas>
         </div>
         
         <!-- Issue Types Chart -->
         <div class="bg-white p-4 rounded shadow">
-          <h2 class="text-lg font-semibold mb-4">Phân bố loại Issue</h2>
+          <h2 class="text-lg font-semibold mb-4">Issue Type Distribution</h2>
           <canvas #issueTypesChart></canvas>
         </div>
       </div>
@@ -34,11 +34,11 @@ Chart.register(...registerables);
         <thead>
           <tr>
             <th class="px-4 py-2 border">Sprint</th>
-            <th class="px-4 py-2 border">Ngày bắt đầu</th>
-            <th class="px-4 py-2 border">Ngày kết thúc</th>
-            <th class="px-4 py-2 border">Story Points (hoàn thành/tổng)</th>
-            <th class="px-4 py-2 border">Số lượng Bug</th>
-            <th class="px-4 py-2 border">Tổng số Issue</th>
+            <th class="px-4 py-2 border">Start Date</th>
+            <th class="px-4 py-2 border">End Date</th>
+            <th class="px-4 py-2 border">Story Points (completed/total)</th>
+            <th class="px-4 py-2 border">Bug Count</th>
+            <th class="px-4 py-2 border">Total Issues</th>
           </tr>
         </thead>
         <tbody>
@@ -151,14 +151,14 @@ export class ReportsComponent implements OnInit, AfterViewInit {
         labels: this.sprints.map(s => s.name),
         datasets: [
           {
-            label: 'Story Points hoàn thành',
+            label: 'Story Points completed',
             data: this.sprints.map(s => this.getCompletedStoryPoints(s)),
             backgroundColor: 'rgba(75, 192, 192, 0.5)',
             borderColor: 'rgba(75, 192, 192, 1)',
             borderWidth: 1
           },
           {
-            label: 'Tổng Story Points',
+            label: 'Total Story Points',
             data: this.sprints.map(s => this.getTotalStoryPoints(s)),
             backgroundColor: 'rgba(54, 162, 235, 0.5)',
             borderColor: 'rgba(54, 162, 235, 1)',
@@ -174,7 +174,7 @@ export class ReportsComponent implements OnInit, AfterViewInit {
           },
           title: {
             display: true,
-            text: 'Story Points theo Sprint'
+            text: 'Story Points by Sprint'
           }
         },
         scales: {
@@ -216,7 +216,7 @@ export class ReportsComponent implements OnInit, AfterViewInit {
           },
           title: {
             display: true,
-            text: 'Phân bố loại Issue'
+            text: 'Issue Type Distribution'
           }
         }
       }

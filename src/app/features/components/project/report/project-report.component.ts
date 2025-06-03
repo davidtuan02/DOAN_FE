@@ -60,11 +60,11 @@ export class ProjectReportComponent implements OnInit {
                 this.sprintId = (activeSprint ? activeSprint.id : sprints[0].id) || '';
                 this.loadAll();
               } else {
-                this.error = 'Không có sprint nào cho project này!';
+                this.error = 'No sprints found for this project!';
               }
             },
             error: (err) => {
-              this.error = 'Không thể lấy danh sách sprint!';
+              this.error = 'Failed to get sprint list!';
               console.error(err);
             }
           });
