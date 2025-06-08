@@ -25,7 +25,7 @@
   </div>
 
   <!-- Main content area with scroll -->
-  <div class="flex-grow overflow-y-auto p-6">
+  <div class="flex-grow p-6">
     <!-- Loading indicator -->
     <div *ngIf="loading" class="flex justify-center my-8">
       <div
@@ -180,7 +180,7 @@
                   </div>
                   <div>
                     <div class="font-medium">
-                      {{ member.user?.firstName }} {{ member.user?.lastName }}
+                      {{ member.user?.firstName }}
                     </div>
                     <div class="text-sm text-gray-500">
                       {{ member.accessLevel || "Member" }}

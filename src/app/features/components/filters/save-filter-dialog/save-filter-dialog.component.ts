@@ -64,7 +64,7 @@ export class SaveFilterDialogComponent implements OnInit {
         [Validators.required, Validators.maxLength(100)],
       ],
       description: [
-        this.modalData.existingFilter?.description || '',
+        this.modalData.existingFilter?.description || 'Description',
         [Validators.maxLength(500)],
       ],
       isShared: [this.modalData.existingFilter?.isShared || false],
@@ -87,7 +87,7 @@ export class SaveFilterDialogComponent implements OnInit {
     if (!userId) {
       this.modalRef.close({
         error: true,
-        message: 'Bạn cần đăng nhập để lưu bộ lọc',
+        message: 'You need to choose filter!',
       });
       return;
     }
@@ -98,13 +98,13 @@ export class SaveFilterDialogComponent implements OnInit {
       !this.modalData.filterCriteria.projectId
     ) {
       console.error(
-        'Thiếu hoặc không hợp lệ filter criteria',
+        'Filter criteria invalid!',
         this.modalData.filterCriteria
       );
       // Show error message to user
       this.modalRef.close({
         error: true,
-        message: 'Thiếu project ID trong bộ lọc. Không thể lưu bộ lọc.',
+        message: 'Cannot save the filter!',
       });
       return;
     }
@@ -123,7 +123,7 @@ export class SaveFilterDialogComponent implements OnInit {
     );
 
     if (!hasCriteria) {
-      console.warn('Lưu bộ lọc không có tiêu chí nào ngoài project ID');
+      console.warn('Save filter with no criteria other than project ID!');
     }
 
     this.loading = true;
@@ -132,7 +132,7 @@ export class SaveFilterDialogComponent implements OnInit {
     const filter: SavedFilter = {
       id: this.modalData.existingFilter?.id,
       name: formValues.name,
-      description: formValues.description || '',
+      description: formValues.description || 'Description',
       owner: userId,
       isShared: formValues.isShared,
       isStarred: formValues.isStarred,
@@ -143,11 +143,10 @@ export class SaveFilterDialogComponent implements OnInit {
 
     // Make sure criteria has projectId - this should be redundant after our earlier check
     if (!filter.criteria.projectId) {
-      console.error('Thiếu projectId trong filter criteria');
       this.loading = false;
       this.modalRef.close({
         error: true,
-        message: 'Thiếu project ID trong bộ lọc. Không thể lưu bộ lọc.',
+        message: 'Missing project ID in filter. Cannot save filter!',
       });
       return;
     }
@@ -165,7 +164,7 @@ export class SaveFilterDialogComponent implements OnInit {
           this.loading = false;
           this.modalRef.close({
             error: true,
-            message: 'Không thể cập nhật bộ lọc. Vui lòng thử lại sau.',
+            message: 'Could not update filter. Please try again later!',
           });
         },
       });
@@ -184,7 +183,7 @@ export class SaveFilterDialogComponent implements OnInit {
             error: true,
             message:
               error?.error?.message ||
-              'Không thể lưu bộ lọc. Vui lòng thử lại sau.',
+              'Filter could not be saved. Please try again later!',
           });
         },
       });

@@ -21,7 +21,7 @@
               user?.lastName +
               '&background=random'
             "
-            [alt]="user?.firstName + ' ' + user?.lastName"
+            [alt]="user?.firstName"
             class="object-cover w-full h-full border-4 border-blue-100 rounded-full"
           />
           <div
@@ -32,7 +32,7 @@
           <div class="flex items-center justify-between">
             <div>
               <h1 class="m-0 text-3xl font-semibold text-gray-900">
-                {{ user?.firstName }} {{ user?.lastName }}
+                {{ user?.firstName }}
               </h1>
               <p class="mt-2 text-lg text-gray-600">
                 {{ "@" + user?.username }}
@@ -109,7 +109,7 @@
                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div> -->
-                <div class="space-y-2">
+                <!-- <div class="space-y-2">
                   <label class="block text-sm font-medium text-gray-700"
                     >Fullname</label
                   >
@@ -120,7 +120,7 @@
                     (input)="onInputChange($event)"
                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
-                </div>
+                </div> -->
                 <div class="space-y-2">
                   <label class="block text-sm font-medium text-gray-700"
                     >Email</label
@@ -178,12 +178,12 @@
                   >
                   <p class="text-gray-900">{{ user?.firstName }}</p>
                 </div> -->
-                <div class="space-y-2">
+                <!-- <div class="space-y-2">
                   <label class="block text-sm font-medium text-gray-700"
                     >Full Name</label
                   >
                   <p class="text-gray-900">Manager</p>
-                </div>
+                </div> -->
                 <div class="space-y-2">
                   <label class="block text-sm font-medium text-gray-700"
                     >Email</label

@@ -413,7 +413,7 @@ export class IssuesPageComponent implements OnInit {
 
   getAssigneeName(id: string): string {
     const assignee = this.assignees.find((a) => a.id === id);
-    return assignee ? assignee.name : 'Unknown';
+    return assignee ? assignee.name : 'User not assigned';
   }
 
   // Map old status enum values to new status display values
@@ -560,13 +560,13 @@ export class IssuesPageComponent implements OnInit {
     const selectedProject = this.projectService.getSelectedProject();
 
     if (!selectedProject || !selectedProject.id) {
-      this.messageService.error('Không có dự án nào được chọn');
+      this.messageService.error('No project is choosen');
       return;
     }
 
     const userId = this.userService.getCurrentUserId();
     if (!userId) {
-      this.messageService.error('Bạn chưa đăng nhập');
+      this.messageService.error('You have to log in');
       return;
     }
 
@@ -598,11 +598,11 @@ export class IssuesPageComponent implements OnInit {
     if (!hasAnyCriteria) {
       // Nếu không có tiêu chí nào, hiển thị cảnh báo
       this.modalService.confirm({
-        nzTitle: 'Bộ lọc trống',
+        nzTitle: 'Empty filter',
         nzContent:
-          'Bạn đang lưu một bộ lọc không có tiêu chí nào. Bạn có muốn tiếp tục không?',
-        nzOkText: 'Tiếp tục',
-        nzCancelText: 'Hủy',
+          'You are saving a filter with no criteria. Do you want to continue?',
+        nzOkText: 'Next',
+        nzCancelText: 'Cancel',
         nzOnOk: () => this.openSaveFilterDialog(criteria),
       });
     } else {
@@ -615,7 +615,7 @@ export class IssuesPageComponent implements OnInit {
   private openSaveFilterDialog(criteria: FilterCriteria): void {
     this.modalService
       .create<SaveFilterDialogComponent>({
-        nzTitle: 'Lưu bộ lọc',
+        nzTitle: 'Save filter',
         nzContent: SaveFilterDialogComponent,
         nzData: {
           filterCriteria: criteria,
@@ -627,12 +627,12 @@ export class IssuesPageComponent implements OnInit {
         if (result) {
           if (result.error) {
             // Handle error returned from dialog
-            this.messageService.error(result.message || 'Không thể lưu bộ lọc');
+            this.messageService.error(result.message || 'Cannot save filter');
           } else {
             // Successfully saved filter
-            this.messageService.success(
-              `Bộ lọc "${result.name}" đã được lưu thành công`
-            );
+            // this.messageService.success(
+            //   `Bộ lọc "${result.name}" đã được lưu thành công`
+            // );
             // Refresh saved filters list
             const selectedProject = this.projectService.getSelectedProject();
             if (selectedProject && selectedProject.id) {

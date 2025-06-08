@@ -47,9 +47,7 @@
       align-items: center;
       height: 32px;
       font-size: 14px;
-      color: #42526e;
       border-color: #dfe1e6;
-      background-color: #f4f5f7;
       padding: 0 12px;
 
       &:hover {
@@ -317,6 +315,7 @@
   }
 
   .ant-dropdown {
+    background-color: #ffffffff !important;
     .filter-dropdown-menu {
       background-color: white;
       border-radius: 3px;

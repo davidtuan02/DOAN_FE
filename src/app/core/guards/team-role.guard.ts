@@ -39,7 +39,7 @@ export class TeamRoleGuard implements CanActivate {
         if (!user) return false;
 
         // Manager users have access to everything
-        if (user.role === UserRole.MANAGER) {
+        if (user.role === UserRole.MANAGER || user.role === UserRole.LEADER) {
           return true;
         }
 

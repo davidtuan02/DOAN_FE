@@ -322,7 +322,7 @@ export class FilterService {
     return {
       id: backendFilter.id,
       name: backendFilter.name,
-      description: backendFilter.description || '',
+      description: backendFilter.description || 'Description',
       owner: backendFilter.createdBy,
       isShared: backendFilter.isPublic,
       isStarred: backendFilter.isStarred || false,
@@ -423,7 +423,7 @@ export class FilterService {
     return {
       id: filter.id,
       name: filter.name,
-      description: filter.description || '',
+      description: filter.description || 'Description',
       isPublic: filter.isShared,
       isStarred: filter.isStarred || false,
       createdBy: userId,

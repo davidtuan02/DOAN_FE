@@ -19,7 +19,7 @@
       <div class="flex gap-2 py-1 item-centers">
         <app-avatar [user]="u" [size]="24"></app-avatar>
         <div class="capitalize text-textDark">
-          {{ u.firstName }} {{ u.lastName }}
+          {{ u.firstName }}
         </div>
       </div>
     </nz-option>
@@ -34,7 +34,7 @@
   <div class="flex items-center h-full gap-2" *ngIf="selected.nzValue">
     <app-avatar [user]="selected.nzValue" [size]="24"></app-avatar>
     <div class="capitalize text-textDark">
-      {{ selected.nzValue.firstName }} {{ selected.nzValue.lastName }}
+      {{ selected.nzValue.firstName }}
     </div>
   </div>
   <div class="text-textMedium" *ngIf="!selected.nzValue">Unassigned</div>

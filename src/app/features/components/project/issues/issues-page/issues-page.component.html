@@ -78,7 +78,6 @@
       </button>
       <nz-dropdown-menu #projectMenu="nzDropdownMenu">
         <div class="p-2 project-filter-container">
-          <!-- Operator selector -->
           <div class="mb-3">
             <div class="mb-1 text-xs text-gray-500">Operator</div>
             <div class="flex overflow-hidden border border-gray-200 rounded-md">
@@ -99,16 +98,14 @@
             </div>
           </div>
 
-          <!-- Project selector tabs -->
-          <div class="mb-3 project-tabs">
+          <!-- <div class="mb-3 project-tabs">
             <div class="flex border-b border-gray-200">
               <button class="tab-btn active">Project</button>
               <button class="tab-btn">Status</button>
               <button class="tab-btn">Priority</button>
             </div>
-          </div>
+          </div> -->
 
-          <!-- Project search -->
           <div class="mb-3 search-field">
             <input
               type="text"
@@ -116,12 +113,8 @@
               [(ngModel)]="projectSearchTerm"
               class="search-input"
             />
-            <span class="search-icon">
-              <span nz-icon nzType="search" nzTheme="outline"></span>
-            </span>
           </div>
 
-          <!-- Projects list -->
           <div class="projects-list">
             <div *ngFor="let project of filteredProjects" class="project-item">
               <label class="project-label">
@@ -139,7 +132,6 @@
             </div>
           </div>
 
-          <!-- Footer -->
           <div class="flex justify-between pt-2 mt-3 border-t border-gray-200">
             <button
               class="text-sm font-medium text-blue-600 hover:text-blue-800"
@@ -161,9 +153,9 @@
         formControlName="types"
       ></app-type-filter-control>
 
-      <app-label-filter-control
+      <!-- <app-label-filter-control
         formControlName="labels"
-      ></app-label-filter-control>
+      ></app-label-filter-control> -->
 
       <app-assignee-filter-control
         formControlName="assignees"
@@ -262,7 +254,7 @@
     <!-- Save filter button -->
     <button
       nz-button
-      nzType="default"
+      nzType="primary"
       class="filter-button"
       (click)="showSaveFilterModal()"
     >
@@ -273,6 +265,7 @@
     <!-- AI button if needed -->
     <button
       nz-button
+      nzType="primary"
       class="flex items-center gap-1 ai-button"
       nz-tooltip
       nzTooltipTitle="Generate issues using AI"
@@ -315,14 +308,14 @@
       nzMode="closeable"
       (nzOnClose)="removeAssigneeFilter(id)"
     >
-      Assignee: {{ getAssigneeName(id) }}
+      {{ getAssigneeName(id) }}
     </nz-tag>
     <nz-tag
       *ngIf="selectedProjectIds.length > 0"
       nzMode="closeable"
       (nzOnClose)="clearProjectSelection()"
     >
-      Project {{ projectOperator }}: {{ getSelectedProjectsLabel() }}
+      Project {{ projectOperator }} {{ getSelectedProjectsLabel() }}
     </nz-tag>
     <button
       nz-button

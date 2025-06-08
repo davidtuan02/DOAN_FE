@@ -112,6 +112,7 @@ export class PermissionService {
     if (this.currentUser?.role === UserRole.MANAGER) {
       return true;
     }
+    return false;
     // ... existing code ...
   }
 
@@ -119,6 +120,7 @@ export class PermissionService {
     if (user.role === UserRole.MANAGER) {
       return TeamRole.MANAGER;
     }
+    return false;
     // ... existing code ...
   }
 }

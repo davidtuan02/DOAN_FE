@@ -16,7 +16,7 @@
             <path d="M28 4H4v24h24V4zm2-2v28H2V2h28z" fill-rule="evenodd"/>
           </svg>
         </div>
-        <div *ngIf="!loading && selectedProject">
+        <div *ngIf="!loading && projects.length && selectedProject">
           <div class="font-semibold">{{ selectedProject.name }}</div>
           <div class="text-xs text-gray-500">TaskFlow project</div>
         </div>

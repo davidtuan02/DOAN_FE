@@ -2,7 +2,7 @@
 <div class="flex items-center gap-2 h-full">
   <app-avatar *ngIf="reporter" [user]="reporter" [size]="24"></app-avatar>
   <div *ngIf="reporter" class="capitalize text-textDark">
-    {{ reporter.firstName }} {{ reporter.lastName }}
+    {{ reporter.firstName }}
   </div>
   <div *ngIf="!reporter" class="text-textDark text-opacity-70">
     No reporter assigned

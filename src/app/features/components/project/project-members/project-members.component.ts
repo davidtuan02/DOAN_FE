@@ -88,7 +88,7 @@ export class ProjectMembersComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadMembers();
-    this.loadUsers();
+    // this.loadUsers();
     this.checkPermissions();
   }
 
@@ -109,6 +109,8 @@ export class ProjectMembersComponent implements OnInit {
         next: (members) => {
           this.members = members;
           this.filteredMembers = [...members];
+          console.log('Loaded members:', this.filteredMembers);
+          this.loadUsers();
         },
         error: (error: any) => {
           this.message.error('Failed to load project members');
@@ -124,7 +126,9 @@ export class ProjectMembersComponent implements OnInit {
       .pipe(finalize(() => (this.usersLoading = false)))
       .subscribe({
         next: (users: any[]) => {
-          this.users = users;
+          console.log(this.filteredMembers)
+          console.log(users)
+          this.users = users.filter((user: any) => !this.filteredMembers.map((e: any) => e.userId).includes(user.id));
         },
         error: (error: any) => {
           console.error('Error loading users:', error);

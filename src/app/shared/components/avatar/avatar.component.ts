@@ -49,8 +49,8 @@ export class AvatarComponent {
   getFullName(): string {
     if (!this.user) return '';
 
-    if (this.user.firstName && this.user.lastName) {
-      return `${this.user.firstName} ${this.user.lastName}`;
+    if (this.user.firstName) {
+      return `${this.user.firstName}`;
     }
 
     return this.user.username || this.user.email || 'Unknown User';

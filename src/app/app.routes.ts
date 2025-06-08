@@ -173,7 +173,7 @@ export const routes: Routes = [
         path: ':id',
         component: TeamDetailComponent,
         title: 'Team Details',
-        canActivate: [TeamRoleGuard],
+        // canActivate: [TeamRoleGuard],
         data: {
           teamPermission: 'canManageTeam',
         },
@@ -182,7 +182,7 @@ export const routes: Routes = [
         path: ':id/edit',
         component: TeamFormComponent,
         title: 'Edit Team',
-        canActivate: [TeamRoleGuard],
+        // canActivate: [TeamRoleGuard],
         data: {
           isStandalone: true,
           teamPermission: 'canManageTeam',

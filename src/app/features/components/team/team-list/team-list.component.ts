@@ -122,6 +122,7 @@ export class TeamListComponent implements OnInit {
   }
 
   viewTeam(teamId: string): void {
+    console.log(teamId)
     this.router.navigate(['/teams', teamId]);
   }
 

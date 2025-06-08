@@ -3,6 +3,10 @@
   background-color: #f4f5f7;
 }
 
+.center {
+  text-align: center !important;
+}
+
 .filter-tabs {
   ::ng-deep {
     .ant-tabs-nav {

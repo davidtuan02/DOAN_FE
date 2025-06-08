@@ -144,7 +144,7 @@ export class TeamFormComponent implements OnInit {
                   `Team "${team.name}" created successfully`,
                   { nzDuration: 3000 }
                 );
-                this.router.navigate(['/teams', team.id]);
+                this.router.navigate(['/teams']);
               },
               error: (err) => {
                 this.error = err.error?.message || 'Failed to create team';
