@@ -17,6 +17,7 @@ import {
 } from 'ng-zorro-antd/notification';
 import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { ForgotPasswordModalComponent } from '../forgot-password-modal/forgot-password-modal.component';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -47,7 +48,8 @@ export class LoginComponent implements OnInit {
     private router: Router,
     private userService: UserService,
     private notification: NzNotificationService,
-    private modal: NzModalService
+    private modal: NzModalService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -178,6 +180,7 @@ export class LoginComponent implements OnInit {
               'You have successfully logged in!',
               { nzDuration: 3000 }
             );
+            this.authService.setCurrentUser(response.user);
             this.router.navigate(['/board']);
           },
           error: (err) => {
