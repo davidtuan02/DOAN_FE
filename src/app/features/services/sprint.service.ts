@@ -21,6 +21,7 @@ export interface CreateSprintDto {
   status: 'PLANNING' | 'ACTIVE' | 'COMPLETED';
   startDate?: Date;
   endDate?: Date;
+  project_id: string;
 }
 
 export interface UpdateSprintDto {
@@ -95,23 +96,28 @@ export class SprintService {
   }
 
   // Create a new sprint
-  createSprint(boardId: string, sprint: CreateSprintDto): Observable<Sprint> {
+  createSprint(boardId: string, sprintData: CreateSprintDto): Observable<Sprint> {
     const jwtToken = this.userService['jwtService'].getToken();
+    console.log('Creating sprint with boardId:', boardId);
+    console.log('Sprint data:', sprintData);
 
-    return this.http
-      .post<Sprint>(`${this.apiUrl}/create/${boardId}`, sprint, {
+    // Remove project_id from URL param
+    return this.http.post<Sprint>(
+      `${this.apiUrl}/create/${boardId}`,
+      sprintData,
+      {
         headers: new HttpHeaders({
           'Content-Type': 'application/json',
           Authorization: `Bearer ${jwtToken}`,
         }),
+      }
+    ).pipe(
+      tap(response => console.log('Sprint created:', response)),
+      catchError(error => {
+        console.error('Error creating sprint:', error);
+        return throwError(() => error);
       })
-      .pipe(
-        tap((newSprint) => console.log('Created new sprint', newSprint)),
-        catchError((error) => {
-          console.error('Error creating sprint:', error);
-          return throwError(() => new Error(this.getErrorMessage(error)));
-        })
-      );
+    );
   }
 
   // Update a sprint

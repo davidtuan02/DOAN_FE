@@ -221,6 +221,8 @@ export class BacklogService {
       );
     }
 
+    const projectId = this.currentProjectId; // Store in a non-null variable
+
     // Create the sprint data payload
     const createSprintDto: CreateSprintDto = {
       name: sprintData.name || 'New Sprint',
@@ -228,78 +230,14 @@ export class BacklogService {
       status: 'PLANNING',
       startDate: sprintData.startDate,
       endDate: sprintData.endDate,
+      project_id: projectId // Use the non-null variable
     };
 
     console.log('Creating sprint with data:', createSprintDto);
-    console.log('Current board ID in service:', this.currentBoardId);
+    console.log('Current project ID:', projectId);
 
-    // Nếu đã có sẵn board ID thì dùng luôn
-    if (this.currentBoardId) {
-      console.log(`Using stored board ID: ${this.currentBoardId}`);
-
-      // Ensure the board ID is a valid string
-      if (
-        typeof this.currentBoardId !== 'string' ||
-        this.currentBoardId.trim() === ''
-      ) {
-        console.error('Board ID is invalid:', this.currentBoardId);
-        return throwError(
-          () =>
-            new Error(
-              'Invalid board ID. Please refresh the page and try again.'
-            )
-        );
-      }
-
-      return this.sprintService
-        .createSprint(this.currentBoardId, createSprintDto)
-        .pipe(
-          tap(() => {
-            console.log('Sprint created successfully with board ID');
-            this.loadProjectData();
-          }),
-          map(() => undefined),
-          catchError((error) => {
-            console.error('Sprint creation failed:', error);
-            if (error.status === 404) {
-              // If board not found, try to get it again
-              console.log('Board not found, attempting to retrieve again');
-              return this.getBoardIdForProject(this.currentProjectId!).pipe(
-                switchMap((boardId) => {
-                  if (!boardId) {
-                    return throwError(
-                      () =>
-                        new Error(
-                          'Could not find or create board for this project'
-                        )
-                    );
-                  }
-
-                  // Try creating the sprint again with the new board ID
-                  return this.sprintService
-                    .createSprint(boardId, createSprintDto)
-                    .pipe(
-                      tap(() => {
-                        console.log(
-                          'Sprint created successfully after retrieving board ID'
-                        );
-                        this.loadProjectData();
-                      }),
-                      map(() => undefined)
-                    );
-                })
-              );
-            }
-            return throwError(
-              () => new Error('Failed to create sprint. Please try again.')
-            );
-          })
-        );
-    }
-
-    // If we don't have board ID cached, try to get it from project
-    console.log('No board ID in service, trying to retrieve from project');
-    return this.getBoardIdForProject(this.currentProjectId).pipe(
+    // Get board ID for the project
+    return this.getBoardIdForProject(projectId).pipe(
       switchMap((boardId) => {
         if (!boardId) {
           console.error('No board found for project and could not create one');
@@ -315,10 +253,10 @@ export class BacklogService {
         this.currentBoardId = boardId;
         console.log(`Found board ID: ${boardId}, using for sprint creation`);
 
-        // Create sprint with the board ID
-        return this.sprintService.createSprint(boardId, createSprintDto).pipe(
+        // Create sprint with the project ID
+        return this.sprintService.createSprint(this.currentBoardId, createSprintDto).pipe(
           tap(() => {
-            console.log('Sprint created successfully with retrieved board ID');
+            console.log('Sprint created successfully with project ID');
             this.loadProjectData();
           }),
           map(() => undefined),

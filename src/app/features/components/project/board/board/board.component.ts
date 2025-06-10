@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewContainerRef, inject, DestroyRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, Subject, of } from 'rxjs';
+import { Observable, Subject, of, throwError } from 'rxjs';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { filter, map, takeUntil, take, switchMap } from 'rxjs/operators';
 import { NzModalRef } from 'ng-zorro-antd/modal/modal-ref';
@@ -336,29 +336,34 @@ export class BoardComponent implements OnInit {
               name: `Sprint ${sprints.length + 1}`,
               goal: 'Complete sprint tasks',
               status: 'PLANNING' as const,
-              startDate: new Date(), // Changed to Date object
-              endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // Changed to Date object
+              startDate: new Date(),
+              endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+              project_id: this.currentProject.id
             };
 
-            this.sprintService
-              .createSprint(this.currentProject.id, newSprint)
+            // Get board ID from project first
+            this.http.get<any>(`${BASE_URL}/projects/${this.currentProject.id}`)
+              .pipe(
+                switchMap(project => {
+                  if (!project.boards || project.boards.length === 0) {
+                    return throwError(() => new Error('No board found for this project'));
+                  }
+                  const boardId = project.boards[0].id;
+                  console.log('Found board ID:', boardId);
+
+                  // Create sprint with correct board ID
+                  return this.sprintService.createSprint(boardId, newSprint);
+                })
+              )
               .subscribe({
                 next: () => {
-                   this.notification.success(
-                     'Success',
-                     `New sprint created! Proceed to start it.`, // Changed success message
-                     { nzDuration: 3000 }
-                   );
-                  this.initializeBoard(); // Reload board data to show the new planning sprint
+                  this.notification.success('Success', 'New sprint created! Proceed to start it.');
+                  this.initializeBoard();
                 },
                 error: (err) => {
-                  this.notification.error(
-                    'Error',
-                    `Failed to create sprint!`, // Changed error message for clarity
-                    { nzDuration: 3000 }
-                  );
+                  this.notification.error('Error', err.message || 'Failed to create sprint!');
                   console.error('Error creating sprint:', err);
-                },
+                }
               });
           }
         },
@@ -568,7 +573,8 @@ export class BoardComponent implements OnInit {
           const newSprint = {
             name: data.name,
             goal: data.goal,
-            status: 'PLANNING' as const
+            status: 'PLANNING' as const,
+            project_id: this.currentProject.id
           };
 
           // Now create sprint with the correct board ID
