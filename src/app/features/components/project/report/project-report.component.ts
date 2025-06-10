@@ -56,7 +56,7 @@ export class ProjectReportComponent implements OnInit {
             next: (sprints) => {
               if (sprints && sprints.length > 0) {
                 // Ưu tiên sprint đang active, nếu không có thì lấy sprint đầu tiên
-                const activeSprint = sprints.find(s => s.status === 'active');
+                const activeSprint = sprints.find(s => s.status === 'ACTIVE');
                 this.sprintId = (activeSprint ? activeSprint.id : sprints[0].id) || '';
                 this.loadAll();
               } else {

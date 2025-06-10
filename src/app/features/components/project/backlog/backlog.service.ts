@@ -29,7 +29,7 @@ export interface Sprint {
   goal?: string;
   startDate?: Date;
   endDate?: Date;
-  status: 'Planning' | 'Active' | 'Completed';
+  status: 'PLANNING' | 'ACTIVE' | 'COMPLETED';
   issues: Issue[];
   totalStoryPoints: number;
   completedStoryPoints: number;
@@ -146,15 +146,15 @@ export class BacklogService {
 
   private mapApiStatusToUiStatus(
     status: string
-  ): 'Planning' | 'Active' | 'Completed' {
+  ): 'PLANNING' | 'ACTIVE' | 'COMPLETED' {
     const statusMap: {
-      [key: string]: 'Planning' | 'Active' | 'Completed';
+      [key: string]: 'PLANNING' | 'ACTIVE' | 'COMPLETED';
     } = {
-      planning: 'Planning',
-      active: 'Active',
-      completed: 'Completed',
+      planning: 'PLANNING',
+      active: 'ACTIVE',
+      completed: 'COMPLETED',
     };
-    return statusMap[status] || 'Planning';
+    return statusMap[status] || 'PLANNING';
   }
 
   // Helper method to get board ID from project
@@ -225,7 +225,7 @@ export class BacklogService {
     const createSprintDto: CreateSprintDto = {
       name: sprintData.name || 'New Sprint',
       goal: sprintData.goal || '',
-      status: 'planning',
+      status: 'PLANNING',
       startDate: sprintData.startDate,
       endDate: sprintData.endDate,
     };
@@ -390,16 +390,16 @@ export class BacklogService {
   }
 
   private reverseMapSprintStatus(
-    status?: 'Planning' | 'Active' | 'Completed'
-  ): 'planning' | 'active' | 'completed' | undefined {
+    status?: 'PLANNING' | 'ACTIVE' | 'COMPLETED'
+  ): 'PLANNING' | 'ACTIVE' | 'COMPLETED' | undefined {
     if (!status) return undefined;
 
     const statusMap: {
-      [key: string]: 'planning' | 'active' | 'completed';
+      [key: string]: 'PLANNING' | 'ACTIVE' | 'COMPLETED';
     } = {
-      Planning: 'planning',
-      Active: 'active',
-      Completed: 'completed',
+      Planning: 'PLANNING',
+      Active: 'ACTIVE',
+      Completed: 'COMPLETED',
     };
     return statusMap[status];
   }

@@ -9,7 +9,7 @@ export interface Sprint {
   id?: string;
   name: string;
   goal?: string;
-  status: 'planning' | 'active' | 'completed';
+  status: 'PLANNING' | 'ACTIVE' | 'COMPLETED';
   startDate?: Date;
   endDate?: Date;
   issues?: any[];
@@ -18,7 +18,7 @@ export interface Sprint {
 export interface CreateSprintDto {
   name: string;
   goal?: string;
-  status: 'planning' | 'active' | 'completed';
+  status: 'PLANNING' | 'ACTIVE' | 'COMPLETED';
   startDate?: Date;
   endDate?: Date;
 }
@@ -26,7 +26,7 @@ export interface CreateSprintDto {
 export interface UpdateSprintDto {
   name?: string;
   goal?: string;
-  status?: 'planning' | 'active' | 'completed';
+  status?: 'PLANNING' | 'ACTIVE' | 'COMPLETED';
   startDate?: Date;
   endDate?: Date;
 }

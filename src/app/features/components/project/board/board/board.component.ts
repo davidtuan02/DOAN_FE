@@ -160,7 +160,7 @@ export class BoardComponent implements OnInit {
           .subscribe({
             next: (sprints) => {
               const activeSprints = sprints.filter(
-                (sprint) => sprint.status === 'active'
+                (sprint) => sprint.status === 'ACTIVE'
               );
               this.activeSprints = activeSprints;
 
@@ -168,7 +168,7 @@ export class BoardComponent implements OnInit {
 
               // Get planning sprints
               this.planningSprints = sprints.filter(
-                (sprint) => sprint.status === 'planning'
+                (sprint) => sprint.status === 'PLANNING'
               );
 
               if (activeSprints.length === 0) {
@@ -183,7 +183,7 @@ export class BoardComponent implements OnInit {
 
               if (
                 currentSelectedSprint &&
-                currentSelectedSprint.status === 'active' &&
+                currentSelectedSprint.status === 'ACTIVE' &&
                 activeSprints.some((s) => s.id === currentSelectedSprint.id)
               ) {
                 this.currentSprint = currentSelectedSprint;
@@ -307,7 +307,7 @@ export class BoardComponent implements OnInit {
       .subscribe({
         next: (sprints) => {
           const planningSprint = sprints.find(
-            (sprint) => sprint.status === 'planning'
+            (sprint) => sprint.status === 'PLANNING'
           );
 
           if (planningSprint && planningSprint.id) {
@@ -335,7 +335,7 @@ export class BoardComponent implements OnInit {
             const newSprint = {
               name: `Sprint ${sprints.length + 1}`,
               goal: 'Complete sprint tasks',
-              status: 'planning' as const,
+              status: 'PLANNING' as const,
               startDate: new Date(), // Changed to Date object
               endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // Changed to Date object
             };
@@ -568,7 +568,7 @@ export class BoardComponent implements OnInit {
           const newSprint = {
             name: data.name,
             goal: data.goal,
-            status: 'planning' as const
+            status: 'PLANNING' as const
           };
 
           // Now create sprint with the correct board ID
@@ -607,8 +607,8 @@ export class BoardComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (sprints) => {
-          this.activeSprints = sprints.filter(sprint => sprint.status === 'active');
-          this.planningSprints = sprints.filter(sprint => sprint.status === 'planning');
+          this.activeSprints = sprints.filter(sprint => sprint.status === 'ACTIVE');
+          this.planningSprints = sprints.filter(sprint => sprint.status === 'PLANNING');
         },
         error: (err) => {
           console.error('Error refreshing sprints:', err);

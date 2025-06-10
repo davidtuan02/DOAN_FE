@@ -1460,7 +1460,7 @@ export class BacklogComponent implements OnInit {
     if (!this.sprintToComplete) return [];
     return this.sprints.filter(
       (sprint) =>
-        (sprint.status === 'Planning' || sprint.status === 'Active') &&
+        (sprint.status === 'PLANNING' || sprint.status === 'ACTIVE') &&
         sprint.id !== this.sprintToComplete?.id
     );
   }

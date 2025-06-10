@@ -17,7 +17,7 @@ Chart.register(...registerables);
         </div>
         <div class="card-body">
           <div *ngIf="sprints.length === 0" class="alert alert-info">No sprints found in this project.</div>
-          
+
           <!-- Charts Section -->
           <div *ngIf="sprints.length > 0" class="row mb-4">
             <!-- Story Points Chart -->
@@ -29,7 +29,7 @@ Chart.register(...registerables);
                 </div>
               </div>
             </div>
-            
+
             <!-- Issue Types Chart -->
             <div class="col-md-6">
               <div class="card">
@@ -104,7 +104,7 @@ Chart.register(...registerables);
 export class ReportsComponent implements OnInit, AfterViewInit {
   @ViewChild('storyPointsChart') storyPointsChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('issueTypesChart') issueTypesChartRef!: ElementRef<HTMLCanvasElement>;
-  
+
   sprints: Sprint[] = [];
   private storyPointsChart: Chart | null = null;
   private issueTypesChart: Chart | null = null;
@@ -133,13 +133,13 @@ export class ReportsComponent implements OnInit, AfterViewInit {
       this.initCharts();
     }, 300);
   }
-  
+
   private addSampleData(): void {
     this.sprints = [
       {
         id: '1',
         name: 'Sprint 1',
-        status: 'completed',
+        status: 'COMPLETED',
         startDate: new Date('2023-01-01'),
         endDate: new Date('2023-01-14'),
         issues: [
@@ -151,7 +151,7 @@ export class ReportsComponent implements OnInit, AfterViewInit {
       {
         id: '2',
         name: 'Sprint 2',
-        status: 'completed',
+        status: 'COMPLETED',
         startDate: new Date('2023-01-15'),
         endDate: new Date('2023-01-28'),
         issues: [
@@ -164,7 +164,7 @@ export class ReportsComponent implements OnInit, AfterViewInit {
       {
         id: '3',
         name: 'Sprint 3',
-        status: 'active',
+        status: 'ACTIVE',
         startDate: new Date('2023-02-01'),
         endDate: new Date('2023-02-14'),
         issues: [
@@ -296,4 +296,4 @@ export class ReportsComponent implements OnInit, AfterViewInit {
     if (!sprint.issues) return 0;
     return sprint.issues.filter((i: any) => i.type === 'Bug').length;
   }
-} 
+}

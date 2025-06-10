@@ -99,7 +99,7 @@ export class BoardService {
           switchMap((sprints) => {
             // Find all active sprints
             const activeSprints = sprints.filter(
-              (sprint) => sprint.status === 'active'
+              (sprint) => sprint.status === 'ACTIVE'
             );
 
             this.activeSprintsSubject.next(activeSprints);
@@ -118,7 +118,7 @@ export class BoardService {
 
             if (
               currentSelectedSprint &&
-              currentSelectedSprint.status === 'active' &&
+              currentSelectedSprint.status === 'ACTIVE' &&
               activeSprints.some((s) => s.id === currentSelectedSprint.id)
             ) {
               activeSprint = currentSelectedSprint;
@@ -240,7 +240,7 @@ export class BoardService {
             switchMap((sprints) => {
               // Find active sprints
               const activeSprints = sprints.filter(
-                (sprint) => sprint.status === 'active'
+                (sprint) => sprint.status === 'ACTIVE'
               );
 
               this.activeSprintsSubject.next(activeSprints);
@@ -354,7 +354,7 @@ export class BoardService {
             } else {
               // Find first active sprint
               targetSprint =
-                sprints.find((sprint) => sprint.status === 'active') || null;
+                sprints.find((sprint) => sprint.status === 'ACTIVE') || null;
             }
 
             // If no active sprint, just return the created issue

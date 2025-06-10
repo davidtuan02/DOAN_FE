@@ -256,7 +256,7 @@ export class ProjectStatsService {
       map((sprints) => {
         // Find the active sprint
         const activeSprint = sprints.find(
-          (sprint) => sprint.status === 'active'
+          (sprint) => sprint.status === 'ACTIVE'
         );
 
         if (!activeSprint) {

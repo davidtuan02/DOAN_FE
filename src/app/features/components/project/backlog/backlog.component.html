@@ -225,7 +225,7 @@
 
           <!-- Start Sprint Button (for planning sprints) -->
           <button
-            *ngIf="sprint.status === 'Planning' && canManageSprints"
+            *ngIf="sprint.status === 'PLANNING' && canManageSprints"
             class="px-3 py-1.5 text-sm font-medium text-white bg-green-600 ml-4 rounded hover:bg-green-700"
             (click)="startSprint(sprint.id)"
           >
@@ -234,7 +234,7 @@
 
           <!-- Complete Sprint Button (for active sprints) -->
           <button
-            *ngIf="sprint.status === 'Active' && canManageSprints"
+            *ngIf="sprint.status === 'ACTIVE' && canManageSprints"
             class="px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 ml-4 rounded hover:bg-gray-200"
             (click)="completeSprint(sprint.id)"
           >
