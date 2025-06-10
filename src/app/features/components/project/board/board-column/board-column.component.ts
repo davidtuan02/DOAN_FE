@@ -40,10 +40,13 @@ import { CardTypesEnum } from '../../../../../core/enums';
 })
 export class BoardColumnComponent implements OnInit, OnChanges {
   @Input() column!: Column;
+  @Input() cards$!: Observable<Card[]>;
+  @Input() loadingCardIds$!: Observable<string[]>;
+  @Input() defaultIssueStatus: string | null = null;
+
+  @Output() cardDropped = new EventEmitter<CdkDragDrop<Card[]>>();
   @Output() cardUpdated = new EventEmitter<void>();
 
-  cards$!: Observable<Array<Card>>;
-  loadingCardIds$!: Observable<Array<string>>;
   private cardsSubject = new BehaviorSubject<Card[]>([]);
 
   contextMenuVisible: boolean = false;

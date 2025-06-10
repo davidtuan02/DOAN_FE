@@ -55,6 +55,7 @@ import { RichTextEditorComponent } from '../../../../shared/components/rich-text
 import { TeamRole } from '../../../../core/models/team-role.model';
 import { PermissionService } from '../../../../core/services/permission.service';
 import { CardTypesEnum } from '../../../../core/enums';
+import { BoardColumnService } from '../../../../core/services/board-column.service';
 
 @Component({
   selector: 'app-backlog',
@@ -188,7 +189,9 @@ export class BacklogComponent implements OnInit {
   // Add permission related properties
   userTeamRole: TeamRole = TeamRole.MEMBER;
   canManageSprints = false;
-  canCreateIssues = false; // Add this property
+  canCreateIssues = false;
+
+  defaultColumnStatus: string | null = null;
 
   constructor(
     private backlogService: BacklogService,
@@ -204,7 +207,8 @@ export class BacklogComponent implements OnInit {
     private store: Store<fromStore.AppState>,
     private notification: NzNotificationService,
     private permissionService: PermissionService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private boardColumnService: BoardColumnService
   ) {
     // Initialize filter form controls
     this.groupByControl = new FormControl('None');
@@ -232,6 +236,9 @@ export class BacklogComponent implements OnInit {
           this.sprints = [];
           this.backlogIssues = [];
           this.errorMessage = '';
+
+          // Load default column status when project is available
+          this.loadDefaultColumnStatus();
 
           // Call loadBoardIdFromProject which will then call initializeBacklog when done
           this.loadBoardIdFromProject().subscribe({
@@ -358,6 +365,9 @@ export class BacklogComponent implements OnInit {
   }
 
   private initializeBacklog(): void {
+    console.log('Backlog: initializeBacklog called. Current defaultColumnStatus:', this.defaultColumnStatus);
+    this.isLoading = true;
+    this.errorMessage = '';
     // Initialize the backlog service with current project
     this.backlogService.setCurrentProject(this.currentProjectId);
 
@@ -2142,7 +2152,8 @@ export class BacklogComponent implements OnInit {
    * Handles creating a new card in the backlog
    */
   onCreateCardInBacklog(cardData: any): void {
-    console.log('Creating card in backlog with data:', cardData);
+    console.log('Backlog: onCreateCardInBacklog called with cardData:', cardData);
+    console.log('Backlog: Current defaultColumnStatus:', this.defaultColumnStatus);
 
     // First convert Card to Issue format
     const newIssue: Partial<Issue> = {
@@ -2150,9 +2161,10 @@ export class BacklogComponent implements OnInit {
       type: this.mapCardTypeToIssueType(cardData.type || 'TASK'),
       description: '',
       priority: 'Medium',
-      status: 'To Do',
+      status: this.defaultColumnStatus || 'To Do', // Explicitly use defaultColumnStatus
       storyPoints: 0,
     };
+    console.log('Backlog: newIssue object before API call:', newIssue);
 
     if (!newIssue.title || newIssue.title.trim() === '') {
         this.notification.error(        'Error',        'Please enter a title for the issue',        { nzDuration: 3000 }      );      return;    }
@@ -2163,15 +2175,19 @@ export class BacklogComponent implements OnInit {
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
         next: (createdIssue) => {
-          console.log('Issue created successfully:', createdIssue);
+          console.log('Backlog: Issue created successfully (API response):', createdIssue);
 
           // Cập nhật state thống nhất qua backlogService thay vì thêm trực tiếp
           this.backlogService.updateLocalIssueState(createdIssue, 'create');
 
-                    this.notification.success(            'Success',            'Issue created in backlog',            { nzDuration: 3000 }          );
+          this.notification.success(
+            'Success',
+            'Issue created in backlog',
+            { nzDuration: 3000 }
+          );
         },
         error: (err) => {
-          console.error('Error creating issue:', err);
+          console.error('Backlog: Error creating issue:', err);
           this.handleError(err, 'Failed to create issue');
         },
       });
@@ -2181,6 +2197,9 @@ export class BacklogComponent implements OnInit {
    * Handles creating a new card in a specific sprint
    */
   onCreateCardInSprint(cardData: any, sprintId: string): void {
+    console.log('Backlog: onCreateCardInSprint called with cardData:', cardData, 'and sprintId:', sprintId);
+    console.log('Backlog: Current defaultColumnStatus:', this.defaultColumnStatus);
+
     const { title, description, type, priority, assignee } = cardData;
 
     // Create a new issue object
@@ -2189,10 +2208,11 @@ export class BacklogComponent implements OnInit {
       description,
       type: this.mapCardTypeToIssueType(type),
       priority,
-      status: 'To Do',
+      status: this.defaultColumnStatus || 'To Do', // Explicitly use defaultColumnStatus
       labels: [],
       components: [],
     };
+    console.log('Backlog: newIssue object before API call (for sprint issue):', newIssue);
 
     // Add assignee if provided
     if (assignee) {
@@ -2210,14 +2230,14 @@ export class BacklogComponent implements OnInit {
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
         next: (createdIssue) => {
-          console.log('Created issue:', createdIssue);
+          console.log('Backlog: Issue created successfully (API response):', createdIssue);
 
           // Then move the issue to the sprint
           this.issueService
             .moveIssueToSprint(createdIssue.id, sprintId)
             .subscribe({
               next: (updatedIssue) => {
-                console.log('Moved to sprint:', updatedIssue);
+                console.log('Backlog: Issue moved to sprint (API response):', updatedIssue);
 
                 // Find the sprint and add the issue to it
                 const targetSprint = this.sprints.find(
@@ -2226,18 +2246,23 @@ export class BacklogComponent implements OnInit {
                 if (targetSprint) {
                   targetSprint.issues.push(updatedIssue);
                   this.recalculateSprintMetrics(targetSprint);
+                  console.log('Backlog: Updated sprint issues with', updatedIssue);
                 }
 
-                                this.notification.success(                  'Success',                  'Issue created in sprint',                  { nzDuration: 3000 }                );
+                this.notification.success(
+                  'Success',
+                  'Issue created in sprint',
+                  { nzDuration: 3000 }
+                );
               },
               error: (err) => {
-                console.error('Error moving to sprint:', err);
+                console.error('Backlog: Error moving issue to sprint:', err);
                 this.handleError(err, 'Failed to add issue to sprint');
               },
             });
         },
         error: (err) => {
-          console.error('Error creating issue:', err);
+          console.error('Backlog: Error creating issue for sprint:', err);
           this.handleError(err, 'Failed to create issue');
         },
       });
@@ -2349,5 +2374,31 @@ export class BacklogComponent implements OnInit {
       this.canCreateIssues = isManager;
       this.canManageSprints = isManager;
     });
+  }
+
+  private loadDefaultColumnStatus(): void {
+    if (!this.currentProjectId) return;
+
+    this.boardColumnService.getColumnsByProjectId(this.currentProjectId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (columns) => {
+          console.log('BacklogComponent: Columns fetched for default status:', columns);
+          const defaultColumn = columns.find(col => col.isDefault);
+          if (defaultColumn) {
+            this.defaultColumnStatus = defaultColumn.name;
+            // Update newIssue default status
+            this.newIssue.status = this.defaultColumnStatus;
+            console.log('BacklogComponent: defaultColumnStatus set to', this.defaultColumnStatus);
+          } else {
+            console.warn('BacklogComponent: No default column found. Defaulting status to To Do.');
+            this.defaultColumnStatus = 'To Do';
+            this.newIssue.status = 'To Do';
+          }
+        },
+        error: (err) => {
+          console.error('Error loading default column status:', err);
+        }
+      });
   }
 }

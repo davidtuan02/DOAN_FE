@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, Input } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -34,6 +34,8 @@ export class CreateCardFormComponent {
     Partial<Issue>
   >();
 
+  @Input() defaultStatus: string | null = null;
+
   cardTypes = [
     {
       label: 'Task',
@@ -66,6 +68,7 @@ export class CreateCardFormComponent {
 
   onSubmit(): void {
     console.log('Submitting form:', this.createCardForm.value);
+    console.log('CreateCardFormComponent: defaultStatus received', this.defaultStatus);
     if (this.createCardForm.valid) {
       const currentUserId = this.userService.getCurrentUserId();
 
@@ -73,7 +76,7 @@ export class CreateCardFormComponent {
         title: this.createCardForm.value.title,
         type: this.createCardForm.value.type,
         priority: this.createCardForm.value.priority || 'Medium',
-        status: 'To Do',
+        status: this.defaultStatus || 'To Do',
         storyPoints: 0, // Add default story points
       };
 
@@ -83,8 +86,14 @@ export class CreateCardFormComponent {
         type: this.cardTypes[0].label,
         priority: 'Medium',
       });
+      // Delay setting editMode to false to ensure event propagation
+      setTimeout(() => {
+        this.editMode = false;
+      }, 0); // Use 0ms timeout for next tick
+    } else {
+      // If form is invalid, still exit edit mode but don't emit
+      this.editMode = false;
     }
-    this.editMode = false;
   }
 
   onDismiss(): void {

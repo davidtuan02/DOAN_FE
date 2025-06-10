@@ -768,7 +768,7 @@
         <div class="flex items-center p-3 border-t border-gray-200 bg-gray-50">
           <app-create-card-form
             (createCard)="onCreateCardInBacklog($event)"
-            class="w-full"
+            [defaultStatus]="defaultColumnStatus"
           ></app-create-card-form>
         </div>
       </div>

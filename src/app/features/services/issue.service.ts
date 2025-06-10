@@ -9,7 +9,7 @@ export interface CreateIssueDto {
   title: string;
   description?: string;
   priority: 'HIGHEST' | 'HIGH' | 'MEDIUM' | 'LOW' | 'LOWEST';
-  status: 'TODO' | 'IN_PROGRESS' | 'REVIEW' | 'DONE';
+  status: 'TODO' | 'IN_PROGRESS' | 'REVIEW' | 'DONE' | 'CREATED';
   type: 'Epic' | 'Story' | 'Task' | 'Bug' | 'Sub-task';
   storyPoints?: number;
   epicId?: string;
@@ -24,7 +24,7 @@ export interface CreateChildIssueDto {
   title: string;
   description?: string;
   priority: 'HIGHEST' | 'HIGH' | 'MEDIUM' | 'LOW' | 'LOWEST';
-  status: 'TODO' | 'IN_PROGRESS' | 'REVIEW' | 'DONE';
+  status: 'TODO' | 'IN_PROGRESS' | 'REVIEW' | 'DONE' | 'CREATED';
   parentTaskId: string;
   type: 'Sub-task';
   storyPoints?: number;
@@ -37,7 +37,7 @@ export interface UpdateIssueDto {
   title?: string;
   description?: string;
   priority?: 'HIGHEST' | 'HIGH' | 'MEDIUM' | 'LOW' | 'LOWEST';
-  status?: 'TODO' | 'IN_PROGRESS' | 'REVIEW' | 'DONE';
+  status?: 'TODO' | 'IN_PROGRESS' | 'REVIEW' | 'DONE' | 'CREATED';
   type?: 'Epic' | 'Story' | 'Task' | 'Bug' | 'Sub-task';
   storyPoints?: number;
   epicId?: string;
@@ -185,7 +185,7 @@ export class IssueService {
       startDate: issue.startDate || null,
     };
 
-    console.log(`Creating issue for project ${projectId}:`, createTaskDto);
+    console.log(`IssueService: Sending create issue request to backend for project ${projectId}:`, createTaskDto);
 
     return this.http
       .post<IssueDto>(`${this.apiUrl}/create/${projectId}`, createTaskDto, {
@@ -195,8 +195,9 @@ export class IssueService {
         }),
       })
       .pipe(
+        tap((rawResponse) => console.log('IssueService: Raw API response for create issue:', rawResponse)),
         map((task) => this.mapTaskToIssue(task)),
-        tap((createdIssue) => console.log('Created new issue:', createdIssue)),
+        tap((createdIssue) => console.log('IssueService: Mapped UI issue after creation:', createdIssue)),
         catchError((error) => {
           console.error('Error creating issue:', error);
           return throwError(() => new Error(this.getErrorMessage(error)));
@@ -452,6 +453,7 @@ export class IssueService {
   }
 
   private mapTaskToIssue(task: IssueDto): Issue {
+    console.log('IssueService: mapTaskToIssue - Input task DTO:', task);
     const assigneeObj = task.assignee || task.assignedTo;
 
     const mappedIssue: Issue = {
@@ -507,6 +509,7 @@ export class IssueService {
       );
     }
 
+    console.log('IssueService: mapTaskToIssue - Output mapped issue:', mappedIssue);
     return mappedIssue;
   }
 
@@ -532,6 +535,7 @@ export class IssueService {
       [key: string]: 'To Do' | 'In Progress' | 'Review' | 'Done';
     } = {
       CREATED: 'To Do',
+      TODO: 'To Do',
       IN_PROGRESS: 'In Progress',
       REVIEW: 'Review',
       DONE: 'Done',
@@ -570,16 +574,18 @@ export class IssueService {
 
   private mapStatusToBackend(
     status: string
-  ): 'CREATED' | 'IN_PROGRESS' | 'REVIEW' | 'DONE' {
+  ): 'TODO' | 'IN_PROGRESS' | 'REVIEW' | 'DONE' | 'CREATED' {
     const statusMap: {
-      [key: string]: 'CREATED' | 'IN_PROGRESS' | 'REVIEW' | 'DONE';
+      [key: string]: 'TODO' | 'IN_PROGRESS' | 'REVIEW' | 'DONE' | 'CREATED';
     } = {
-      'To Do': 'CREATED',
-      'In Progress': 'IN_PROGRESS',
-      Review: 'REVIEW',
-      Done: 'DONE',
+      'TO DO': 'TODO',
+      'IN PROGRESS': 'IN_PROGRESS',
+      'REVIEW': 'REVIEW',
+      'DONE': 'DONE',
+      'TODO': 'TODO',
+      'CREATED': 'CREATED',
     };
-    return statusMap[status] || 'CREATED';
+    return statusMap[status.toUpperCase()] || 'TODO';
   }
 
   private getErrorMessage(error: any): string {

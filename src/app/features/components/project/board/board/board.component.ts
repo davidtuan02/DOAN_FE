@@ -28,6 +28,7 @@ import { HttpClient } from '@angular/common/http';
 import { BASE_URL } from '../../../../../core/constants/api.const';
 import { NzNotificationService } from 'ng-zorro-antd/notification';
 import { PermissionService } from '../../../../../core/services/permission.service';
+import { BoardColumnService } from '../../../../../core/services/board-column.service';
 
 @Component({
   selector: 'app-board',
@@ -68,6 +69,7 @@ export class BoardComponent implements OnInit {
   // Permission related properties
   userTeamRole: TeamRole = TeamRole.MEMBER;
   canManageSprints = false;
+  defaultColumnStatus: string | null = null;
 
   constructor(
     private store: Store<fromStore.AppState>,
@@ -81,7 +83,8 @@ export class BoardComponent implements OnInit {
     private message: NzMessageService,
     private http: HttpClient,
     private notification: NzNotificationService,
-    private permissionService: PermissionService
+    private permissionService: PermissionService,
+    private boardColumnService: BoardColumnService
   ) {}
 
   ngOnInit(): void {
@@ -105,6 +108,8 @@ export class BoardComponent implements OnInit {
           this.loadBoardData(); // Reload the board data for the new sprint
         }
       });
+
+    this.loadDefaultColumnStatus();
   }
 
   // Add method to load user permissions
@@ -626,5 +631,23 @@ export class BoardComponent implements OnInit {
         this.isLoading = false;
       }, 100);
     }
+  }
+
+  private loadDefaultColumnStatus(): void {
+    if (!this.currentProject || !this.currentProject.id) return;
+
+    this.boardColumnService.getColumnsByProjectId(this.currentProject.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (columns) => {
+          const defaultColumn = columns.find(col => col.isDefault);
+          if (defaultColumn) {
+            this.defaultColumnStatus = defaultColumn.name;
+          }
+        },
+        error: (err) => {
+          console.error('Error loading default column status:', err);
+        }
+      });
   }
 }

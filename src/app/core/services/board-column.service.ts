@@ -50,13 +50,17 @@ export class BoardColumnService {
   getColumnsByBoardId(boardId: string): Observable<BoardColumn[]> {
     return this.http
       .get<BoardColumn[]>(`${this.apiUrl}/board/${boardId}`)
-      .pipe(tap((columns) => console.log('Fetched board columns:', columns)));
+      .pipe(
+        tap((columns) => console.log('BoardColumnService: Fetched columns by Board ID:', columns))
+      );
   }
 
   getColumnsByProjectId(projectId: string): Observable<BoardColumn[]> {
     return this.http
       .get<BoardColumn[]>(`${this.apiUrl}/project/${projectId}`)
-      .pipe(tap((columns) => console.log('Fetched project columns:', columns)));
+      .pipe(
+        tap((columns) => console.log('BoardColumnService: Fetched columns by Project ID:', columns))
+      );
   }
 
   createColumn(column: CreateBoardColumnDto): Observable<BoardColumn> {
