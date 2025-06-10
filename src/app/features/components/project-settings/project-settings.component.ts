@@ -16,6 +16,7 @@ import {
   ReorderColumnsDto,
 } from '../../../core/models/project-column.model';
 import { BoardColumnsSettingsComponent } from './board-columns-settings/board-columns-settings.component';
+import { PermissionService } from '../../../core/services/permission.service';
 
 // Define extended project interface with the additional properties needed
 interface ExtendedProject extends Project {
@@ -76,30 +77,6 @@ export class ProjectSettingsComponent implements OnInit {
       label: 'Details',
       icon: 'settings',
       active: true,
-    },
-    // {
-    //   id: 'access',
-    //   label: 'Access',
-    //   icon: 'lock',
-    //   active: false,
-    // },
-    // {
-    //   id: 'notifications',
-    //   label: 'Notifications',
-    //   icon: 'bell',
-    //   active: false,
-    // },
-    {
-      id: 'columns',
-      label: 'Columns and statuses',
-      icon: 'board',
-      active: false,
-    },
-    {
-      id: 'filters',
-      label: 'Custom filters',
-      icon: 'search',
-      active: false,
     },
   ];
 
@@ -167,10 +144,46 @@ export class ProjectSettingsComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private projectService: ProjectService,
-    private projectColumnsService: ProjectColumnsService
+    private projectColumnsService: ProjectColumnsService,
+    private permissionService: PermissionService
   ) {}
 
   ngOnInit(): void {
+    // Check user role and set available tabs
+    this.permissionService.isManager().subscribe(isManager => {
+      if (isManager) {
+        this.settingsTabs = [
+          {
+            id: 'details',
+            label: 'Details',
+            icon: 'settings',
+            active: true,
+          },
+          {
+            id: 'columns',
+            label: 'Columns and statuses',
+            icon: 'board',
+            active: false,
+          },
+          {
+            id: 'filters',
+            label: 'Custom filters',
+            icon: 'search',
+            active: false,
+          },
+        ];
+      } else {
+        this.settingsTabs = [
+          {
+            id: 'details',
+            label: 'Details',
+            icon: 'settings',
+            active: true,
+          },
+        ];
+      }
+    });
+
     // Thử lấy ID từ route params
     this.projectId = this.route.snapshot.paramMap.get('id') || '';
 
