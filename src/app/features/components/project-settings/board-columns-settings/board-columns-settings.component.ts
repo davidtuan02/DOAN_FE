@@ -151,6 +151,9 @@ export class BoardColumnsSettingsComponent implements OnInit {
     this.isEditMode = false;
     this.currentColumnId = null;
     this.columnForm.reset({ color: '#1890FF', isDefault: false });
+    this.columnForm.get('name')?.enable();
+    this.columnForm.get('color')?.enable();
+    this.columnForm.get('description')?.enable();
     this.isModalVisible = true;
   }
 
@@ -163,6 +166,9 @@ export class BoardColumnsSettingsComponent implements OnInit {
       description: column.description || '',
       isDefault: column.isDefault || false,
     });
+    this.columnForm.get('name')?.disable();
+    this.columnForm.get('color')?.disable();
+    this.columnForm.get('description')?.disable();
     this.isModalVisible = true;
   }
 

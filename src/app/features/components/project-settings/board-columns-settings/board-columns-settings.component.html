@@ -1,7 +1,7 @@
 <div class="board-columns-container">
   <div class="header">
     <h2>Board Columns Settings</h2>
-    <button
+    <!-- <button
       *ngIf="isManager"
       nz-button
       nzType="primary"
@@ -9,7 +9,7 @@
       [disabled]="isLoading"
     >
       <i nz-icon nzType="plus"></i>Add Column
-    </button>
+    </button> -->
   </div>
 
   <nz-divider></nz-divider>
@@ -57,6 +57,12 @@
             nzType="check"
             nzTheme="outline"
           ></i>
+          <i
+            *ngIf="!column.isDefault"
+            nz-icon
+            nzType="close"
+            nzTheme="outline"
+          ></i>
         </div>
         <div class="column-actions" *ngIf="isManager">
           <button nz-button nzType="text" (click)="showEditColumnModal(column)">
@@ -95,14 +101,14 @@
       <nz-form-item>
         <nz-form-label [nzSpan]="6" nzRequired>Name</nz-form-label>
         <nz-form-control [nzSpan]="18" nzErrorTip="Please input a column name!">
-          <input nz-input formControlName="name" placeholder="Column name" />
+          <input nz-input formControlName="name" placeholder="Column name" [disabled]="isEditMode" />
         </nz-form-control>
       </nz-form-item>
 
       <nz-form-item>
         <nz-form-label [nzSpan]="6">Color</nz-form-label>
         <nz-form-control [nzSpan]="18">
-          <nz-color-picker formControlName="color"></nz-color-picker>
+          <nz-color-picker formControlName="color" [disabled]="isEditMode"></nz-color-picker>
         </nz-form-control>
       </nz-form-item>
 
@@ -114,6 +120,7 @@
             formControlName="description"
             rows="3"
             placeholder="Column description"
+            [disabled]="isEditMode"
           ></textarea>
         </nz-form-control>
       </nz-form-item>
