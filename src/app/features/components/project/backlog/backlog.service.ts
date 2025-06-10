@@ -150,9 +150,9 @@ export class BacklogService {
     const statusMap: {
       [key: string]: 'PLANNING' | 'ACTIVE' | 'COMPLETED';
     } = {
-      planning: 'PLANNING',
-      active: 'ACTIVE',
-      completed: 'COMPLETED',
+      PLANNING: 'PLANNING',
+      ACTIVE: 'ACTIVE',
+      COMPLETED: 'COMPLETED',
     };
     return statusMap[status] || 'PLANNING';
   }

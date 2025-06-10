@@ -364,6 +364,7 @@ export class BacklogComponent implements OnInit {
     // Subscribe to sprints and backlog issues
     this.backlogService.getSprints().subscribe({
       next: (sprints) => {
+        console.log(sprints)
         this.sprints = sprints;
         this.updateConnectedDropLists();
         this.isLoading = false;
