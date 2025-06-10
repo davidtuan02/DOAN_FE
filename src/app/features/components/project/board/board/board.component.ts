@@ -537,70 +537,48 @@ export class BoardComponent implements OnInit {
 
   handleCreateSprint(data: {name: string, goal: string}): void {
     if (!this.currentProject || !this.currentProject.id) {
-      this.message.error('No project selected');
+      this.notification.error('Error', 'No project selected', { nzDuration: 3000 });
       return;
     }
 
-    // Get board ID from project before creating sprint
+    // Create the sprint data payload
+    const createSprintDto = {
+      name: data.name,
+      goal: data.goal,
+      status: 'PLANNING' as const,
+      startDate: new Date(),
+      endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days from now
+      project_id: this.currentProject.id
+    };
+
+    // Get board ID for the project
     this.http.get<any>(`${BASE_URL}/projects/${this.currentProject.id}`)
       .pipe(
-        switchMap((project) => {
-          if (project.boards && project.boards.length > 0) {
-            const boardId = project.boards[0].id;
-            console.log('Found board ID for project:', boardId);
-            return of(boardId);
-          } else {
-            console.log('No boards found, creating default board');
-            return this.http.post<any>(
-              `${BASE_URL}/projects/${this.currentProject.id}/create-default-board`,
-              {}
-            ).pipe(
-              map(board => {
-                console.log('Created default board:', board);
-                return board?.id;
-              })
-            );
+        switchMap(project => {
+          if (!project.boards || project.boards.length === 0) {
+            return throwError(() => new Error('No board found for this project'));
           }
+          const boardId = project.boards[0].id;
+          console.log('Found board ID:', boardId);
+
+          // Create sprint with the board ID
+          return this.sprintService.createSprint(boardId, createSprintDto);
         })
       )
       .subscribe({
-        next: (boardId) => {
-          if (!boardId) {
-            this.message.error('Could not find or create board for this project');
-            return;
+        next: () => {
+          this.notification.success('Success', 'New sprint created successfully', { nzDuration: 3000 });
+          // Refresh sprint lists
+          this.refreshSprintLists();
+          // Reset form
+          const completeSprintComponent = document.querySelector('app-complete-sprint');
+          if (completeSprintComponent) {
+            completeSprintComponent.dispatchEvent(new CustomEvent('resetCreateForm'));
           }
-
-          const newSprint = {
-            name: data.name,
-            goal: data.goal,
-            status: 'PLANNING' as const,
-            project_id: this.currentProject.id
-          };
-
-          // Now create sprint with the correct board ID
-          this.sprintService.createSprint(boardId, newSprint).subscribe({
-            next: () => {
-              this.message.success('New sprint created');
-
-              // After creating a sprint, refresh the planning sprints list but keep modal open
-              this.refreshSprintLists();
-
-              // Send an event to reset the form in the component
-              const completeSprintComponent = document.querySelector('app-complete-sprint');
-              if (completeSprintComponent) {
-                // Using a custom event to reset the form
-                completeSprintComponent.dispatchEvent(new CustomEvent('resetCreateForm'));
-              }
-            },
-            error: (err) => {
-              this.message.error('Failed to create sprint');
-              console.error('Error creating sprint:', err);
-            }
-          });
         },
         error: (err) => {
-          this.message.error('Failed to get board information');
-          console.error('Error getting board info:', err);
+          this.notification.error('Error', err.message || 'Failed to create sprint', { nzDuration: 3000 });
+          console.error('Error creating sprint:', err);
         }
       });
   }
