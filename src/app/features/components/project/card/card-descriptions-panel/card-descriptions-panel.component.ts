@@ -179,7 +179,7 @@ export class CardDescriptionsPanelComponent implements OnInit, OnDestroy {
     const childTask: Partial<Issue> = {
       title: this.newChildIssue.title,
       type: this.newChildIssue.type as any,
-      status: 'To Do',
+      status: 'CREATED',
       priority: 'Medium',
     };
 
@@ -223,7 +223,7 @@ export class CardDescriptionsPanelComponent implements OnInit, OnDestroy {
     const childTask: Partial<Issue> = {
       title: this.newChildTask.title,
       description: this.newChildTask.description,
-      status: 'To Do',
+      status: 'CREATED',
       priority: 'Medium',
       type: this.newChildTask.type as any,
     };
