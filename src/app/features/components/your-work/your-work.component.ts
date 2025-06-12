@@ -142,7 +142,7 @@ export class YourWorkComponent implements OnInit {
       next: (issues) => {
         // Get the most recently updated issues
         this.workedOnTasks = issues
-          .slice(0, 5)
+          // .slice(0, 5)
           .map((issue) => this.mapIssueToTask(issue));
       },
       error: (err) => {
@@ -202,7 +202,22 @@ export class YourWorkComponent implements OnInit {
   }
 
   private mapIssueToTask(issue: any): Task {
-    const projectId = issue.projectId || '';
+    // const projectId = issue.projectId || '';
+    const projectIds = this.recentProjects.map((p) => p.id);
+
+    console.log({
+      id: issue.id || '',
+      key: issue.key || `TASK-${issue.id ? issue.id.substring(0, 2) : '00'}`,
+      title: issue.title || issue.summary || 'Untitled Task',
+      summary: issue.description || 'No description',
+      status: issue.status || 'To Do',
+      priority: issue.priority || 'Medium',
+      projectId: projectIds[0],
+      projectName: this.getProjectName(projectIds[0]),
+      projectKey: this.getProjectKey(projectIds[0]),
+      assignee: issue.assignee,
+      created: new Date(issue.createdAt || Date.now()),
+    })
 
     return {
       id: issue.id || '',
@@ -211,9 +226,9 @@ export class YourWorkComponent implements OnInit {
       summary: issue.description || 'No description',
       status: issue.status || 'To Do',
       priority: issue.priority || 'Medium',
-      projectId: projectId,
-      projectName: this.getProjectName(projectId),
-      projectKey: this.getProjectKey(projectId),
+      projectId: projectIds[0],
+      projectName: this.getProjectName(projectIds[0]),
+      projectKey: this.getProjectKey(projectIds[0]),
       assignee: issue.assignee,
       created: new Date(issue.createdAt || Date.now()),
     };
