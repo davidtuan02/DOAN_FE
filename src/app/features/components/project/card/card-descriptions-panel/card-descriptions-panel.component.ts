@@ -11,7 +11,7 @@ import { Store } from '@ngrx/store';
 import { Card, PartialCard } from '../../../../../core/models';
 import { takeUntil, filter, switchMap, catchError, tap } from 'rxjs/operators';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { AttachmentService } from '../../../../../services/attachment.service';
+import { AttachmentService } from '../../../../../core/services/attachment.service';
 import { CommonModule } from '@angular/common';
 import { CardTitleComponent } from '../card-title/card-title.component';
 import { CardDescriptionComponent } from '../card-description/card-description.component';
@@ -53,6 +53,7 @@ import { NzMenuModule } from 'ng-zorro-antd/menu';
 export class CardDescriptionsPanelComponent implements OnInit, OnDestroy {
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
   @ViewChild('childTaskDetailModal') childTaskDetailModal!: TemplateRef<any>;
+  @ViewChild(CardAttachmentComponent) cardAttachmentComponent!: CardAttachmentComponent;
 
   selectedCard$: Observable<Card | null | undefined>;
   private unsubscribe$ = new Subject<void>();
@@ -253,14 +254,10 @@ export class CardDescriptionsPanelComponent implements OnInit, OnDestroy {
 
   cancelCreateChildModal(): void {
     this.modalService.closeAll();
-    this.newChildTask = { title: '', description: '', type: 'Sub-task' };
   }
 
   openChildTask(childId: string): void {
-    // Navigate to the child task
-    this.router.navigate(['/projects', this.projectId, 'board'], {
-      queryParams: { taskId: childId },
-    });
+    this.router.navigate(['project', 'board', 'issue', childId]);
   }
 
   private uploadFile(file: File): void {
@@ -277,6 +274,10 @@ export class CardDescriptionsPanelComponent implements OnInit, OnDestroy {
       next: () => {
         this.message.remove(loadingMessage);
         this.message.success(`${file.name} uploaded successfully`);
+        // Instead of dispatching NgRx action, directly call loadAttachments on the child component
+        if (this.cardAttachmentComponent) {
+          this.cardAttachmentComponent.loadAttachments();
+        }
       },
       error: (error) => {
         console.error('Error uploading file:', error);
@@ -286,95 +287,83 @@ export class CardDescriptionsPanelComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Thêm phương thức để lấy danh sách người dùng trong dự án
   loadProjectUsers(): void {
-    if (!this.projectId) return;
-
-    // Lấy users từ store giống như các components khác
-    this.store
-      .select(fromStore.allUsers)
+    this.projectService
+      .getProjectMembers(this.projectId)
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((users) => {
-        if (users && users.length > 0) {
-          this.projectUsers = users.map((user: any) => ({
-            id: user.id,
-            name: `${user.name}`,
-            avatar: user.avatarUrl || 'assets/images/default-avatar.png',
-          }));
-        } else {
-          // Nếu chưa có dữ liệu users trong store, dispatch action để lấy
-          this.store.dispatch(fromStore.getUsers());
-        }
+      .subscribe({
+        next: (users: any[]) => {
+          this.projectUsers = users;
+        },
+        error: (error: any) => {
+          console.error('Error loading project users:', error);
+          this.message.error('Failed to load project users');
+        },
       });
   }
 
-  // Cập nhật priority cho child task
   updateChildTaskPriority(childTask: Issue, priority: string): void {
-    if (!childTask.id) return;
-
-    const updatedTask: Partial<Issue> = {
-      id: childTask.id,
-      priority: priority as any,
-    };
-
+    const partial: Partial<Issue> = { priority: priority as any };
     this.issueService
-      .updateIssue(childTask.id, updatedTask)
+      .updateIssue(childTask.id, partial)
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe({
-        next: () => {
-          // Cập nhật lại danh sách child tasks
-          this.loadChildTasks();
-          this.message.success(`Priority updated to ${priority}`);
+        next: (updatedIssue) => {
+          const index = this.childTasks.findIndex((t) => t.id === updatedIssue.id);
+          if (index !== -1) {
+            this.childTasks[index] = updatedIssue;
+          }
+          this.message.success('Child task priority updated');
         },
         error: (error) => {
+          this.message.error('Failed to update child task priority');
           console.error('Error updating child task priority:', error);
-          this.message.error('Failed to update priority');
         },
       });
   }
 
-  // Cập nhật status cho child task
   updateChildTaskStatus(childTask: Issue, status: string): void {
-    if (!childTask.id) return;
-
+    const partial: Partial<Issue> = { status: status as any };
     this.issueService
-      .updateIssueStatus(childTask.id, status as any)
+      .updateIssue(childTask.id, partial)
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe({
-        next: () => {
-          // Cập nhật lại danh sách child tasks
-          this.loadChildTasks();
-          this.message.success(`Status updated to ${status}`);
+        next: (updatedIssue) => {
+          const index = this.childTasks.findIndex((t) => t.id === updatedIssue.id);
+          if (index !== -1) {
+            this.childTasks[index] = updatedIssue;
+          }
+          this.message.success('Child task status updated');
         },
         error: (error) => {
+          this.message.error('Failed to update child task status');
           console.error('Error updating child task status:', error);
-          this.message.error('Failed to update status');
         },
       });
   }
 
-  // Cập nhật assignee cho child task
   updateChildTaskAssignee(childTask: Issue, userId: string): void {
-    if (!childTask.id) return;
-
+    const partial: Partial<Issue> = {
+      assignee: userId ? { id: userId, name: '', avatar: '' } : undefined,
+    };
     this.issueService
-      .assignUser(childTask.id, userId)
+      .updateIssue(childTask.id, partial)
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe({
-        next: () => {
-          // Cập nhật lại danh sách child tasks
-          this.loadChildTasks();
-          const user = this.projectUsers.find((user) => user.id === userId);
-          this.message.success(`Task assigned to ${user ? user.name : 'user'}`);
+        next: (updatedIssue) => {
+          const index = this.childTasks.findIndex((t) => t.id === updatedIssue.id);
+          if (index !== -1) {
+            this.childTasks[index] = updatedIssue;
+          }
+          this.message.success('Child task assignee updated');
         },
-        error: (error) => {
-          console.error('Error assigning user to child task:', error);
-          this.message.error('Failed to assign user');
+        error: (error: any) => {
+          this.message.error('Failed to update child task assignee');
+          console.error('Error updating child task assignee:', error);
         },
       });
   }
 
-  // Ngừng lan truyền sự kiện click
   stopPropagation(event: Event): void {
     event.stopPropagation();
   }

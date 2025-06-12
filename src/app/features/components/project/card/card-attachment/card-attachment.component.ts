@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule, NgIf, NgFor } from '@angular/common';
-import { AttachmentService } from '../../../../../services/attachment.service';
+import { AttachmentService } from '../../../../../core/services/attachment.service';
 import { Attachment } from '../../../../../core/models';
 import { SvgIconComponent } from '../../../../../shared/components';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
@@ -34,6 +34,7 @@ export class CardAttachmentComponent implements OnInit {
     this.attachmentService.getAttachmentsByTaskId(this.cardId).subscribe({
       next: (attachments) => {
         this.attachments = attachments;
+        console.log('CardAttachmentComponent: Loaded attachments:', this.attachments);
         this.isLoading = false;
       },
       error: (error) => {
@@ -60,7 +61,7 @@ export class CardAttachmentComponent implements OnInit {
     this.attachmentService.uploadAttachment(file, this.cardId).subscribe({
       next: (response) => {
         this.message.success(`${file.name} uploaded successfully`);
-        this.attachments.push(response);
+        this.loadAttachments();
         this.uploading = false;
       },
       error: (error) => {
