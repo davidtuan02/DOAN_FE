@@ -102,17 +102,21 @@ export class YourWorkComponent implements OnInit {
             .filter((project) => project && project.id)
             .slice(0, 4)
             .map((project) => ({
+              ...project,
               id: project.id,
               name: project.name || 'Unnamed Project',
               key: project.key || project.id.substring(0, 4).toUpperCase(),
               type: project.category || 'software',
               description: project.description,
               avatarUrl: project.avatarUrl,
-              issueCount: {
-                open: project.openTasksCount || 0,
-                done: project.closedTasksCount || 0,
-              },
+              // issueCount: {
+              //   open: project.openTasksCount || 0,
+              //   done: project.closedTasksCount || 0,
+              // },
             }));
+
+            console.log(this.recentProjects)
+
 
           // After projects are loaded, fetch issues for each project
           this.loadWorkedOnTasks();

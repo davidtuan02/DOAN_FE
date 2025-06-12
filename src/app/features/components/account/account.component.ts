@@ -60,14 +60,7 @@ export class AccountComponent implements OnInit, OnDestroy {
 
   userRoles = Object.values(UserRole);
 
-  ngOnInit(): void {
-    this.loadUsers();
-    this.accountForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      name: ['', Validators.required],
-      role: [UserRole.MEMBER, Validators.required],
-    });
-  }
+
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
@@ -86,6 +79,7 @@ export class AccountComponent implements OnInit, OnDestroy {
     ).subscribe(users => {
       // Filter out MANAGER users
       // this.users = users.filter(user => user.role !== UserRole.MANAGER);
+      this.users = [...users]
       this.displayUsers = [...users]; // Initialize display list
     }));
   }
@@ -96,15 +90,15 @@ export class AccountComponent implements OnInit, OnDestroy {
       return;
     }
     const lowerCaseSearchValue = this.searchValue.toLowerCase();
-    this.displayUsers = this.users.filter(user =>
+    this.displayUsers = this.users.filter((user: any) =>
       // Filter out MANAGER users and apply search filter
       user.role !== UserRole.MANAGER &&
-      (user.firstName?.toLowerCase().includes(lowerCaseSearchValue) ||
-      user.lastName?.toLowerCase().includes(lowerCaseSearchValue) ||
+      (user.fullName?.toLowerCase().includes(lowerCaseSearchValue) ||
       user.email?.toLowerCase().includes(lowerCaseSearchValue) ||
       user.username?.toLowerCase().includes(lowerCaseSearchValue) ||
-      user.role?.toLowerCase().includes(lowerCaseSearchValue))
-    );
+      user.role?.toLowerCase().includes(lowerCaseSearchValue) ||
+      user.age?.toString().includes(lowerCaseSearchValue))
+    )
   }
 
   showAddModal(): void {
@@ -136,13 +130,30 @@ export class AccountComponent implements OnInit, OnDestroy {
    });
  }
 
+ngOnInit(): void {
+    this.loadUsers();
+    this.accountForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      fullName: ['', Validators.required],
+      username: ['', Validators.required],
+      age: ['', Validators.required],
+      password: ['', Validators.required],
+      confirmPassword: ['', Validators.required],
+      role: [UserRole.MEMBER, Validators.required],
+    });
+  }
+
  showEditModal(user: User): void {
   console.log(user)
   this.isEditing = true;
   this.currentUser = user;
   this.modalTitle = 'Edit Account';
-  this.accountForm.patchValue(user);
+  // this.accountForm.patchValue(user);
   this.accountForm.get('fullName')?.setValue(user.firstName)
+  this.accountForm.get('email')?.setValue(user.email)
+  this.accountForm.get('username')?.setValue(user.username)
+  this.accountForm.get('age')?.setValue(user.age)
+  this.accountForm.get('role')?.setValue(user.role)
   this.isModalVisible = true;
 
    // Remove validators for password fields when editing

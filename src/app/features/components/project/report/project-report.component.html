@@ -111,7 +111,7 @@
   </div>
 
   <!-- Sprint Progress -->
-  <div class="report-section">
+  <!-- <div class="report-section">
     <h2 class="section-title">Sprint Progress</h2>
     <div style="overflow-x:auto;">
       <table *ngIf="sprintProgress?.length" class="report-table">
@@ -142,7 +142,7 @@
         No data available
       </div>
     </div>
-  </div>
+  </div> -->
 
   <!-- Thống kê thời gian -->
   <div class="report-section">
@@ -157,7 +157,7 @@
         <div class="stat-value">{{ timeTracking.averageTimePerTask }}</div>
       </div>
     </div>
-    <div class="grid-2 mt-4">
+    <!-- <div class="grid-2 mt-4">
       <div>
         <strong>By User:</strong>
         <ul *ngIf="timeTracking?.timeByUser?.length > 0">
@@ -172,11 +172,11 @@
         </ul>
         <div *ngIf="!timeTracking?.timeByTask || timeTracking.timeByTask.length === 0" class="text-gray-400 italic py-2">No data available</div>
       </div>
-    </div>
+    </div> -->
   </div>
 
   <!-- Burndown Chart -->
-  <div class="report-section">
+  <!-- <div class="report-section">
     <h2 class="section-title">Burndown Chart</h2>
     <div *ngIf="burndownChart && burndownChart.burndownData?.length > 0">
       <p>Sprint: {{ burndownChart.sprintName }}</p>
@@ -190,5 +190,5 @@
     <div *ngIf="!burndownChart || !burndownChart.burndownData || burndownChart.burndownData.length === 0" class="text-gray-400 italic py-3 text-center">
       No data available
     </div>
-  </div>
+  </div> -->
 </div>

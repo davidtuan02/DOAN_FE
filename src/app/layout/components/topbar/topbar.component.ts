@@ -95,11 +95,11 @@ export class TopbarComponent implements OnInit, OnDestroy {
   recentProjects: ProjectDisplay[] = [];
 
   topbarMenuItems: TopbarMenuItem[] = [
-    { name: 'Your work', selected: false, route: '/your-work' },
-    { name: 'Projects', selected: false, route: '/projects' },
-    { name: 'Filters', selected: false, route: '/filters' },
-    { name: 'People', selected: false, route: '/teams' },
     { name: 'Accounts', selected: false, route: '/accounts', managerOnly: true },
+    { name: 'People', selected: false, route: '/teams' },
+    { name: 'Projects', selected: false, route: '/projects' },
+    { name: 'Your work', selected: false, route: '/your-work' },
+    { name: 'Filters', selected: false, route: '/filters' },
   ];
 
   displayTopbarMenuItems: TopbarMenuItem[] = [];

@@ -181,7 +181,7 @@ export class LoginComponent implements OnInit {
               { nzDuration: 3000 }
             );
             this.authService.setCurrentUser(response.user);
-            this.router.navigate(['/board']);
+            this.router.navigate(['/your-work']);
           },
           error: (err) => {
             console.error('Login error:', err);
