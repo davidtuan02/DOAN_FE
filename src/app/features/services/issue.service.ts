@@ -463,7 +463,7 @@ export class IssueService {
       description: task.description || task.taskDescription || '',
       priority: this.mapTaskPriority(task.priority),
       status: this.mapTaskStatus(task.status),
-      type: task.type as 'Epic' | 'Story' | 'Task' | 'Bug' | 'Sub-task',
+      type: this.mapTaskType(task.type),
       assignee: assigneeObj
         ? {
             id: assigneeObj.id,
@@ -716,5 +716,24 @@ export class IssueService {
           );
         })
       );
+  }
+
+  private mapTaskType(type: string): 'Epic' | 'Story' | 'Task' | 'Bug' | 'Sub-task' {
+    console.log('Mapping task type:', type);
+    const typeMap: {
+      [key: string]: 'Epic' | 'Story' | 'Task' | 'Bug' | 'Sub-task';
+    } = {
+      'STORY': 'Story',
+      'TASK': 'Task',
+      'BUG': 'Bug',
+      'SUB_TASK': 'Sub-task',
+      'SUBTASK': 'Sub-task',
+      'Sub-task': 'Sub-task',
+      'Sub task': 'Sub-task',
+      'Subtask': 'Sub-task'
+    };
+    const mappedType = typeMap[type.toUpperCase()] || 'Task';
+    console.log('Mapped type:', mappedType);
+    return mappedType;
   }
 }

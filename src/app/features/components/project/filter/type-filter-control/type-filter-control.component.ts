@@ -29,17 +29,25 @@ import { SvgIconComponent } from '../../../../../shared/components';
 export class TypeFilterControlComponent implements ControlValueAccessor {
   cardTypes = [
     {
-      label: 'TASK',
+      label: 'Task',
       icon: 'blueCheck',
+      value: 'Task'
     },
     {
-      label: 'BUG',
+      label: 'Bug',
       icon: 'bug',
+      value: 'Bug'
     },
     {
-      label: 'STORY',
+      label: 'Story',
       icon: 'story',
+      value: 'Story'
     },
+    {
+      label: 'Sub-task',
+      icon: 'subtask',
+      value: 'Sub-task'
+    }
   ];
 
   contextMenuVisible = false;
@@ -58,16 +66,18 @@ export class TypeFilterControlComponent implements ControlValueAccessor {
   }
 
   writeValue(selectedTypes: Array<string>): void {
+    console.log('Type filter writeValue:', selectedTypes);
     this.selectedTypes = [...selectedTypes];
   }
 
   onChangeFilter(selected: boolean, type: string) {
+    console.log('Type filter changed:', { selected, type });
     if (this.selectedTypes.includes(type)) {
       this.selectedTypes = this.selectedTypes.filter((l) => l !== type);
     } else {
       this.selectedTypes = [...this.selectedTypes, type];
     }
-
+    console.log('Selected types:', this.selectedTypes);
     this.onChanged(this.selectedTypes);
   }
 }

@@ -65,7 +65,7 @@
       <button
         nz-button
         nzType="default"
-        class="filter-button"
+        class="filter-button hover:bg-gray-100 transition-colors duration-200 flex items-center gap-2 px-4 py-2 rounded-md border border-gray-200 shadow-sm"
         nz-dropdown
         [nzDropdownMenu]="projectMenu"
         [nzVisible]="projectMenuVisible"
@@ -73,30 +73,36 @@
         nzTrigger="click"
         [nzOverlayClassName]="'dropdown-overlay'"
       >
-        <span>Project</span>
-        <span nz-icon nzType="down" nzTheme="outline" class="ml-1"></span>
+        <span class="font-medium text-gray-700">Project</span>
+        <span nz-icon nzType="down" nzTheme="outline" class="text-gray-500"></span>
       </button>
       <nz-dropdown-menu #projectMenu="nzDropdownMenu">
-        <div class="p-2 project-filter-container">
-          <div class="mb-3">
-            <div class="mb-1 text-xs text-gray-500">Operator</div>
-            <div class="flex overflow-hidden border border-gray-200 rounded-md">
+        <div class="p-4 project-filter-container bg-white rounded-lg shadow-lg min-w-[280px]">
+          <!-- <div class="mb-4">
+            <div class="mb-2 text-sm font-medium text-gray-700">Operator</div>
+            <div class="flex overflow-hidden border border-gray-200 rounded-lg shadow-sm">
               <button
-                class="w-1/2 py-1.5 px-3 text-sm font-medium operator-btn"
+                class="w-1/2 py-2.5 px-4 text-sm font-medium transition-colors duration-200 operator-btn hover:bg-gray-50"
                 [class.active]="projectOperator === '='"
+                [class.bg-blue-50]="projectOperator === '='"
+                [class.text-blue-600]="projectOperator === '='"
+                [class.border-blue-200]="projectOperator === '='"
                 (click)="setProjectOperator('=')"
               >
                 = (equals)
               </button>
               <button
-                class="w-1/2 py-1.5 px-3 text-sm font-medium operator-btn"
+                class="w-1/2 py-2.5 px-4 text-sm font-medium transition-colors duration-200 operator-btn hover:bg-gray-50"
                 [class.active]="projectOperator === '!='"
+                [class.bg-blue-50]="projectOperator === '!='"
+                [class.text-blue-600]="projectOperator === '!='"
+                [class.border-blue-200]="projectOperator === '!='"
                 (click)="setProjectOperator('!=')"
               >
                 != (not equals)
               </button>
             </div>
-          </div>
+          </div> -->
 
           <!-- <div class="mb-3 project-tabs">
             <div class="flex border-b border-gray-200">
@@ -108,6 +114,7 @@
 
           <div class="mb-3 search-field">
             <input
+            style="width: 100%;"
               type="text"
               placeholder="Search projects"
               [(ngModel)]="projectSearchTerm"
@@ -124,9 +131,6 @@
                   (change)="toggleProjectSelection(project.id)"
                   class="project-checkbox"
                 />
-                <div class="project-icon">
-                  <span nz-icon nzType="project" nzTheme="outline"></span>
-                </div>
                 <span class="project-name">{{ project.name }}</span>
               </label>
             </div>

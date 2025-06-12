@@ -17,9 +17,9 @@
 <ng-template #contextTypeMenuTemplate>
   <div class="flex flex-col justify-start items-start w-36">
     <label *ngFor="let type of cardTypes"
-           [nzChecked]="selectedTypes.includes(type.label)"
+           [nzChecked]="selectedTypes.includes(type.value)"
            nz-checkbox class="type-filter-option"
-           (nzCheckedChange)="onChangeFilter($event, type.label)">
+           (nzCheckedChange)="onChangeFilter($event, type.value)">
       <div class="flex items-end gap-2">
         <app-svg-icon [name]="type.icon" [width]="16" [height]="16"></app-svg-icon>
         <div>{{type.label}}</div>
