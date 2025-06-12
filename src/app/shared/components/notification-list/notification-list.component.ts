@@ -64,7 +64,6 @@ import { Subscription } from 'rxjs';
             class="border-b border-gray-200 hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
           >
             <a
-              [routerLink]="notification.link"
               (click)="onNotificationClick(notification)"
               class="block px-4 py-3"
             >

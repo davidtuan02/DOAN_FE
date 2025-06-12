@@ -5,7 +5,7 @@
   <div class="flex flex-col">
     <div class="flex flex-row items-baseline gap-4">
       <div class="font-medium cursor-pointer text-textDark">
-        {{ comment.user?.firstName }} {{ comment.user?.lastName }}
+        {{ comment.user?.firstName }}
       </div>
       <div class="text-xs text-textDark">
         {{ comment.createdAt | date : "short" }}
@@ -14,9 +14,9 @@
 
     <div [innerHTML]="comment.content" class="mt-1"></div>
 
-    <div class="flex flex-row items-center gap-4 mt-1">
+    <!-- <div class="flex flex-row items-center gap-4 mt-1">
       <button class="font-medium text-textGray hover:underline">Edit</button>
       <button class="font-medium text-textGray hover:underline">Delete</button>
-    </div>
+    </div> -->
   </div>
 </div>

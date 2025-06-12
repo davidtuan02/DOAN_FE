@@ -294,6 +294,7 @@ export class CardDescriptionsPanelComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (users: any[]) => {
           this.projectUsers = users;
+          console.log(this.projectUsers)
         },
         error: (error: any) => {
           console.error('Error loading project users:', error);

@@ -35,35 +35,6 @@
   <div class="my-4 ml-1.5">
     <div class="flex items-center justify-between mb-2">
       <div class="font-medium text-textDark">Child issues</div>
-      <div class="flex items-center">
-        <button
-          class="p-1 text-gray-500 rounded hover:bg-gray-100"
-          title="Refresh"
-        >
-          <app-svg-icon
-            name="refresh"
-            [width]="16"
-            [height]="16"
-          ></app-svg-icon>
-        </button>
-        <button
-          class="p-1 ml-1 text-gray-500 rounded hover:bg-gray-100"
-          title="More options"
-        >
-          <app-svg-icon
-            name="threedot"
-            [width]="16"
-            [height]="16"
-          ></app-svg-icon>
-        </button>
-        <button
-          class="p-1 ml-1 text-gray-500 rounded hover:bg-gray-100"
-          title="Add child issue"
-          (click)="createChildIssue()"
-        >
-          <app-svg-icon name="add" [width]="16" [height]="16"></app-svg-icon>
-        </button>
-      </div>
     </div>
 
     <div class="bg-white border rounded">
@@ -83,9 +54,8 @@
             <th class="w-24 px-3 py-2 text-left">Key</th>
             <th class="px-3 py-2 text-left">Summary</th>
             <th class="w-24 px-3 py-2 text-left">Priority</th>
-            <th class="w-32 px-3 py-2 text-left">Assignee</th>
+            <!-- <th class="w-32 px-3 py-2 text-left">Assignee</th> -->
             <th class="w-24 px-3 py-2 text-left">Status</th>
-            <th class="w-10 px-3 py-2 text-left"></th>
           </tr>
         </thead>
         <tbody>
@@ -93,7 +63,6 @@
             <tr
               *ngFor="let childTask of childTasks"
               class="border-t cursor-pointer hover:bg-blue-50"
-              (click)="openChildTask(childTask.id)"
             >
               <td class="px-3 py-2">
                 <ng-container [ngSwitch]="childTask.type">
@@ -178,7 +147,7 @@
                   </nz-dropdown-menu>
                 </div>
               </td>
-              <td class="px-3 py-2">
+              <!-- <td class="px-3 py-2">
                 <div
                   class="relative cursor-pointer"
                   (click)="stopPropagation($event)"
@@ -191,14 +160,6 @@
                     *ngIf="childTask.assignee; else unassigned"
                     class="flex items-center"
                   >
-                    <img
-                      [src]="
-                        childTask.assignee.avatar ||
-                        'assets/images/default-avatar.png'
-                      "
-                      class="w-6 h-6 mr-2 rounded-full"
-                      [alt]="childTask.assignee.name"
-                    />
                     <span class="truncate">{{ childTask.assignee.name }}</span>
                     <app-svg-icon
                       name="arrowDown"
@@ -226,14 +187,7 @@
                         (click)="updateChildTaskAssignee(childTask, user.id)"
                       >
                         <div class="flex items-center">
-                          <img
-                            [src]="
-                              user.avatar || 'assets/images/default-avatar.png'
-                            "
-                            class="w-6 h-6 mr-2 rounded-full"
-                            [alt]="user.name"
-                          />
-                          <span>{{ user.name }}</span>
+                          <span>{{ user.user.firstName }}</span>
                         </div>
                       </li>
                       <li nz-menu-divider *ngIf="projectUsers.length > 0"></li>
@@ -249,7 +203,7 @@
                     </ul>
                   </nz-dropdown-menu>
                 </div>
-              </td>
+              </td> -->
               <td class="px-3 py-2">
                 <div
                   class="relative cursor-pointer"
@@ -302,18 +256,6 @@
                     </ul>
                   </nz-dropdown-menu>
                 </div>
-              </td>
-              <td class="px-3 py-2">
-                <button
-                  class="text-gray-400 hover:text-gray-600 focus:outline-none"
-                  (click)="stopPropagation($event)"
-                >
-                  <app-svg-icon
-                    name="threedot"
-                    [width]="16"
-                    [height]="16"
-                  ></app-svg-icon>
-                </button>
               </td>
             </tr>
           </ng-container>
